@@ -1,0 +1,12 @@
+*.o
+*~
+mi_mkfs
+disco.imagen
+infosb
+infomb
+RWBits
+RWBlocs
+RWInodes
+traduir
+docs/*
+documentacio.html

@@ -1,0 +1,10 @@
+#!/bin/sh
+
+OBJ="../libs/ficheros_basico.o ../libs/bloques.o ../libs/ficheros.o"
+
+gcc -Wall -O1 -ggdb infosb.c ${OBJ} -o infosb
+gcc -Wall -O1 -ggdb infomb.c ${OBJ} -o infomb
+gcc -Wall -O1 -ggdb RWBits.c ${OBJ} -o RWBits
+gcc -Wall -O1 -ggdb RWBlocs.c ${OBJ} -o RWBlocs
+gcc -Wall -O1 -ggdb RWInodes.c ${OBJ} -o RWInodes
+gcc -Wall -O1 -ggdb traduir.c ${OBJ} -o traduir
