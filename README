@@ -1,0 +1,20 @@
+Pràctica de Ampliació de sistemes operatius
+-------------------------------------------
+
+Sistema de fitxers amb els següents requeriments (en espanyol):
+
+- El sistema de ficheros deberá ser jerárquico con estructura de árbol; es decir, deben poder crearse subdirectorios.
+
+- El sistema de ficheros debe ser indexado (inodos de 128 bytes con 12 punteros directos, 1 puntero indirecto simple, 1 puntero indirecto doble y 1 puntero indirecto triple).
+
+- Cada fichero (es decir, cada inodo) tendrá una metainformación mínima necesaria para las primitivas.
+
+- El sistema de ficheros debe estar preparado para trabajar con un tamaño de bloque comprendido entre 512 bytes y 4.096 bytes.
+
+- El nombre del fichero (disco.imagen) que almacenará el sistema de ficheros deberá ser dinámico; es decir, no estará definido en los programas fuentes.
+
+- La asignación de espacio a los ficheros deberá ser dinámica: se asignarán nuevos bloques a medida que hagan falta.
+
+- En las bibliotecas deben implementarse métodos de control de concurrencia para acceder a los datos de gestión del sistema de ficheros (superbloque, mapa de bits y array de inodos): hay que definir secciones críticas y usar semáforos donde corresponda.
+
+- Dentro de las bibliotecas no se ha de controlar el acceso concurrente de varios procesos a los datos de un mismo fichero. Si hace falta, los procesos externos deberán encargarse de dicho control.
