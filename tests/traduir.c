@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
     printf("[traduir.c] INFO: Inode reservat: %d\n", r);
 
     memset(buff, 2, TB);
-    
+
     /*
     int i;
     for (i = 0; i < TB -1; i++) {
@@ -43,8 +43,8 @@ int main(int argc, char *argv[])
     }
     */
 
-    const int offset = 50;
-    const int nbytes = 5000;
+    const int offset = 0;
+    const int nbytes = 8000;
 
     int s;
 
@@ -55,7 +55,7 @@ int main(int argc, char *argv[])
         return -1;
     }
     printf("[traduir.c] INFO: bytes escrits = %d\n", s);
-	printf("[traudir.c] ******* FIN mi_write_f *******\n");
+    printf("[traudir.c] ******* FIN mi_write_f *******\n");
 
 /*
     r = reservarInode('0', 'r'); // reservam de tipus 'lliure' i amb permis d'escriptura
@@ -66,6 +66,7 @@ int main(int argc, char *argv[])
 
     printf("[traduir.c] INFO: Inode reservat: %d\n", r);
 */
+/*
     printf("[traudir.c] Se ejecuta mi_read_f ****\n");
     s = mi_read_f(r, &buff, offset, nbytes);
     if (s == -1) {
@@ -73,7 +74,8 @@ int main(int argc, char *argv[])
         return -1;
     }
     printf("[traduir.c] INFO: bytes llegits = %d\n", s);
-  	printf("[traudir.c] ******* FIN mi_read_f *******\n");
+    printf("[traudir.c] ******* FIN mi_read_f *******\n");
+*/
     // desmontam es FS
     if (bumount() == -1) {
         return -1;
