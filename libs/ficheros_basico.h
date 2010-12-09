@@ -87,4 +87,4 @@ inode llegirInode(int);
 int reservarInode(int, char);
 int alliberarBlocInode(inode, int);
 int alliberarInode(int, int, int);
-unsigned int traduirBlocInode(unsigned int, unsigned int, char);
+int traduirBlocInode(unsigned int inod, unsigned int blocLogic, char reservar);
