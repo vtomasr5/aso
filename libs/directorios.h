@@ -29,8 +29,8 @@
 #include "ficheros.h"
 
 typedef struct {
-    char nombre[60];
-    unsigned int inodo;
+    char nom[60];
+    unsigned int inod;
 } entrada;
 
 int extreureCami(const char *cami, char *inicial, char *final);
