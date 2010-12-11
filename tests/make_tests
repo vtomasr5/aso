@@ -1,6 +1,6 @@
 #!/bin/sh
 
-OBJ="../libs/ficheros_basico.o ../libs/bloques.o ../libs/ficheros.o"
+OBJ="../libs/ficheros_basico.o ../libs/bloques.o ../libs/ficheros.o ../libs/directorios.o"
 
 gcc -Wall -O1 -ggdb infosb.c ${OBJ} -o infosb
 gcc -Wall -O1 -ggdb infomb.c ${OBJ} -o infomb

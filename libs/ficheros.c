@@ -22,7 +22,7 @@
 /**
  *  @file ficheros.c
  *  @brief Conté els funcions de més alt nivell que interactuen amb el sistema de fitxers.
- *  S'implementes les funcions necessàries per a llegir i escriure en el sistema de fitxers.
+ *  S'implementen les funcions necessàries per a llegir i escriure en el sistema de fitxers.
  *  @date 15/11/2010
  */
 
