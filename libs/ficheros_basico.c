@@ -837,6 +837,7 @@ int traduirBlocInode(unsigned int inod, unsigned int blocLogic, char reservar)
                 (N_PUNTERS_BLOC * N_PUNTERS_BLOC * N_PUNTERS_BLOC); // 16843020
     int bloc_res = 0; // bloc reservat
     int temp;
+    int temp2;
 
     in = llegirInode(inod); // llegim l'inode
 
@@ -848,9 +849,9 @@ int traduirBlocInode(unsigned int inod, unsigned int blocLogic, char reservar)
                 return bfisic;
 
             } else if (blocLogic >= pd &&  blocLogic <= pin0 - 1) {  // punters indirectes de nivell0 // 12 - 267
-                temp = in.pindirectes[0];
+                temp2 = in.pindirectes[0];
 
-                if (temp > 0) { // comprovam que hi hagui direccions
+                if (temp2 > 0) { // comprovam que hi hagui direccions
                     if (bread(in.pindirectes[0], buff) == -1) { // carregam a memoria (a buff) els punters indirectes de nivell 0
                         return -1;
                     }
@@ -862,9 +863,9 @@ int traduirBlocInode(unsigned int inod, unsigned int blocLogic, char reservar)
                     return -1;
                 }
             } else if (blocLogic >= pin0 && blocLogic <= pin1 - 1) { // punters indirectes nivell 1 //268 - 65.803
-                temp = in.pindirectes[1];
+                temp2 = in.pindirectes[1];
 
-                if (temp > 0) { // comprovam que hi hagui direccions
+                if (temp2 > 0) { // comprovam que hi hagui direccions
                     if (bread(in.pindirectes[1], buff) == -1) { // carregam a memoria (a buff) els punters indirectes de nivell 1
                         return -1;
                     }
@@ -882,9 +883,9 @@ int traduirBlocInode(unsigned int inod, unsigned int blocLogic, char reservar)
                     return -1;
                 }
             } else if (blocLogic >= pin1 && blocLogic <= pin2 - 1) { // punters indirectes de nivell 2 // 65.804 - 16.843.019
-                temp = in.pindirectes[2];
+                temp2 = in.pindirectes[2];
 
-                if (temp > 0) { // comprovam que hi hagui direccions
+                if (temp2 > 0) { // comprovam que hi hagui direccions
                     if (bread(in.pindirectes[2], buff) == -1) { // carregam a memoria (a buff) els punters indirectes de nivell 2
                         return -1;
                     }
@@ -913,9 +914,10 @@ int traduirBlocInode(unsigned int inod, unsigned int blocLogic, char reservar)
         } else if (reservar == '1') { // Escriptura
 
             if (blocLogic >= 0 && blocLogic <= pd - 1) { // punters directes de 0 - 11
-                temp = in.pdirectes[blocLogic];
-                printf("[ficheros_basico.c] DEBUG: in.pdirectes : %d\n",temp);
-                if (temp > 0) { // comprovam que existeix el bloc físic
+            	
+                temp2 = in.pdirectes[blocLogic];
+                //printf("[ficheros_basico.c] DEBUG: in.pdirectes : %d\n",temp);
+                if (temp2 > 0) { // comprovam que existeix el bloc físic
                     bfisic = in.pdirectes[blocLogic]; // retornam directament la posició del bloc físic
                     return bfisic;
                 } else  {
@@ -925,13 +927,13 @@ int traduirBlocInode(unsigned int inod, unsigned int blocLogic, char reservar)
 
                     escriureInode(inod, in); // escrivim els canvis de l'inode
                     bfisic = in.pdirectes[blocLogic]; // retornam directament la posició del bloc físic
-
+					printf("[traduirBlocInode]  bfisic: %d\n",bfisic);
                     return bfisic;
                 }
             } else if (blocLogic >= pd &&  blocLogic <= pin0 - 1) {  // punters indirectes de nivell0 // 12 - 267
-                temp = in.pindirectes[0];
+                temp2 = in.pindirectes[0];
 
-                if (temp > 0) { // comprovam que hi hagui direccions
+                if (temp2 > 0) { // comprovam que hi hagui direccions
                     if (bread(in.pindirectes[0], buff) == -1) { // carregam a memoria (a buff) els punters indirectes de nivell 0
                         return -1;
                     }
@@ -942,7 +944,7 @@ int traduirBlocInode(unsigned int inod, unsigned int blocLogic, char reservar)
                     bloc_res = reservarBloc(); // reservam un bloc
                     in.pindirectes[0] = bloc_res; // assignam el bloc reservat al punter indirecte de nivell 0
 
-                    if (bread(temp, buff) == -1) {
+                    if (bread(in.pindirectes[0], buff) == -1) {
                         return -1;
                     }
 
@@ -950,7 +952,7 @@ int traduirBlocInode(unsigned int inod, unsigned int blocLogic, char reservar)
                     bloc_res = reservarBloc();
                     buff[bfisic] = bloc_res;
 
-                    if (bwrite(temp, buff) == -1) {
+                    if (bwrite(in.pindirectes[0], buff) == -1) {
                         return -1;
                     }
 
@@ -961,9 +963,9 @@ int traduirBlocInode(unsigned int inod, unsigned int blocLogic, char reservar)
                     return buff[bfisic]; // retornam el "punter" del bloc físic que es troba al buff (dins memòria) i que apunta la zona de dades (el bloc de dades)
                 }
             } else if (blocLogic >= pin0 && blocLogic <= pin1 - 1) { // punters indirectes nivell 1 //268 - 65.803
-                temp = in.pindirectes[1];
+                temp2 = in.pindirectes[1];
 
-                if (temp > 0) { // comprovam que hi hagui direccions
+                if (temp2 > 0) { // comprovam que hi hagui direccions
                     if (bread(in.pindirectes[1], buff) == -1) { // carregam a memoria (a buff) els punters indirectes de nivell 1
                         return -1;
                     }
@@ -997,6 +999,7 @@ int traduirBlocInode(unsigned int inod, unsigned int blocLogic, char reservar)
 
                     bloc_res = reservarBloc();
                     buff2[bfisic / N_PUNTERS_BLOC] = bloc_res;
+                    
                     in.blocs_assignats_dades++;
                     in.data_modificacio = time(NULL);
 
@@ -1008,8 +1011,8 @@ int traduirBlocInode(unsigned int inod, unsigned int blocLogic, char reservar)
                     return buff2[bfisic % N_PUNTERS_BLOC];
                 }
             } else if (blocLogic >= pin1 && blocLogic <= pin2 - 1) { // punters indirectes de nivell 2 // 65.804 - 16.843.019
-                temp = in.pindirectes[2];
-                if (temp > 0) { // comprovam que hi hagui direccions
+                temp2 = in.pindirectes[2];
+                if (temp2 > 0) { // comprovam que hi hagui direccions
                     if (bread(in.pindirectes[2], buff) == -1) { // carregam a memoria (a buff) els punters indirectes de nivell 2
                         return -1;
                     }

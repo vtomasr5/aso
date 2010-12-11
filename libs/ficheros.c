@@ -78,8 +78,8 @@ int mi_write_f (unsigned int inod, const void *buff_original, unsigned int offse
 
     // únicament tenim que escriure en un bloc
     if (nbytes <= bytes_lliures_primer_bloc) {
-        //memcpy(&buff_bloc[desplacament_primer_bloc], buff_original, nbytes);
         memcpy(buff_bloc + desplacament_primer_bloc, buff_original, TB - desplacament_primer_bloc);
+        //memcpy(buff_bloc + desplacament_primer_bloc, buff_original, TB - nbytes);
 
         if (bwrite(blocFisic, buff_bloc) == -1) {
             return -1;
@@ -97,7 +97,9 @@ int mi_write_f (unsigned int inod, const void *buff_original, unsigned int offse
     } else if (nbytes > bytes_lliures_primer_bloc) { // cas en que escrivim en més d'un bloc
         bytes_escrits = TB - desplacament_primer_bloc;
 
+        printf("ficheros.c] DEBUG: cas intermitjo - antes del 1º memcpy\n");
         memcpy(buff_bloc + desplacament_primer_bloc, buff_original, bytes_lliures_primer_bloc);
+        printf("ficheros.c] DEBUG: cas intermitjo - despues del 1º memcpy\n");
 
         printf ("[ficheros.c] cas directe - DEBUG: bytes_escritos: %d\n", bytes_escrits);
         if (bwrite(blocFisic, buff_bloc) == -1) {
@@ -110,7 +112,9 @@ int mi_write_f (unsigned int inod, const void *buff_original, unsigned int offse
         for (i = blocLogic; i < darrer_bloc_logic; i++) { //el problema era <= , debia ser <, sino escribia un bloque intermedio mas
             printf ("[ficheros.c] DEBUG: cas intermitjo - darrer_bloc_intermitj %d  | i: %d\n", darrer_bloc_logic,i);
 
+            printf("ficheros.c] DEBUG: cas intermitjo - antes de traduir inode\n");
             blocFisic = traduirBlocInode(inod, i, '1');
+            printf("ficheros.c] DEBUG: cas intermitjo - despues de traduir inode\n");
 
             if (blocFisic <= 0) {
                 printf("[ficheros.c] ERROR: Bloc físic incorrecte\n");
@@ -306,9 +310,11 @@ int mi_chmod_f (unsigned int inod, unsigned short int mode)
  */
 int mi_truncar_f (unsigned int inod, unsigned int nbytes)
 {
-    inode in;
-
-    in = llegirInode(inod);
+    inode in = llegirInode(inod);
+    int max_punters = MAX_PUNTERS_DIRECTES + N_PUNTERS_BLOC + (N_PUNTERS_BLOC * N_PUNTERS_BLOC) +
+                (N_PUNTERS_BLOC * N_PUNTERS_BLOC * N_PUNTERS_BLOC); // 16.843.020
+    int blocs_conservar = 0;
+    int blocs_llegits = 0;
 
     if (nbytes > in.tamany) {
         printf("[ficheros.c] ERROR: No se pot truncar un fitxer més gran que el seu tamany\n");
@@ -319,15 +325,32 @@ int mi_truncar_f (unsigned int inod, unsigned int nbytes)
         alliberarInode(inod, 0, 0);
 
         in = llegirInode(inod);
-        printf("[ficheros.c] DEBUG: tamany inode abans %d\n", in.tamany);
+        //printf("[ficheros.c] DEBUG: tamany inode abans %d\n", in.tamany);
         in.tamany = nbytes;
-        printf("[ficheros.c] DEBUG: tamany inode despres %d\n", in.tamany);
+        //printf("[ficheros.c] DEBUG: tamany inode despres %d\n", in.tamany);
 
         escriureInode(inod, in);
     } else {
+        blocs_conservar = (nbytes / TB) + 1;
 
+        int i, bf;
+        for (i = 0; i < max_punters; i++) {
+            bf = traduirBlocInode(inod, i, '0');
+
+            if (bf > 0) {
+                blocs_llegits++;
+            }
+
+            if (blocs_llegits == blocs_conservar) {
+                alliberarInode(inod, blocs_conservar, 0);
+                //in = llegirInode(inod);
+                //printf("[ficheros.c] DEBUG: tamany inode abans %d\n", in.tamany);
+                in.tamany = nbytes;
+                //printf("[ficheros.c] DEBUG: tamany inode despres %d\n", in.tamany);
+                escriureInode(inod, in);
+            }
+        }
     }
-
     return 0;
 }
 

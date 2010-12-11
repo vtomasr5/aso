@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
     */
 
     const int offset = 0;
-    const int nbytes = 8000;
+    const int nbytes = 7000;
 
     int s;
 
