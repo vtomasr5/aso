@@ -825,9 +825,9 @@ int alliberarInode(int inod, int bloc, int eliminar)
 int traduirBlocInode(unsigned int inod, unsigned int blocLogic, char reservar)
 {
     inode in;
-    char buff[N_PUNTERS_BLOC];
-    char buff2[N_PUNTERS_BLOC];
-    char buff3[N_PUNTERS_BLOC];
+    unsigned char buff[N_PUNTERS_BLOC];
+    unsigned char buff2[N_PUNTERS_BLOC];
+    unsigned char buff3[N_PUNTERS_BLOC];
     int bfisic = 0;
     int pd = MAX_PUNTERS_DIRECTES; // pd = punters directes
     int pin0 = MAX_PUNTERS_DIRECTES + N_PUNTERS_BLOC; // 268
@@ -914,7 +914,7 @@ int traduirBlocInode(unsigned int inod, unsigned int blocLogic, char reservar)
         } else if (reservar == '1') { // Escriptura
 
             if (blocLogic >= 0 && blocLogic <= pd - 1) { // punters directes de 0 - 11
-            	
+
                 temp2 = in.pdirectes[blocLogic];
                 //printf("[ficheros_basico.c] DEBUG: in.pdirectes : %d\n",temp);
                 if (temp2 > 0) { // comprovam que existeix el bloc físic
@@ -927,7 +927,7 @@ int traduirBlocInode(unsigned int inod, unsigned int blocLogic, char reservar)
 
                     escriureInode(inod, in); // escrivim els canvis de l'inode
                     bfisic = in.pdirectes[blocLogic]; // retornam directament la posició del bloc físic
-					printf("[traduirBlocInode]  bfisic: %d\n",bfisic);
+                    printf("[traduirBlocInode]  bfisic: %d\n",bfisic);
                     return bfisic;
                 }
             } else if (blocLogic >= pd &&  blocLogic <= pin0 - 1) {  // punters indirectes de nivell0 // 12 - 267
@@ -999,7 +999,7 @@ int traduirBlocInode(unsigned int inod, unsigned int blocLogic, char reservar)
 
                     bloc_res = reservarBloc();
                     buff2[bfisic / N_PUNTERS_BLOC] = bloc_res;
-                    
+
                     in.blocs_assignats_dades++;
                     in.data_modificacio = time(NULL);
 

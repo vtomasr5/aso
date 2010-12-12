@@ -30,28 +30,18 @@ int main(int argc, char *argv[])
     }
 
     // proves
-    int b = 0;
+    int b;
     if ((b = reservarBloc()) == -1) {
         return -1;
     }
     printf("Bloc reservat: %d\n", b);
-/*
-    unsigned char buff[TB];
-//    memset(buff, 0, TB);
-    if (bread(b, buff) == -1) { // llegim el bloc i ho posam al buffer
-        return -1;
-    }
-*/
+
+    // canviam el contingut de l'inode
     inode inod;
-    inod.permisos = 'r';
-    inod.tamany = 666;
-//    memcpy(&buff, &inod, sizeof(inode));
-/*
-    if (bwrite(b, buff) == -1) {
-        return -1;
-    }
-*/
-    int i = 0;
+    inod.permisos = 'w';
+    inod.tamany = 96;
+
+    int i;
     if ((i = escriureInode(b, inod)) == -1) {
         return -1;
     }
@@ -61,6 +51,12 @@ int main(int argc, char *argv[])
     d = llegirInode(b);
     printf("Contingut inode (permisos): %c\n", d.permisos);
     printf("Contingut inode (tamany): %d\n", d.tamany);
+
+    int e;
+    if ((e = alliberarBloc(b)) == -1) {
+        return -1;
+    }
+    printf("Bloc alliberat: %d\n", e);
 
     // desmontam es FS
     if (bumount() == -1) {

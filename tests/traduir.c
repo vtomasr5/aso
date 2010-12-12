@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
     int s;
 
     printf("[traudir.c] Se ejecuta mi_write_f ****\n");
-    s = mi_write_f(r, &buff, offset, nbytes);
+    s = mi_write_f(r, buff, offset, nbytes);
     if (s == -1) {
         printf("[traduir.c] ERROR: falla mi_write_f()\n");
         return -1;
@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
 */
 /*
     printf("[traudir.c] Se ejecuta mi_read_f ****\n");
-    s = mi_read_f(r, &buff, offset, nbytes);
+    s = mi_read_f(r, buff, offset, nbytes);
     if (s == -1) {
         printf("[traduir.c] ERROR: falla mi_read_f()\n");
         return -1;
@@ -76,6 +76,7 @@ int main(int argc, char *argv[])
     printf("[traduir.c] INFO: bytes llegits = %d\n", s);
     printf("[traudir.c] ******* FIN mi_read_f *******\n");
 */
+
     // desmontam es FS
     if (bumount() == -1) {
         return -1;

@@ -37,6 +37,18 @@ int main(int argc, char *argv[])
     }
     printf("Bit llegit: %d\n", c);
 
+    int d;
+    if ((d = alliberarBloc(b)) == -1) {
+        return -1;
+    }
+    printf("Bloc alliberat: %d\n", d);
+
+    int e;
+    if ((e = llegirBit(b)) == -1) {
+        return -1;
+    }
+    printf("Bit llegit: %d\n", e);
+
     // desmontam es FS
     if (bumount() == -1) {
         return -1;

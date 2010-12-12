@@ -49,6 +49,6 @@ typedef struct {
 
 int mi_write_f (unsigned int inod, const void *buff_original, unsigned int offset, unsigned int nbytes);
 int mi_read_f (unsigned int inod, void *buff_original, unsigned int offset, unsigned int nbytes);
-int mi_chmod_f (unsigned int inod, unsigned short int mode);
+int mi_chmod_f (unsigned int inod, unsigned char mode);
 int mi_truncar_f (unsigned int inod, unsigned int nbytes);
 int mi_stat_f (unsigned int inod, STAT *p_stat);
