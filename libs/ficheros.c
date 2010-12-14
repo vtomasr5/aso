@@ -112,11 +112,11 @@ int mi_write_f (unsigned int inod, const void *buff_original, unsigned int offse
         int i;
         printf ("[ficheros.c] DEBUG: blocLogic %d darrer_bloc_intermitj: %d \n", blocLogic,darrer_bloc_logic);
         for (i = blocLogic; i < darrer_bloc_logic; i++) { //el problema era <= , debia ser <, sino escribia un bloque intermedio mas
-            printf ("[ficheros.c] DEBUG: cas intermitjo - darrer_bloc_intermitj %d  | i: %d\n", darrer_bloc_logic,i);
+            //printf ("[ficheros.c] DEBUG: cas intermitjo - darrer_bloc_intermitj %d  | i: %d\n", darrer_bloc_logic,i);
 
-            printf("ficheros.c] DEBUG: cas intermitjo - antes de traduir inode\n");
+            //printf("ficheros.c] DEBUG: cas intermitjo - antes de traduir inode\n");
             blocFisic = traduirBlocInode(inod, i, '1');
-            printf("ficheros.c] DEBUG: cas intermitjo - despues de traduir inode\n");
+            //printf("ficheros.c] DEBUG: cas intermitjo - despues de traduir inode\n");
 
             if (blocFisic <= 0) {
                 printf("[ficheros.c] ERROR: Bloc físic incorrecte\n");
@@ -201,6 +201,7 @@ int mi_read_f (unsigned int inod, void *buff_original, unsigned int offset, unsi
         return -1;
     }
 */
+	
     blocFisic = traduirBlocInode(inod, blocLogic, '0');
 
     if (blocFisic <= 0) {
