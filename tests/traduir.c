@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
     }
 
     // proves
-    int r;
+    uint r;
     r = reservarInode('0', 'w'); // reservam de tipus 'lliure' i amb permis d'escriptura
     if (r == -1) {
         printf("[traduir.c] ERROR: falla reservarInode1()\n");
@@ -43,8 +43,8 @@ int main(int argc, char *argv[])
     }
     */
 
-    const int offset = 0;
-    const int nbytes = 12000;
+    uint offset = 0;
+    uint nbytes = 12000;
 
     int s;
 

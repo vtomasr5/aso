@@ -78,6 +78,10 @@ int mi_write_f (unsigned int inod, const void *buff_original, unsigned int offse
 
     // únicament tenim que escriure en un bloc
     if (nbytes <= bytes_lliures_primer_bloc) {
+        if (bread(blocFisic, buff_bloc) == -1) {
+            return -1;
+        }
+
         memcpy(buff_bloc + desplacament_primer_bloc, buff_original, TB - desplacament_primer_bloc);
         //memcpy(buff_bloc + desplacament_primer_bloc, buff_original, TB - nbytes);
 
@@ -201,7 +205,7 @@ int mi_read_f (unsigned int inod, void *buff_original, unsigned int offset, unsi
         return -1;
     }
 */
-	
+
     blocFisic = traduirBlocInode(inod, blocLogic, '0');
 
     if (blocFisic <= 0) {
