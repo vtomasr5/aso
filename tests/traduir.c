@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
     }
 
     // proves
-    uint r;
+    int r;
     r = reservarInode('0', 'w'); // reservam de tipus 'lliure' i amb permis d'escriptura
     if (r == -1) {
         printf("[traduir.c] ERROR: falla reservarInode1()\n");
@@ -48,13 +48,13 @@ int main(int argc, char *argv[])
 
     int s;
 
-    printf("[traudir.c] Se ejecuta mi_write_f ****\n");
+    printf("[traudir.c] Se ejecuta mi_write_f ****\n\n");
     s = mi_write_f(r, buff, offset, nbytes);
     if (s == -1) {
         printf("[traduir.c] ERROR: falla mi_write_f()\n");
         return -1;
     }
-    printf("[traduir.c] INFO: bytes escrits = %d\n", s);
+    printf("\n[traduir.c] INFO: bytes escrits = %d\n", s);
     printf("[traudir.c] ******* FIN mi_write_f *******\n");
 
 /*

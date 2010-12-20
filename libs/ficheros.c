@@ -44,12 +44,12 @@ int mi_write_f (unsigned int inod, const void *buff_original, unsigned int offse
     int blocLogic = offset / TB; // primer bloc (logic) on escriurem
     int blocFisic;
     int darrer_bloc_logic = ((offset + nbytes) - 1) / TB;
-    int darrer_byte = (offset + nbytes - 1); // darrer byte on escriurem
+    //int darrer_byte = (offset + nbytes - 1); // darrer byte on escriurem
     int desplacament_primer_bloc = offset % TB; // Offset del primer bloc. Punt d'inici del primer bloc
     int bytes_lliures_primer_bloc = TB - desplacament_primer_bloc; // Numero de bytes a escriure en el primer bloc
     int primer_bloc = blocLogic;
-    int bytes_darrer_bloc = (nbytes - (TB - (offset % TB))) % TB;
-
+    int bytes_darrer_bloc = (nbytes - bytes_lliures_primer_bloc) % TB; // Numero de bytes a escriure en el darrer bloc
+    int bytes_per_escriure = nbytes; //Bytes que faltan per escriure
     in = llegirInode(inod);
     printf("[ficheros.c - mi_write_f] DEBUG: bytes_a_escribir %d\n",nbytes);
 
@@ -57,13 +57,13 @@ int mi_write_f (unsigned int inod, const void *buff_original, unsigned int offse
         printf("[ficheros.c] ERROR: L'inode no te permisos d'escriptura!\n");
         return -1;
     }
-    printf ("[ficheros.c] DEBUG: mi_write_f blogLogic: %d | offset: %d | TB: %d\n",blocLogic, offset, TB);
+    //printf ("[ficheros.c] DEBUG: mi_write_f blogLogic: %d | offset: %d | TB: %d\n",blocLogic, offset, TB);
 
     blocFisic = traduirBlocInode(inod, blocLogic, '1'); // bloc físic on escriurem
 
-    printf("[ficheros.c] DEBUG: blocFisic 0 = %d\n", blocFisic);
+    //printf("[ficheros.c] DEBUG: blocFisic 0 = %d\n", blocFisic);
 
-    printf("!!![ficheros.c] DEBUG: bytes_darrer_bloc %d  | darrer_bloc_intermitj: %d | bytes_lliures_primer_bloc: %d | darrer_bloc_logic: %d\n", darrer_byte,darrer_bloc_logic,bytes_lliures_primer_bloc,darrer_bloc_logic);
+    printf("!!![ficheros.c] DEBUG: bytes_darrer_bloc %d  | darrer_bloc_intermitj: %d | bytes_lliures_primer_bloc: %d | darrer_bloc_logic: %d\n", bytes_darrer_bloc,darrer_bloc_logic,bytes_lliures_primer_bloc,darrer_bloc_logic);
 
     if (blocFisic <= 0) {
         printf("[ficheros.c] ERROR: Bloc físic incorrecte\n");
@@ -81,7 +81,6 @@ int mi_write_f (unsigned int inod, const void *buff_original, unsigned int offse
         if (bread(blocFisic, buff_bloc) == -1) {
             return -1;
         }
-
         memcpy(buff_bloc + desplacament_primer_bloc, buff_original, TB - desplacament_primer_bloc);
         //memcpy(buff_bloc + desplacament_primer_bloc, buff_original, TB - nbytes);
 
@@ -90,6 +89,7 @@ int mi_write_f (unsigned int inod, const void *buff_original, unsigned int offse
         }
 
         bytes_escrits = nbytes;
+        bytes_per_escriure -= bytes_escrits;
         printf("[ficheros.c] DEBUG: bytes_escrits [primer_bloc_unicament] %d\n",bytes_escrits);
 
         // actualitzam les dades de l'inode
@@ -103,46 +103,51 @@ int mi_write_f (unsigned int inod, const void *buff_original, unsigned int offse
             return -1;
         }
 
-        printf("ficheros.c] DEBUG: cas intermitjo - antes del 1º memcpy\n");
+        //printf("ficheros.c] DEBUG: cas intermitjo - antes del 1º memcpy\n");
         memcpy(buff_bloc + desplacament_primer_bloc, buff_original, bytes_lliures_primer_bloc);
-        printf("ficheros.c] DEBUG: cas intermitjo - despues del 1º memcpy\n");
+        //printf("ficheros.c] DEBUG: cas intermitjo - despues del 1º memcpy\n");
 
-        printf ("[ficheros.c] cas directe - DEBUG: bytes_escritos: %d\n", bytes_escrits);
+       
         if (bwrite(blocFisic, buff_bloc) == -1) {
             return -1;
         }
         bytes_escrits = TB - desplacament_primer_bloc;
-
+        bytes_per_escriure -= bytes_escrits;
+	printf ("\n[ficheros.c] CAS DIRECTE - DEBUG: bytes_escritos: %d en el blogLogic %d | faltan: %d bytes por escribir\n", bytes_escrits,blocLogic,bytes_per_escriure);
+        blocLogic++;
         int i;
-        printf ("[ficheros.c] DEBUG: blocLogic %d darrer_bloc_intermitj: %d \n", blocLogic,darrer_bloc_logic);
-        for (i = blocLogic; i < darrer_bloc_logic; i++) { //el problema era <= , debia ser <, sino escribia un bloque intermedio mas
-            //printf ("[ficheros.c] DEBUG: cas intermitjo - darrer_bloc_intermitj %d  | i: %d\n", darrer_bloc_logic,i);
 
-            //printf("ficheros.c] DEBUG: cas intermitjo - antes de traduir inode\n");
+	printf ("[ficheros.c] DEBUG: ANTES DE ENTRAR A BLOQUES INTERMEDIOS - blocLogic %d  | darrer bloc logic: %d\n", blocLogic,darrer_bloc_logic);
+        for (i = blocLogic; i < darrer_bloc_logic; i++) { //el problema era <= , debia ser <, sino escribia un bloque intermedio mas
+  
+            printf("ficheros.c] DEBUG: cas intermitjo - antes de traduir inode\n");
             blocFisic = traduirBlocInode(inod, i, '1');
-            //printf("ficheros.c] DEBUG: cas intermitjo - despues de traduir inode\n");
+            printf("ficheros.c] DEBUG: cas intermitjo - despues de traduir inode\n");
 
             if (blocFisic <= 0) {
                 printf("[ficheros.c] ERROR: Bloc físic incorrecte\n");
                 return -1;
             }
-
-            memcpy(buff_bloc, buff_original + (TB - desplacament_primer_bloc) + (i - primer_bloc - 1) * TB, TB);
+	        printf("ficheros.c] DEBUG: cas intermitjo - antes del memcpy \n");
+            memcpy(buff_bloc, buff_original + (TB - desplacament_primer_bloc) + (i - primer_bloc - 1) * TB, TB); //AQUI FALLO SEGMENTACION
+            printf("ficheros.c] DEBUG: cas intermitjo - despues del memcpy\n");
 
             // Escrivim directament TB bytes al bloc
             if (bwrite(blocFisic, buff_bloc) == -1) {
                 return -1;
             }
-
-            bytes_escrits += TB;
-            printf ("[ficheros.c] cas intermitjo - DEBUG: bytes_escritos: %d\n", bytes_escrits);
+           printf("[ficheros.c] DEBUG:  bytes_escrits += TB  %d += %d\n", bytes_escrits,TB);
+           bytes_escrits += TB; 
+           bytes_per_escriure -= TB; //bytes que faltan por escribir
+           printf ("\n[ficheros.c] CAS INTERMITJ - DEBUG: bytes_escritos: %d en el blogLogic %d | faltan: %d bytes por escribir\n", bytes_escrits, blocLogic,bytes_per_escriure);
         }
         blocLogic = i;
         printf("[ficheros.c] DEBUG: salimos de los casos intermedios | blocLogic : %d \n", blocLogic);
 
         // cas darrer bloc
-        if (bytes_darrer_bloc > 0) {
-            printf("[ficheros.c] DEBUG: bytes_darrer_bloc: %d\n",  darrer_byte);
+        printf("\n[ficheros.c]  DARRER CAS DEBUG: bytes_per_escriure: %d\n",  bytes_per_escriure);
+        if (bytes_per_escriure > 0) {
+            
             blocFisic = traduirBlocInode(inod, blocLogic, '1');
 
             if (blocFisic <= 0) {
@@ -154,15 +159,16 @@ int mi_write_f (unsigned int inod, const void *buff_original, unsigned int offse
                 return -1;
             }
 
-            memcpy(buff_bloc, buff_original + (TB - desplacament_primer_bloc) + (darrer_bloc_logic - primer_bloc - 1) * TB, (darrer_byte % TB) + 1);
+            memcpy(buff_bloc, buff_original + (TB - desplacament_primer_bloc) + (darrer_bloc_logic - primer_bloc - 1) * TB, bytes_per_escriure);
+            // memcpy(buff_bloc, buff_original + (TB - desplacament_primer_bloc) + (darrer_bloc_logic - primer_bloc - 1) * TB, (darrer_byte % TB) + 1);
             //memcpy(buff_bloc, buff_original + bytes_escrits, bytes_darrer_bloc);
-
+	   
             if (bwrite(blocFisic, buff_bloc) == -1) {
                 return -1;
             }
 
-            bytes_escrits += bytes_darrer_bloc;
-            printf ("[ficheros.c] cas darrer - DEBUG: bytes_escritos: %d\n", bytes_escrits);
+            bytes_escrits += bytes_per_escriure; //sumamos los bytes que faltaban por escribir al total hasta ahora.
+            printf ("\n[ficheros.c] DARRER CAS - DEBUG: bytes_escritos: %d\n", bytes_escrits);
         }
         in = llegirInode(inod);
 
@@ -205,7 +211,7 @@ int mi_read_f (unsigned int inod, void *buff_original, unsigned int offset, unsi
         return -1;
     }
 */
-
+	
     blocFisic = traduirBlocInode(inod, blocLogic, '0');
 
     if (blocFisic <= 0) {

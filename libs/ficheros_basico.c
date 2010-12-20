@@ -929,7 +929,7 @@ int traduirBlocInode(unsigned int inod, unsigned int blocLogic, char reservar)
                     escriureInode(inod, in); // escrivim els canvis de l'inode
 
                     bfisic = in.pdirectes[blocLogic]; // retornam directament la posició del bloc físic
-                    printf("[traduirBlocInode]  PUNTERS DIRECTOS 0 -11 blocLogic: %d\n",blocLogic);
+                    printf("--->[traduirBlocInode]  PUNTERS DIRECTOS 0 -11 blocLogic: %d\n",blocLogic);
                     return bfisic;
                 }
             } else if (blocLogic >= pd &&  blocLogic <= pin0 - 1) {  // punters indirectes de nivell0 // 12 - 267
