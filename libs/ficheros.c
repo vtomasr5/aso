@@ -48,7 +48,7 @@ int mi_write_f (unsigned int inod, const void *buff_original, unsigned int offse
     //int darrer_byte = (offset + nbytes - 1); // darrer byte on escriurem
     int desplacament_primer_bloc = offset % TB; // Offset del primer bloc. Punt d'inici del primer bloc
     int bytes_lliures_primer_bloc = TB - desplacament_primer_bloc; // Numero de bytes a escriure en el primer bloc
-    int primer_bloc = blocLogic;
+    //int primer_bloc = blocLogic;
     int bytes_darrer_bloc = (nbytes - bytes_lliures_primer_bloc) % TB; // Numero de bytes a escriure en el darrer bloc
     int bytes_per_escriure = nbytes; //Bytes que faltan per escriure
     in = llegirInode(inod);
@@ -115,7 +115,7 @@ int mi_write_f (unsigned int inod, const void *buff_original, unsigned int offse
         }
         bytes_escrits = bytes_lliures_primer_bloc;
         bytes_per_escriure -= bytes_escrits;
-	    printf ("\n[ficheros.c] CAS DIRECTE - DEBUG: ESCRIBIM bytes_escritos: %d en el blogLogic %d | faltan: %d bytes por escribir\n", bytes_escrits,blocLogic,bytes_per_escriure);
+	    printf ("\n[ficheros.c] CAS DIRECTE - DEBUG: ESCRIBIM bytes_escritos: %d en el blogLogic %d blocFisic %d| faltan: %d bytes por escribir\n", bytes_escrits,blocLogic,blocFisic,bytes_per_escriure);
         blocLogic++;
         int i;
 
@@ -141,7 +141,7 @@ int mi_write_f (unsigned int inod, const void *buff_original, unsigned int offse
             }
            bytes_escrits += TB; 
            bytes_per_escriure -= TB; //bytes que faltan por escribir
-           printf ("\n[ficheros.c] CAS INTERMITJ - DEBUG: ESCRIBIM bytes_escritos: %d en el blogLogic %d | faltan: %d bytes por escribir\n", bytes_escrits, blocLogic,bytes_per_escriure);
+           printf ("\n[ficheros.c] CAS INTERMITJ - DEBUG: ESCRIBIM bytes_escritos: %d en el blogLogic %d blocFisic %d | faltan: %d bytes por escribir\n", bytes_escrits, blocLogic,blocFisic,bytes_per_escriure);
         }
         blocLogic = i;
         printf("[ficheros.c] DEBUG: salimos de los casos intermedios | blocLogic : %d \n", blocLogic);
@@ -203,20 +203,19 @@ int mi_read_f (unsigned int inod, void *buff_original, unsigned int offset, unsi
 
     int blocFisic;
     int darrer_bloc_logic = ((offset + nbytes) - 1 )/ TB; // darrer bloc logic
-    int darrer_byte = (offset + nbytes) - 1;
+   // int darrer_byte = (offset + nbytes) - 1;
     int desplacament_primer_bloc = offset % TB; // desplaçament del primer bloc. On es comença a llegir
     int bytes_lliures_primer_bloc = TB - desplacament_primer_bloc; // nombre de bytes a escriure al primer bloc
     //int blocs_intermitjos = (nbytes - bytes_lliures_primer_bloc) / TB;
-    int primer_bloc = blocLogic;
+    //int primer_bloc = blocLogic;
     int bytes_darrer_bloc = (nbytes - bytes_lliures_primer_bloc) % TB;
 	int bytes_per_llegits = nbytes; //Bytes que faltan per escriure
     in = llegirInode(inod);
-/*
-   if (in.permisos != 'r') {
+
+    if (in.permisos != 'r') {
        printf("[ficheros.c] ERROR: L'inode no te permisos de lectura!\n");
         return -1;
     }
-*/
 
     blocFisic = traduirBlocInode(inod, blocLogic, '0');
 
@@ -230,7 +229,7 @@ int mi_read_f (unsigned int inod, void *buff_original, unsigned int offset, unsi
             return -1;
         }
 
-        memcpy(buff_original, &buff_bloc[desplacament_primer_bloc], TB - desplacament_primer_bloc);
+        memcpy(buff_original, &buff_bloc[desplacament_primer_bloc], nbytes);
 
         bytes_llegits = nbytes;
         bytes_per_llegits -= bytes_llegits; //Aqui no fa falta
@@ -305,6 +304,12 @@ int mi_read_f (unsigned int inod, void *buff_original, unsigned int offset, unsi
             //printf("[ficheros.c] DEBUG: tamany buff_original = %lu\n", sizeof(buff_original)); // en bytes
         }
     }
+    // actualitzam la metainformació de l'inode
+    in = llegirInode(inod);
+    
+    in.data_acces = time(NULL);
+    escriureInode(inod, in);
+    
     return bytes_llegits;
 }
 

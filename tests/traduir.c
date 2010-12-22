@@ -13,7 +13,8 @@
 
 int main(int argc, char *argv[])
 {
-    unsigned char buff[TB];
+	int tam = 4000;
+    unsigned char buff[tam];
 
     if (argc != 2) {
         printf("[mi_mkfs.c] ERROR: Arguments incorrectes. Ex: ./traduir disco.imagen\n");
@@ -34,7 +35,7 @@ int main(int argc, char *argv[])
     }
     printf("[traduir.c] INFO: Inode reservat: %d\n", r);
 
-    memset(buff, '2', TB);
+    memset(buff, '2', tam);
 
     /*
     int i;
@@ -44,7 +45,7 @@ int main(int argc, char *argv[])
     */
 
     uint offset = 0;
-    uint nbytes = 4096;
+    uint nbytes = tam;
 
     int s;
 
