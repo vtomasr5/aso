@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
     }
     printf("[traduir.c] INFO: Inode reservat: %d\n", r);
 
-    memset(buff, 2, TB);
+    memset(buff, '2', TB);
 
     /*
     int i;
@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
     */
 
     uint offset = 0;
-    uint nbytes = 12000;
+    uint nbytes = 4096;
 
     int s;
 
@@ -66,16 +66,15 @@ int main(int argc, char *argv[])
 
     printf("[traduir.c] INFO: Inode reservat: %d\n", r);
 */
-/*
-    printf("[traudir.c] Se ejecuta mi_read_f ****\n");
+
+    printf("\n[traudir.c] Se ejecuta mi_read_f ****\n");
     s = mi_read_f(r, buff, offset, nbytes);
     if (s == -1) {
         printf("[traduir.c] ERROR: falla mi_read_f()\n");
         return -1;
     }
-    printf("[traduir.c] INFO: bytes llegits = %d\n", s);
+    printf("\n[traduir.c] INFO: bytes llegits = %d\n", s);
     printf("[traudir.c] ******* FIN mi_read_f *******\n");
-*/
 
     // desmontam es FS
     if (bumount() == -1) {

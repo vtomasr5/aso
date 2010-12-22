@@ -845,7 +845,7 @@ int traduirBlocInode(unsigned int inod, unsigned int blocLogic, char reservar)
         if (reservar == '0') { // Consulta
             if (blocLogic >= 0 && blocLogic <= pd - 1) { // punters directes de 0 - 11
                 bfisic  =  in.pdirectes[blocLogic]; // retornam directament la posició del bloc físic
-                printf("[ficheros_basico.c - traduirBlocInode (consulta)] DEBUG: blocLogic: %d | bfisic:%d\n", blocLogic, bfisic);
+                printf("----->[ficheros_basico.c - traduirBlocInode (consulta)] DEBUG: blocLogic: %d | bfisic:%d\n", blocLogic, bfisic);
                 return bfisic;
 
             } else if (blocLogic >= pd &&  blocLogic <= pin0 - 1) {  // punters indirectes de nivell0 // 12 - 267
@@ -929,7 +929,7 @@ int traduirBlocInode(unsigned int inod, unsigned int blocLogic, char reservar)
                     escriureInode(inod, in); // escrivim els canvis de l'inode
 
                     bfisic = in.pdirectes[blocLogic]; // retornam directament la posició del bloc físic
-                    printf("--->[traduirBlocInode]  PUNTERS DIRECTOS 0 -11 blocLogic: %d\n",blocLogic);
+                    printf("--->[traduirBlocInode]  PUNTERS DIRECTOS 0 - 11 blocLogic: %d\n",blocLogic);
                     return bfisic;
                 }
             } else if (blocLogic >= pd &&  blocLogic <= pin0 - 1) {  // punters indirectes de nivell0 // 12 - 267
@@ -939,7 +939,7 @@ int traduirBlocInode(unsigned int inod, unsigned int blocLogic, char reservar)
                     if (bread(in.pindirectes[0], buff) == -1) { // carregam a memoria (a buff) els punters indirectes de nivell 0
                         return -1;
                     }
-					printf("[traduirBlocInode] PUNTERS INDIRECTOS - 12 -267 bfisic: %d\n",buff[bfisic]);
+					printf("[traduirBlocInode] PUNTERS INDIRECTOS - 12 - 267 bfisic: %d\n",buff[bfisic]);
                     bfisic = blocLogic - pd; // calculam la localització del bloc físic
                     return buff[bfisic]; // retornam el "punter" del bloc físic que es troba al buff (dins memòria) i que apunta la zona de dades (el bloc de dades)
                 } else { // inicialitzam els punters indirectes de nivell 0
