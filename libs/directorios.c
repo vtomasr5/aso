@@ -22,7 +22,8 @@
 /**
  *  @file directorios.c
  *  @brief Conté els funcions sobre directoris de més alt nivell que interactuen amb el sistema de fitxers.
- *  S'implementen les funcions necessàries per a llegir i escriure en el sistema de fitxers.
+ *  S'implementen les funcions necessàries per a cercar les entrades dels directoris,
+ *  crear o eliminar fitxers i llegir i escriure en el sistema de fitxers.
  *  @date 10/12/2010
  */
 
@@ -65,113 +66,113 @@ int extreureCami(const char *cami, char *inicial, char *final)
 }
 
 /*
- *  Funció que donat una ruta (cami_parcial) calcula els valor següents: 
- *  l'inode del directori que conté el fitxer (p_inode_dir), el número de l'inode del propi fitxers (p_inode) 
+ *  Funció que donat una ruta (cami_parcial) calcula els valor següents:
+ *  l'inode del directori que conté el fitxer (p_inode_dir), el número de l'inode del propi fitxers (p_inode)
  *  i el número de l'entrada de directori del fitxer (p_entrada)
  *  @param cami_parcial Es la ruta del fitxer del qual volem trobar l'entrada.
- *  @param p_inode_dir Es el numero de l'inode del directori que conté el fitxer (el directori més proper) 
+ *  @param p_inode_dir Es el numero de l'inode del directori que conté el fitxer (el directori més proper)
  *  @param p_inode Es el numero de l'inode del fitxer
  *  @param p_entrada Es el número d'entrada de directori del fitxer
  */
 int cercarEntrada(const char *cami_parcial, unsigned int *p_inode_dir, unsigned int *p_inode, unsigned int *p_entrada, char reservar)
 {
-	char cami_inicial[200]; //guardamos la primera cadena de la ruta sin '/'
-	char cami_final[200]; // el resto de la ruta hasta el final
-	int trobat = 0;
-	int i = 0;
+    char cami_inicial[200]; // guardamos la primera cadena de la ruta sin '/'
+    char cami_final[200]; // el resto de la ruta hasta el final
+    int trobat = 0;
+    int i = 0;
 
-	if (strcmp(cami_parcial, "/") == 0) {	//si buscamos el directorio raiz
-		*p_inode_dir = 0;
-		*p_inode = 0;
-		return 0;
-	}	
+    if (strcmp(cami_parcial, "/") == 0) { // si buscamos el directorio raiz
+        *p_inode_dir = 0;
+        *p_inode = 0;
+        return 0;
+    }
 
-	if (extreureCami(cami_parcial, cami_inicial, cami_final) == -1) { 	//si no se puede extraer el camino correctamente
-	    printf("[directorios.c] ERROR: Camí incorrecte\n");
+    if (extreureCami(cami_parcial, cami_inicial, cami_final) == -1) {
+        printf("[directorios.c] ERROR: Camí incorrecte\n");
         return -1;
-	}
-	
-		printf("camino parcial:%s\n", cami_parcial);
-		STAT estat;
-		mi_stat_f(*p_inode_dir, &estat); // llegim la informació de l'inode i la guardam en sa varible estat
-		int num_ent = estat.tamany/sizeof(entrada);		//leemos todas las entradas del directorio
-		entrada ent[num_ent]; // definimos un array de entradas de directorio que contiene el numero de entradas del inodo leido		
-		mi_read_f(*p_inode_dir, &ent, 0, num_ent * sizeof(entrada)); // leemos las entradas del directorio y las guardamos en el "buffer" ent
+    }
 
-		while ((trobat == 0) && (i < num_ent)) { //se busca la entrada 
-			printf("[directorios.c] DEBUG: cercarEntrada - dins while - ent[i] %s, cami_inicial %s\n", ent[i].nom, cami_inicial);
-			if (strcmp(ent[i].nom, cami_inicial) == 0) {
-				*p_entrada = i; // El número de su entrada dentro del último directorio que lo contiene
-				*p_inode = ent[i].inod; // Su número de inodo 
-				trobat = 1;
-			}
-			i++;
-		}
-		
-		/*
-		camino = "/dir1/dir2/fichero"
-		inicial = "dir1" (devuelve DIRECTORIO)
-		final = "/dir2/fichero
-		
-		camino = "/dir/"
-		inicial = "dir" (devuelve DIRECTORIO) =  tipus 1
-		final = "/"
+    printf("camino parcial:%s\n", cami_parcial);
+    STAT estat;
+    mi_stat_f(*p_inode_dir, &estat); // llegim la informació de l'inode i la guardam en sa varible estat
+    int num_ent = estat.tamany/sizeof(entrada);     //leemos todas las entradas del directorio
+    entrada ent[num_ent]; // definimos un array de entradas de directorio que contiene el numero de entradas del inodo leido
+    mi_read_f(*p_inode_dir, &ent, 0, num_ent * sizeof(entrada)); // leemos las entradas del directorio y las guardamos en el "buffer" ent
 
-		camino = "/fichero"
-		inicial = "fichero" (devuelve FICHERO) = tipus 2
-		final = ""
-		*/	
-		if (trobat) {
-			if ((strlen(cami_final) == 0) || (strcmp(cami_final, "/") == 0)) {
-				inode inod = llegirInode(*p_inode); // llegim s'inode del fitxer o del directori que hem trobat
-				
-				if (((inod.tipus == 1) && (strcmp(cami_final, "/") == 0)) || ((inod.tipus == 2) && (strlen(cami_final) == 0))) { //es un fichero o directorio
-				    i = i - 1; // corregimos la variable i, ya que al salir del while trobat=true, se incrementa una vez mas de la que toca.
-					*p_inode = ent[i].inod; //  numero del inodo del fichero
-					*p_entrada = i; // numero de su entrada dentro del último directorio que lo contiene
-					return 0; 
-				}
-			} else {
-				*p_inode_dir = *p_inode; 
-				return cercarEntrada(cami_final, p_inode_dir, p_inode, p_entrada, reservar);	
-			}
-		} else {	//no encontrado entonces lo creamos
-			if (reservar) {
-				entrada entra;
-				STAT estat2;
-				int tipus_inode;
+    while ((trobat == 0) && (i < num_ent)) { //se busca la entrada
+        printf("[directorios.c] DEBUG: cercarEntrada - dins while - ent[i] %s, cami_inicial %s\n", ent[i].nom, cami_inicial);
+        if (strcmp(ent[i].nom, cami_inicial) == 0) {
+            *p_entrada = i; // El número de su entrada dentro del último directorio que lo contiene
+            *p_inode = ent[i].inod; // Su número de inodo
+            trobat = 1;
+        }
+        i++;
+    }
 
-				if (strlen(cami_final) == 0) {
-					tipus_inode = 2;
-				} else {
-					tipus_inode = 1;
-				}
-			
-				if ((entra.inod == reservarInode(tipus_inode, 7)) == -1) {
-				    return -1;
-				}
-				
-				strcpy(entra.nom, cami_inicial);
-				mi_stat_f(*p_inode_dir, &estat2);
-				int n_ent = estat2.tamany / sizeof(entrada);
-				mi_write_f(*p_inode_dir, &entra, n_ent * sizeof(entrada), sizeof(entrada));
+    /*
+    camino = "/dir1/dir2/fichero"
+    inicial = "dir1" (devuelve DIRECTORIO)
+    final = "/dir2/fichero"
 
- 				printf("[directorios.c] DEBUGT: TAMANY OFFSET: %lu\n", sizeof(n_ent * sizeof(entrada)));
+    camino = "/dir/"
+    inicial = "dir" (devuelve DIRECTORIO) =  tipus 1
+    final = "/"
 
-				*p_inode = reservar;
-				*p_entrada = estat2.tamany / sizeof(entrada);      
+    camino = "/fichero"
+    inicial = "fichero" (devuelve FICHERO) = tipus 2
+    final = ""
+    */
 
-				if ((strlen(cami_final) == 0) || (strcmp(cami_final, "/") == 0)) {	//si hemos acabado o lo ultimo es /
-					return 0;
-				} else {
-					*p_inode_dir = *p_inode;
-					return cercarEntrada(cami_final, p_inode_dir, p_inode, p_entrada, reservar);
-				}
-			} else {
-				return -1;
-			}
-		}		
-		
+    if (trobat) {
+        if ((strlen(cami_final) == 0) || (strcmp(cami_final, "/") == 0)) {
+            inode inod = llegirInode(*p_inode); // llegim s'inode del fitxer o del directori que hem trobat
+
+            if (((inod.tipus == 1) && (strcmp(cami_final, "/") == 0)) || ((inod.tipus == 2) && (strlen(cami_final) == 0))) { //es un fichero o directorio
+                i = i - 1; // corregimos la variable i, ya que al salir del while trobat=true, se incrementa una vez mas de la que toca.
+                *p_inode = ent[i].inod; //  numero del inodo del fichero
+                *p_entrada = i; // numero de su entrada dentro del último directorio que lo contiene
+                return 0;
+            }
+        } else {
+            *p_inode_dir = *p_inode;
+            return cercarEntrada(cami_final, p_inode_dir, p_inode, p_entrada, reservar);
+        }
+    } else { // no encontrado luego lo creamos ahora
+        if (reservar) {
+            entrada entra;
+            STAT estat2;
+            int tipus_inode;
+
+            if (strlen(cami_final) == 0) {
+                tipus_inode = 2;
+            } else {
+                tipus_inode = 1;
+            }
+
+            if ((entra.inod == reservarInode(tipus_inode, 7)) == -1) {
+                return -1;
+            }
+
+            strcpy(entra.nom, cami_inicial); // copiam el camí a l'entrada de directori
+            mi_stat_f(*p_inode_dir, &estat2); // obtenim la informació de l'inode
+            int n_ent = estat2.tamany / sizeof(entrada); // calculam el numero d'entrades
+            mi_write_f(*p_inode_dir, &entra, n_ent * sizeof(entrada), sizeof(entrada)); // escrivim els canvis
+
+            printf("[directorios.c] DEBUG: Tamany de l'offset: %lu\n", sizeof(n_ent * sizeof(entrada)));
+
+            *p_inode = reservar;
+            *p_entrada = estat2.tamany / sizeof(entrada);
+
+            if ((strlen(cami_final) == 0) || (strcmp(cami_final, "/") == 0)) {  // si hemos acabado o lo ultimo es una "/"
+                return 0;
+            } else {
+                *p_inode_dir = *p_inode;
+                return cercarEntrada(cami_final, p_inode_dir, p_inode, p_entrada, reservar);
+            }
+        } else {
+            return -1;
+        }
+    }
     return 0;
 }
 

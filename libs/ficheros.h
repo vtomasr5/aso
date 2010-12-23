@@ -32,7 +32,7 @@
 #include <time.h>
 
 /**
- *
+ *  Estructura que conté la informació d'estat sobre els inodes dels fitxers i directoris
  */
 typedef struct {
     unsigned char tipus;            // tipus inode (0 = Lliure, 1 = Directori, 2 = Fitxer)
@@ -45,7 +45,6 @@ typedef struct {
     unsigned int blocs_assignats_dades;   // nombre de blocs físics assignats a la zona de dades
     unsigned int links_directoris;
 } STAT;
-
 
 int mi_write_f (unsigned int inod, const void *buff_original, unsigned int offset, unsigned int nbytes);
 int mi_read_f (unsigned int inod, void *buff_original, unsigned int offset, unsigned int nbytes);

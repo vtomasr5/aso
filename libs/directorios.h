@@ -28,9 +28,12 @@
 
 #include "ficheros.h"
 
+/**
+ *  Estructura que conté la informació necessària sobre les entrades de directori.
+ */
 typedef struct {
-    char nom[60];
-    unsigned int inod;
+    char nom[60]; // este campo "nom" no incluye el camino de directorios, ni el carácter de separación '/'
+    unsigned int inode; // numero d'inode al qual fa referència
 } entrada;
 
 int extreureCami(const char *cami, char *inicial, char *final);
