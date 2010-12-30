@@ -32,7 +32,7 @@
 // per saber el nombre d'elements que té un array
 #define length(x) (sizeof(x)/sizeof(x[0]))
 
-/*
+/**
  *  Funció que estreu el camí de la ruta que se li passa com a paràmetre i que
  *  permet diferenciar entre fitxers i directoris.
  *  @param cami ruta completa cap a l'arxiu que es vol referenciar
@@ -70,7 +70,7 @@ int extreureCami(const char *cami, char *inicial, char *final)
     return tipus;
 }
 
-/*
+/**
  *  Funció que donat una ruta (cami_parcial) calcula els valor següents:
  *  l'inode del directori que conté el fitxer (p_inode_dir), el número de l'inode del propi fitxers (p_inode)
  *  i el número de l'entrada de directori del fitxer (p_entrada)
@@ -185,6 +185,22 @@ int cercarEntrada(const char *cami_parcial, unsigned int *p_inode_dir, unsigned 
     return 0;
 }
 
+/**
+ *  Funció que allibera memoria
+ */
+void alliberar(uint *p_inode_dir, uint *p_inode, uint *p_entrada)
+{
+    free(p_inode_dir);
+    free(p_inode);
+    free(p_entrada);
+}
+
+/**
+ *  Funció que crea un fitxer o directori i sa seva respectiva entrada de directori.
+ *  A més ho crea amb uns permisos especificats per paràmetre.
+ *  @param cami ruta que es vol crei
+ *  @param mode permisos amb que es crea el fitxer o directori
+ */
 int mi_creat(const char *cami, unsigned int mode)
 {
     uint *p_inode_dir, *p_inode, *p_entrada;
@@ -198,17 +214,28 @@ int mi_creat(const char *cami, unsigned int mode)
 
     // realment com que no troba l'entrada de directori, la crea
     if (cercarEntrada(cami, p_inode_dir, p_inode, p_entrada, 1) != -1) {
-        printf("[Directorios.c] DEBUG: mi_creat - Cami %s creat\n", cami);
-/*
+        printf("[directorios.c] DEBUG: mi_creat - Cami %s creat\n", cami);
+        /*
         //modificam els permisos del fitxer o directori
         inode in = llegirInode(p_inode);
         in.permisos = mode;
         escriureInode(p_inode, in);
         */
+    } else {
+        printf("[directorios.c] DEBUG: No s'ha trobat l'entrada!\n");
+        alliberar(p_inode_dir, p_inode, p_entrada);
+        return -1;
     }
+    alliberar(p_inode_dir, p_inode, p_entrada);
     return 0;
 }
 
+/**
+ *  Funció que crea un enllaç d'una entrada de directori (cami1) a
+ *  l'inode especificat per una altra entrada de directori (cami2).
+ *  @param cami1 ruta enllaçada a cami2
+ *  @param cami2 ruta que enllaça a l'inode de cami1
+ */
 int mi_link(const char *cami1, const char *cami2)
 {
     uint *p_inode_dir, *p_inode, *p_entrada;
@@ -225,6 +252,7 @@ int mi_link(const char *cami1, const char *cami2)
 
     if (cercarEntrada(cami2, p_inode_dir, p_inode, p_entrada, 0) == -1) {
         printf("[directorios.c] ERROR: El link no s'ha pogut realitzar!\n");
+        alliberar(p_inode_dir, p_inode, p_entrada);
         return -1;
     }
 
@@ -239,9 +267,10 @@ int mi_link(const char *cami1, const char *cami2)
 
     if (cercarEntrada(cami1, p_inode_dir, p_inode, p_entrada, 1) == -1) {
         printf("[directorios.c] ERROR: El link no s'ha pogut realitzar!!\n");
+        alliberar(p_inode_dir, p_inode, p_entrada);
         return -1;
     }
-    alliberarInode(*p_inode, 0, 0); // MAL
+    alliberarInode(*p_inode, 0, 0); // ERROR
 
     mi_stat_f(*p_inode_dir, &estat);
 
@@ -252,9 +281,15 @@ int mi_link(const char *cami1, const char *cami2)
     mi_write_f(*p_inode_dir, &ent, (*p_entrada) * sizeof(entrada), sizeof(entrada));
 
     printf("[directorios.c] DEBUG: mi_link realitzat correctament.\n");
+    alliberar(p_inode_dir, p_inode, p_entrada);
     return 0;
 }
 
+/**
+ *  Funció que elimina l'entrada de directori. Si només hi ha un link elimina el propi
+ *  fitxer o directori.
+ *  @param cami Ruta que ha de borrar.
+ */
 int mi_unlink(const char *cami)
 {
     uint *p_inode_dir, *p_inode, *p_entrada;
@@ -269,6 +304,7 @@ int mi_unlink(const char *cami)
     *p_entrada = 0;
 
     if (cercarEntrada(cami, p_inode_dir, p_inode, p_entrada, 0) == -1) {
+        alliberar(p_inode_dir, p_inode, p_entrada);
         return -1;
     }
 
@@ -301,9 +337,16 @@ int mi_unlink(const char *cami)
         }
     }
     printf("[directorios.c] DEBUG: mi_unlink realitzat correctament.\n");
+    alliberar(p_inode_dir, p_inode, p_entrada);
     return 0;
 }
 
+/**
+ *  Funció que escriu el contingut del directori 'cami' dins el buffer.
+ *  @param cami Ruta que ha de llegir
+ *  @param buffer Buffer on ha de guardar la informació.
+ *  @return El nombre de fitxers que hi ha dins el directori
+ */
 int mi_dir(const char *cami, char *buffer)
 {
     int longitut = strlen(cami);
@@ -322,6 +365,7 @@ int mi_dir(const char *cami, char *buffer)
             *p_entrada = 0;
 
             if (cercarEntrada(cami, p_inode_dir, p_inode, p_entrada, 0) == -1) {   //no ha encontrado el directorio
+                alliberar(p_inode_dir, p_inode, p_entrada);
                 return -1;
             }
 
@@ -332,6 +376,7 @@ int mi_dir(const char *cami, char *buffer)
             }
 
             if (mi_stat_f(pinode, &estat) == -1) {
+                alliberar(p_inode_dir, p_inode, p_entrada);
                 return -1;
             }
 
@@ -339,6 +384,7 @@ int mi_dir(const char *cami, char *buffer)
             if (n_entrades > 0) {   //si hay entradas de directorio
                 entrada ent[n_entrades];
                 if (mi_read_f(pinode, &ent, 0, n_entrades * sizeof(entrada)) == -1) {    //leemos todas las entradas
+                    alliberar(p_inode_dir, p_inode, p_entrada);
                     return -1;
                 }
 
@@ -347,9 +393,8 @@ int mi_dir(const char *cami, char *buffer)
                     strcat(buffer, ent[i].nom);
                     strcat(buffer, ":");
                 }
+                alliberar(p_inode_dir, p_inode, p_entrada);
                 return i;
-            } else {
-                return 0;
             }
         } else {
             printf("[directorios.c] ERROR: Això no es un directori!\n");
@@ -359,21 +404,32 @@ int mi_dir(const char *cami, char *buffer)
     return 0;
 }
 
+/**
+ *  Funció que canvia els permisos a una ruta especificade per paràmetre.
+ *  @param cami ruta que es vol modificar
+ *  @param mode permisos que es volen assignar a la ruta
+ */
 int mi_chmod(const char *cami, unsigned char mode)
 {
     uint p_inode, p_entrada, p_inode_dir = 0;
 
-    if (cercarEntrada(cami, &p_inode_dir, &p_inode, &p_entrada, 0) != -1) { // busca el inodo de la ultima entrada de la ruta y la deposita en p_inode
-        if (mi_chmod_f(p_inode, mode) == -1) { // cambiamos los permisos al inodo
-            return -1;
-        }
-    } else { // no troba s'entrada
-        printf("[directorios.c] ERROR: Entrada no trobada.");
+    if (cercarEntrada(cami, &p_inode_dir, &p_inode, &p_entrada, 0) == -1) { // busca el inodo de la ultima entrada de la ruta y la deposita en p_inode
+        printf("[directorios.c] ERROR: No s'ha trobat el camí!!\n");
         return -1;
     }
+
+    if (mi_chmod_f(p_inode, mode) == -1) { // camviam els permisos a l'inode
+        return -1;
+    }
+
     return 0;
 }
 
+/**
+ *  Funció que recull la metainformació del l'inode del camí que se li passa per paràmetre.
+ *  @param cami ruta que ha de consultar
+ *  @param p_stat on es guarda la informació del l'inode
+ */
 int mi_stat(const char *cami, STAT *p_stat)
 {
     uint p_inode, p_entrada, p_inode_dir = 0;
@@ -388,6 +444,13 @@ int mi_stat(const char *cami, STAT *p_stat)
     return 0;
 }
 
+/**
+ *  Funció que llegeix la informació d'un fitxer o directori del sistema de fitxers i l'escriu en el buffer.
+ *  @param cami ruta que d'on llegeix la informació
+ *  @param buff buffer on guarda la informació
+ *  @param offset nombre de bytes de desplaçament
+ *  @param nbytes nombre de bytes que ha de llegir
+ */
 int mi_read(const char *cami, void *buff, unsigned int offset, unsigned int nbytes)
 {
     uint p_inode, p_entrada, p_inode_dir = 0;
@@ -402,6 +465,14 @@ int mi_read(const char *cami, void *buff, unsigned int offset, unsigned int nbyt
     return 0;
 }
 
+/**
+ *  Funció que llegeix la informació d'un fitxer o directori que hi ha dins el buffer
+ *  i l'escriu en el sistema de fitxers.
+ *  @param cami ruta que d'on llegeix la informació
+ *  @param buff buffer on guarda la informació
+ *  @param offset nombre de bytes de desplaçament
+ *  @param nbytes nombre de bytes que ha de llegir
+ */
 int mi_write(const char *cami, const void *buff, unsigned int offset, unsigned int nbytes)
 {
     uint p_inode, p_entrada, p_inode_dir = 0;
@@ -409,13 +480,23 @@ int mi_write(const char *cami, const void *buff, unsigned int offset, unsigned i
     if (cercarEntrada(cami, &p_inode_dir, &p_inode, &p_entrada, 0) == -1) {
         printf("[directorios.c] ERROR: No s'ha trobat el camí!!\n");
         return -1;
-    } else {
-        int escrito = mi_write_f(p_inode, buff, offset, nbytes);
-        return escrito;
     }
+
+    int escrits = mi_write_f(p_inode, buff, offset, nbytes);
+    if (escrits != 1) {
+        return escrits;
+    } else {
+        return -1;
+    }
+
     return 0;
 }
 
+/**
+ *  Funció que mostra per pantalla el contingut d'un directori
+ *  @param cami ruta que es vol mostrar el contingut
+ *  @param buff buffer on hi ha la informació.
+ */
 int mi_lsdir(const char *cami, char *buff)
 {
     int cont = 0;
@@ -424,8 +505,7 @@ int mi_lsdir(const char *cami, char *buff)
         printf("\n");
     }
 
-    printf("Contingut de: %s\n", cami);
-    printf("----------------------------------------\n");
+    printf(" --- Contingut de %s\n ---", cami);
 
     // imprimimos el contenido del directorio
     for (cont = 0; cont < BUFFER_DIR; cont++) {

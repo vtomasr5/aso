@@ -168,7 +168,7 @@ int initAI(uint nblocs)
     if (bread(POSICIO_SB, (char *)&sb) == -1) { // llegim el superbloc
         return -1;
     }
-	// els permisos de l'inode arrel son declarats en mi_mkfs.c al reservar inode.
+    // els permisos de l'inode arrel son declarats en mi_mkfs.c al reservar inode.
     for (i = 0; i < tam; i++) { // per a cada bloc
         for (j = 0; j < inodesbloc; j++) { // per a cada inode del bloc
             AI[j].tipus = 0;
@@ -192,65 +192,10 @@ int initAI(uint nblocs)
             return -1;
         }
     }
-    return 0;
-}
-
-/*
-int initAI(uint nblocs)
-{
-    superbloc sb;
-    inode inod;
-    int i, j;
-    unsigned char ArrayInodes[TB];
-    int inodesbloc = TB / sizeof(inode); // inodes per bloc
-    int inode_actual = 1; // variable que fa referència a l'inode que s'està tractant actualment
-    // comença per 1 perque el 0 es el directori arrel i no necessita tenir següent.
-
-    // no hi ha inodes directes emprats
-    for (i = 0; i < MAX_PUNTERS_DIRECTES; i++) {
-        inod.pdirectes[i] = -1;
-    }
-
-    // no hi ha inodes indirectes emprats
-    for (i = 0; i < MAX_PUNTERS_INDIRECTES; i++) {
-        inod.pindirectes[i] = -1;
-    }
-
-    if (bread(POSICIO_SB, (char *)&sb) == -1) { // llegim el superbloc
-        return -1;
-    }
-
-    // Per a cada bloc de l'AI, anam inicialitzant la informació corresponent
-    for (i = sb.primerbloc_ai; i <= sb.darrerbloc_ai; i++) {
-        memset(ArrayInodes, 0, TB); // inicialitzam a zero tots els blocs de l'array de inodes
-
-        // per a cada inode inicialitzam els camps corresponents
-        for (j = 0; j < inodesbloc; j++) {
-            inod.tipus = '0'; // 0 lliure, 1 directori, 2 fitxer
-            inod.tamany = 0;
-            inod.blocs_assignats_dades = 0;
-            inod.data_creacio = time(NULL);
-            inod.data_modificacio = time(NULL);
-            inod.data_acces = time(NULL);
-
-            // llista de inodes
-            if (inode_actual < sb.total_inodes - 1) {
-                inod.pdirectes[0] = inode_actual + 1; // apuntam al següent
-            } else if (inode_actual == sb.total_inodes - 1) {
-                inod.pdirectes[0] = -1; // cas del darrer inode
-            }
-            memcpy(&ArrayInodes[j * sizeof(inode)], &inod, sizeof(inode)); // guardam els canvis
-            inode_actual++; // passam al següent inode
-        }
-
-        if (bwrite(i, ArrayInodes) == -1) { // guardam els canvis realitzats en el superbloc
-            return -1;
-        }
-    }
     printf("[ficheros_basico.c] INFO: Array de inodes inicialitzat\n");
     return 0;
 }
-*/
+
 /**
  *  Mostra la informació que conte el superbloc, per pantalla
  */
