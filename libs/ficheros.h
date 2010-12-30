@@ -36,7 +36,7 @@
  */
 typedef struct {
     unsigned char tipus;            // tipus inode (0 = Lliure, 1 = Directori, 2 = Fitxer)
-    unsigned char permisos;         // permisos (lectura(r), escriptura(w) i execucio(x))
+    unsigned int permisos;         // permisos (lectura(r), escriptura(w) i execucio(x))
     unsigned int tamany;            // tamany de l'inode en Bytes lògics
     time_t data_creacio;            // data de creació
     time_t data_modificacio;        // data de modificació
@@ -48,6 +48,6 @@ typedef struct {
 
 int mi_write_f (unsigned int inod, const void *buff_original, unsigned int offset, unsigned int nbytes);
 int mi_read_f (unsigned int inod, void *buff_original, unsigned int offset, unsigned int nbytes);
-int mi_chmod_f (unsigned int inod, unsigned char mode);
+int mi_chmod_f (unsigned int inod, unsigned int mode);
 int mi_truncar_f (unsigned int inod, unsigned int nbytes);
 int mi_stat_f (unsigned int inod, STAT *p_stat);

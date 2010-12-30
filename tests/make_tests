@@ -8,3 +8,5 @@ gcc -Wall -O1 -ggdb RWBits.c ${OBJ} -o RWBits
 gcc -Wall -O1 -ggdb RWBlocs.c ${OBJ} -o RWBlocs
 gcc -Wall -O1 -ggdb RWInodes.c ${OBJ} -o RWInodes
 gcc -Wall -O1 -ggdb traduir.c ${OBJ} -o traduir
+gcc -Wall -O1 -ggdb cercar.c ${OBJ} -o cercar
+echo "OK TEST"

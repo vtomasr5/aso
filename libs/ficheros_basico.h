@@ -59,7 +59,7 @@ typedef struct {
  */
 typedef struct {
     unsigned char tipus;            // tipus inode (0 = Lliure, 1 = Directori, 2 = Fitxer)
-    unsigned char permisos;         // permisos (lectura(r), escriptura(w) i execucio(x))
+    unsigned int permisos;         // permisos (lectura(r), escriptura(w) i execucio(x))
     unsigned int tamany;            // tamany de l'inode en Bytes lògics
     time_t data_creacio;            // data de creació
     time_t data_modificacio;        // data de modificació
@@ -84,7 +84,7 @@ int reservarBloc();
 int alliberarBloc(int);
 int escriureInode(int, inode);
 inode llegirInode(int);
-int reservarInode(int, char);
+int reservarInode(int, unsigned int);
 int alliberarBlocInode(inode, int);
 int alliberarInode(int, int, int);
 int traduirBlocInode(unsigned int inod, unsigned int blocLogic, char reservar);

@@ -168,7 +168,7 @@ int initAI(uint nblocs)
     if (bread(POSICIO_SB, (char *)&sb) == -1) { // llegim el superbloc
         return -1;
     }
-
+	// els permisos de l'inode arrel son declarats en mi_mkfs.c al reservar inode.
     for (i = 0; i < tam; i++) { // per a cada bloc
         for (j = 0; j < inodesbloc; j++) { // per a cada inode del bloc
             AI[j].tipus = 0;
@@ -192,67 +192,65 @@ int initAI(uint nblocs)
             return -1;
         }
     }
-    inode arrel = llegirInode(0);
-    arrel.tipus = 1;
-
     return 0;
 }
 
-//~ int initAI()
-//~ {
-    //~ superbloc sb;
-    //~ inode inod;
-    //~ int i, j;
-    //~ unsigned char ArrayInodes[TB];
-    //~ int inodesbloc = TB / sizeof(inode); // inodes per bloc
-    //~ int inode_actual = 1; // variable que fa referència a l'inode que s'està tractant actualment
-    //~ // comença per 1 perque el 0 es el directori arrel i no necessita tenir següent.
-//~
-    //~ // no hi ha inodes directes emprats
-    //~ for (i = 0; i < MAX_PUNTERS_DIRECTES; i++) {
-        //~ inod.pdirectes[i] = -1;
-    //~ }
-//~
-    //~ // no hi ha inodes indirectes emprats
-    //~ for (i = 0; i < MAX_PUNTERS_INDIRECTES; i++) {
-        //~ inod.pindirectes[i] = -1;
-    //~ }
-//~
-    //~ if (bread(POSICIO_SB, (char *)&sb) == -1) { // llegim el superbloc
-        //~ return -1;
-    //~ }
-//~
-    //~ // Per a cada bloc de l'AI, anam inicialitzant la informació corresponent
-    //~ for (i = sb.primerbloc_ai; i <= sb.darrerbloc_ai; i++) {
-        //~ memset(ArrayInodes, 0, TB); // inicialitzam a zero tots els blocs de l'array de inodes
-//~
-        //~ // per a cada inode inicialitzam els camps corresponents
-        //~ for (j = 0; j < inodesbloc; j++) {
-            //~ inod.tipus = '0'; // 0 lliure, 1 directori, 2 fitxer
-            //~ inod.tamany = 0;
-            //~ inod.blocs_assignats_dades = 0;
-            //~ inod.data_creacio = time(NULL);
-            //~ inod.data_modificacio = time(NULL);
-            //~ inod.data_acces = time(NULL);
-//~
-            //~ // llista de inodes
-            //~ if (inode_actual < sb.total_inodes - 1) {
-                //~ inod.pdirectes[0] = inode_actual + 1; // apuntam al següent
-            //~ } else if (inode_actual == sb.total_inodes - 1) {
-                //~ inod.pdirectes[0] = -1; // cas del darrer inode
-            //~ }
-            //~ memcpy(&ArrayInodes[j * sizeof(inode)], &inod, sizeof(inode)); // guardam els canvis
-            //~ inode_actual++; // passam al següent inode
-        //~ }
-//~
-        //~ if (bwrite(i, ArrayInodes) == -1) { // guardam els canvis realitzats en el superbloc
-            //~ return -1;
-        //~ }
-    //~ }
-    //~ printf("[ficheros_basico.c] INFO: Array de inodes inicialitzat\n");
-    //~ return 0;
-//~ }
+/*
+int initAI(uint nblocs)
+{
+    superbloc sb;
+    inode inod;
+    int i, j;
+    unsigned char ArrayInodes[TB];
+    int inodesbloc = TB / sizeof(inode); // inodes per bloc
+    int inode_actual = 1; // variable que fa referència a l'inode que s'està tractant actualment
+    // comença per 1 perque el 0 es el directori arrel i no necessita tenir següent.
 
+    // no hi ha inodes directes emprats
+    for (i = 0; i < MAX_PUNTERS_DIRECTES; i++) {
+        inod.pdirectes[i] = -1;
+    }
+
+    // no hi ha inodes indirectes emprats
+    for (i = 0; i < MAX_PUNTERS_INDIRECTES; i++) {
+        inod.pindirectes[i] = -1;
+    }
+
+    if (bread(POSICIO_SB, (char *)&sb) == -1) { // llegim el superbloc
+        return -1;
+    }
+
+    // Per a cada bloc de l'AI, anam inicialitzant la informació corresponent
+    for (i = sb.primerbloc_ai; i <= sb.darrerbloc_ai; i++) {
+        memset(ArrayInodes, 0, TB); // inicialitzam a zero tots els blocs de l'array de inodes
+
+        // per a cada inode inicialitzam els camps corresponents
+        for (j = 0; j < inodesbloc; j++) {
+            inod.tipus = '0'; // 0 lliure, 1 directori, 2 fitxer
+            inod.tamany = 0;
+            inod.blocs_assignats_dades = 0;
+            inod.data_creacio = time(NULL);
+            inod.data_modificacio = time(NULL);
+            inod.data_acces = time(NULL);
+
+            // llista de inodes
+            if (inode_actual < sb.total_inodes - 1) {
+                inod.pdirectes[0] = inode_actual + 1; // apuntam al següent
+            } else if (inode_actual == sb.total_inodes - 1) {
+                inod.pdirectes[0] = -1; // cas del darrer inode
+            }
+            memcpy(&ArrayInodes[j * sizeof(inode)], &inod, sizeof(inode)); // guardam els canvis
+            inode_actual++; // passam al següent inode
+        }
+
+        if (bwrite(i, ArrayInodes) == -1) { // guardam els canvis realitzats en el superbloc
+            return -1;
+        }
+    }
+    printf("[ficheros_basico.c] INFO: Array de inodes inicialitzat\n");
+    return 0;
+}
+*/
 /**
  *  Mostra la informació que conte el superbloc, per pantalla
  */
@@ -525,7 +523,7 @@ inode llegirInode(int pos_in)
  *  @param permisosInode Tipus de permisos de l'inode (rwx) amb els que es vol reservar
  *  @return número de l'inode
  */
-int reservarInode(int tipusInode, char permisosInode)
+int reservarInode(int tipusInode, unsigned int permisosInode)
 {
     superbloc sb;
     inode inod;
@@ -845,7 +843,7 @@ int traduirBlocInode(unsigned int inod, unsigned int blocLogic, char reservar)
         if (reservar == '0') { // Consulta
             if (blocLogic >= 0 && blocLogic <= pd - 1) { // punters directes de 0 - 11
                 bfisic  =  in.pdirectes[blocLogic]; // retornam directament la posició del bloc físic
-                printf("----->[ficheros_basico.c - traduirBlocInode (consulta)] DEBUG: blocLogic: %d | bfisic:%d\n", blocLogic, bfisic);
+               // printf("----->[ficheros_basico.c - traduirBlocInode (consulta)] DEBUG: blocLogic: %d | bfisic:%d\n", blocLogic, bfisic);
                 return bfisic;
 
             } else if (blocLogic >= pd &&  blocLogic <= pin0 - 1) {  // punters indirectes de nivell0 // 12 - 267
@@ -919,7 +917,7 @@ int traduirBlocInode(unsigned int inod, unsigned int blocLogic, char reservar)
                // printf("*****[ficheros_basico.c] DEBUG: pdirectes : %d\n",temp2);
                 if (temp2 > 0) { // comprovam que existeix el bloc físic
                     bfisic = in.pdirectes[blocLogic]; // retornam directament la posició del bloc físic
-					printf("[traduirBlocInode]  PUNTERS DIRECTOS 0 - 11 blogic: %d\n",blocLogic);
+                    //printf("[traduirBlocInode]  PUNTERS DIRECTOS 0 - 11 blogic: %d\n",blocLogic);
                     return bfisic;
                 } else {
                     in.pdirectes[blocLogic] = reservarBloc(); // reservam el primer bloc lliure que trobam
@@ -929,7 +927,7 @@ int traduirBlocInode(unsigned int inod, unsigned int blocLogic, char reservar)
                     escriureInode(inod, in); // escrivim els canvis de l'inode
 
                     bfisic = in.pdirectes[blocLogic]; // retornam directament la posició del bloc físic
-                    printf("--->[traduirBlocInode]  PUNTERS DIRECTOS 0 - 11 blocLogic: %d\n",blocLogic);
+                    //printf("--->[traduirBlocInode]  PUNTERS DIRECTOS 0 - 11 blocLogic: %d\n",blocLogic);
                     return bfisic;
                 }
             } else if (blocLogic >= pd &&  blocLogic <= pin0 - 1) {  // punters indirectes de nivell0 // 12 - 267
@@ -939,7 +937,7 @@ int traduirBlocInode(unsigned int inod, unsigned int blocLogic, char reservar)
                     if (bread(in.pindirectes[0], buff) == -1) { // carregam a memoria (a buff) els punters indirectes de nivell 0
                         return -1;
                     }
-					printf("[traduirBlocInode] PUNTERS INDIRECTOS - 12 - 267 bfisic: %d\n",buff[bfisic]);
+                    printf("[traduirBlocInode] PUNTERS INDIRECTOS - 12 - 267 bfisic: %d\n",buff[bfisic]);
                     bfisic = blocLogic - pd; // calculam la localització del bloc físic
                     return buff[bfisic]; // retornam el "punter" del bloc físic que es troba al buff (dins memòria) i que apunta la zona de dades (el bloc de dades)
                 } else { // inicialitzam els punters indirectes de nivell 0
@@ -963,7 +961,7 @@ int traduirBlocInode(unsigned int inod, unsigned int blocLogic, char reservar)
 
                     escriureInode(inod, in); // escrivim els canvis a l'inode
                     printf("[traduirBlocInode] PUNTERS INDIRECTOS - 12 -267 bfisic: %d\n",buff[bfisic]);
-                    
+
                     return buff[bfisic]; // retornam el "punter" del bloc físic que es troba al buff (dins memòria) i que apunta la zona de dades (el bloc de dades)
                 }
             } else if (blocLogic >= pin0 && blocLogic <= pin1 - 1) { // punters indirectes nivell 1 //268 - 65.803
@@ -1007,7 +1005,7 @@ int traduirBlocInode(unsigned int inod, unsigned int blocLogic, char reservar)
                     if (bwrite(buff[bfisic / N_PUNTERS_BLOC], buff2) == -1) {
                         return -1;
                     }
-                    
+
                     in.blocs_assignats_dades++;
                     in.data_modificacio = time(NULL);
                     escriureInode(inod, in);
@@ -1035,7 +1033,7 @@ int traduirBlocInode(unsigned int inod, unsigned int blocLogic, char reservar)
                     if (bread(buff2[temp], buff3) == -1) { // copiam el resultat de la divisió
                         return -1;
                     }
-                    
+
                     return buff3[bfisic % N_PUNTERS_BLOC]; // retornam el "punter" del bloc físic que es troba al buff (dins memòria) i que apunta la zona de dades (el bloc de dades)
                 } else { // ara reservam
                     bloc_res = reservarBloc(); // nivell 0
@@ -1076,7 +1074,7 @@ int traduirBlocInode(unsigned int inod, unsigned int blocLogic, char reservar)
                     if (bwrite(buff3[b2 % N_PUNTERS_BLOC], buff3) == -1) {
                         return -1;
                     }
-                    
+
                     in.blocs_assignats_dades++;
                     in.data_modificacio = time(NULL);
                     escriureInode(inod, in);

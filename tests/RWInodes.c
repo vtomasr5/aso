@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
 
     // canviam el contingut de l'inode
     inode inod;
-    inod.permisos = 'w';
+    inod.permisos = 2;
     inod.tamany = 96;
 
     int i;

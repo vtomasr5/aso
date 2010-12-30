@@ -88,11 +88,15 @@ int main(int argc, char *argv[])
     }
 
     // reservam l'inode arrel del tipus directori (1)
-    if (reservarInode(1, 'w') == -1) {
+    int r;
+    if ((r = reservarInode(1, 7)) == -1) {
         printf("[mi_mkfs.c] ERROR: Error cridant a reservarInode");
         return -1;
     }
-
+    /*
+    int blocFisic = traduirBlocInode(r, 0, '1'); // bloc físic on escriurem
+	printf("[mi_mkfs.c] R: %d blocFisic : %d\n\n",r,blocFisic);*/
+	
     if (infoSB() == -1) { // mostram el contingut del superbloc
         printf("[mi_mkfs.c] ERROR: Error cridant a infoSB");
         return -1;
