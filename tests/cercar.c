@@ -23,7 +23,6 @@ int main(int argc, char *argv[])
 
     // proves
     mi_creat("/dir2/dir3/fichero", 7);
-    
 
     // desmontam es FS
     if (bumount() == -1) {

@@ -200,7 +200,6 @@ int mi_read_f (unsigned int inod, void *buff_original, unsigned int offset, unsi
     inode in;
     int bytes_llegits = 0;
     int blocLogic = offset / TB; // primer bloc logic
-
     int blocFisic;
     int darrer_bloc_logic = ((offset + nbytes) - 1 )/ TB; // darrer bloc logic
    // int darrer_byte = (offset + nbytes) - 1;
@@ -245,8 +244,8 @@ int mi_read_f (unsigned int inod, void *buff_original, unsigned int offset, unsi
             return -1;
         }
 
-        //memcpy(buff_original, &buff_bloc[desplacament_primer_bloc], bytes_lliures_primer_bloc);
-        memcpy(buff_original, &buff_bloc[desplacament_primer_bloc], TB - desplacament_primer_bloc);
+        memcpy(buff_original, &buff_bloc[desplacament_primer_bloc], bytes_lliures_primer_bloc);
+        //memcpy(buff_original, &buff_bloc[desplacament_primer_bloc], TB - desplacament_primer_bloc);
         bytes_llegits = bytes_lliures_primer_bloc;
         bytes_per_llegits -= bytes_llegits;
         printf("\n[ficheros.c] CAS INTERMITJ - DEBUG: LLEGIM bytes_llegits: %d en el bloque logico %d| faltan: %d bytes por llegir\n", bytes_llegits,blocLogic,bytes_per_llegits);
@@ -263,13 +262,13 @@ int mi_read_f (unsigned int inod, void *buff_original, unsigned int offset, unsi
                 printf("[ficheros.c] ERROR: Bloc físic incorrecte\n");
                 return -1;
             }
-
-            //memcpy(buff_original + (TB - darrer_byte) + (i - primer_bloc - 1) * TB, buff_bloc, TB);
-            memcpy(buff_original + bytes_per_llegits, &buff_bloc, TB);
-
+            
             if (bread(blocFisic, buff_bloc) == -1) {
                 return -1;
             }
+
+            //memcpy(buff_original + (TB - darrer_byte) + (i - primer_bloc - 1) * TB, buff_bloc, TB);
+            memcpy(buff_original + bytes_per_llegits, &buff_bloc, TB);
 
             //memcpy(buff_original + (TB - (offset % TB)) + (i - primer_bloc - 1) * TB, &buff_bloc, TB);
             //memcpy(buff_original + bytes_llegits, &buff_bloc, TB);

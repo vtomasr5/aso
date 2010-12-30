@@ -95,7 +95,8 @@ int main(int argc, char *argv[])
     }
     /*
     int blocFisic = traduirBlocInode(r, 0, '1'); // bloc físic on escriurem
-	printf("[mi_mkfs.c] R: %d blocFisic : %d\n\n",r,blocFisic);*/
+	printf("[mi_mkfs.c] R: %d blocFisic : %d\n\n",r,blocFisic);
+	*/
 	
     if (infoSB() == -1) { // mostram el contingut del superbloc
         printf("[mi_mkfs.c] ERROR: Error cridant a infoSB");
