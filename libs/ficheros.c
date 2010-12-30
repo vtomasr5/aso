@@ -49,7 +49,7 @@ int mi_write_f (unsigned int inod, const void *buff_original, unsigned int offse
     int desplacament_primer_bloc = offset % TB; // Offset del primer bloc. Punt d'inici del primer bloc
     int bytes_lliures_primer_bloc = TB - desplacament_primer_bloc; // Numero de bytes a escriure en el primer bloc
     //int primer_bloc = blocLogic;
-    int bytes_darrer_bloc = (nbytes - bytes_lliures_primer_bloc) % TB; // Numero de bytes a escriure en el darrer bloc
+    //int bytes_darrer_bloc = (nbytes - bytes_lliures_primer_bloc) % TB; // Numero de bytes a escriure en el darrer bloc
     int bytes_per_escriure = nbytes; //Bytes que faltan per escriure
     in = llegirInode(inod);
     //printf("[ficheros.c - mi_write_f] DEBUG: bytes_a_escribir %d\n",nbytes);
@@ -210,16 +210,16 @@ int mi_read_f (unsigned int inod, void *buff_original, unsigned int offset, unsi
     int bytes_darrer_bloc = (nbytes - bytes_lliures_primer_bloc) % TB;
     int bytes_per_llegits = nbytes; //Bytes que faltan per escriure
     in = llegirInode(inod);
-    
+
     printf("[ficheros.c] - mi_read_f - inod : %d - in.permisos : %d \n\n", inod, in.permisos);
 
-    if ((in.permisos != 6) && (in.permisos != 7)) { // si no tiene permisos de lectura o escritura 
+    if ((in.permisos != 6) && (in.permisos != 7)) { // si no tiene permisos de lectura o escritura
         printf("[ficheros.c] ERROR: L'inode no te permisos de lectura!\n");
         return -1;
     }
 
     blocFisic = traduirBlocInode(inod, blocLogic, '0');
-	 printf("[ficheros.c] blocFisic:%d\n",blocFisic);
+     printf("[ficheros.c] blocFisic:%d\n",blocFisic);
     if (blocFisic <= 0) {
         printf("[ficheros.c] ERROR: Bloc físic incorrecte\n");
         return -1;
@@ -262,7 +262,7 @@ int mi_read_f (unsigned int inod, void *buff_original, unsigned int offset, unsi
                 printf("[ficheros.c] ERROR: Bloc físic incorrecte\n");
                 return -1;
             }
-            
+
             if (bread(blocFisic, buff_bloc) == -1) {
                 return -1;
             }

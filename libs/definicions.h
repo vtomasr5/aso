@@ -15,3 +15,6 @@
 
 // nombre de punters que caben dins un bloc (256)
 #define N_PUNTERS_BLOC (TB / 4)
+
+// tamany del buffer del directori
+#define BUFFER_DIR (TB * 6)

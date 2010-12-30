@@ -44,4 +44,7 @@ int mi_link(const char *cami1, const char *cami2);
 int mi_unlink(const char *cami);
 int mi_dir(const char *cami, char *buffer);
 int mi_chmod(const char *cami, unsigned char mode);
+int mi_stat(const char *cami, STAT *p_stat);
+int mi_read(const char *cami, void *buff, unsigned int offset, unsigned int nbytes);
 int mi_write(const char *cami, const void *buff, unsigned int offset, unsigned int nbytes);
+int mi_lsdir(const char *cami, char *buff);
