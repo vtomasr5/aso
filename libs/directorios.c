@@ -97,7 +97,7 @@ int cercarEntrada(const char *cami_parcial, unsigned int *p_inode_dir, unsigned 
         return -1;
     }
 
-    printf("-------------  [Directorios.c] cercarEntrada - camino parcial:%s   -------------\n", cami_parcial);
+    printf("------------- ---------------------- -------------\n");
     printf("[directorios.c] cercarEntrada - camino inicial: %s, cami final: %s\n", cami_inicial, cami_final);
     STAT estat;
 
@@ -107,9 +107,7 @@ int cercarEntrada(const char *cami_parcial, unsigned int *p_inode_dir, unsigned 
 
     entrada ent[num_ent]; // definimos un array de entradas de directorio que contiene el numero de entradas del inodo leido
 
-    if (mi_read_f(*p_inode_dir, &ent, 0, num_ent * sizeof(entrada)) == -1) { // leemos las entradas del directorio y las guardamos en el "buffer" ent
-        return -1;
-    }
+    mi_read_f(*p_inode_dir, &ent, 0, num_ent * sizeof(entrada)); // leemos las entradas del directorio y las guardamos en el "buffer" ent
 
     int k;
     for (k = 0; k < length(ent); k++) {
@@ -157,21 +155,20 @@ int cercarEntrada(const char *cami_parcial, unsigned int *p_inode_dir, unsigned 
             }
 
             int r = 0;
-            if ((r = reservarInode(tipus_inode, 7)) == -1) { // Aqui esta el error
+            if ((r = reservarInode(tipus_inode, 7)) == -1) { // reservam els inodes de cada directori/fitxer del cami parcial
                 return -1;
             }
-
+            printf("[directorios.c] DEBUG: inode reservat r = %d\n", r);
+		
             entra.inode = r;
             strcpy(entra.nom, cami_inicial); // copiam el camí a l'entrada de directori
             mi_stat_f(*p_inode_dir, &estat2); // obtenim la informació de l'inode
             int n_ent = estat2.tamany / sizeof(entrada); // calculam el numero d'entrades
             mi_write_f(*p_inode_dir, &entra, n_ent * sizeof(entrada), sizeof(entrada)); // escrivim els canvis
 
-
-
             *p_inode = entra.inode;
             *p_entrada = estat2.tamany / sizeof(entrada);
-             printf("[directorios.c] DEBUG: num de linode que cream:  cami: %s num : %d\n", cami_inicial, r);
+             printf("[directorios.c] DEBUG: num de l'inode que cream:  cami: %s num : %d\n", cami_inicial, r);
             if ((strlen(cami_final) == 0) || (strcmp(cami_final, "/") == 0)) {  // si hemos acabado o lo ultimo es una "/"
                 return 0;
             } else {
@@ -204,6 +201,7 @@ void alliberar(uint *p_inode_dir, uint *p_inode, uint *p_entrada)
 int mi_creat(const char *cami, unsigned int mode)
 {
     uint *p_inode_dir, *p_inode, *p_entrada;
+    int num_inode;
 
     p_inode_dir = malloc(sizeof(int));
     *p_inode_dir = 0;
@@ -215,12 +213,13 @@ int mi_creat(const char *cami, unsigned int mode)
     // realment com que no troba l'entrada de directori, la crea
     if (cercarEntrada(cami, p_inode_dir, p_inode, p_entrada, 1) != -1) {
         printf("[directorios.c] DEBUG: mi_creat - Cami %s creat\n", cami);
-        /*
+        num_inode = *p_inode;
+        
         //modificam els permisos del fitxer o directori
-        inode in = llegirInode(p_inode);
+        inode in = llegirInode(num_inode);
         in.permisos = mode;
-        escriureInode(p_inode, in);
-        */
+        escriureInode(num_inode, in);
+        
     } else {
         printf("[directorios.c] DEBUG: No s'ha trobat l'entrada!\n");
         alliberar(p_inode_dir, p_inode, p_entrada);
@@ -270,7 +269,7 @@ int mi_link(const char *cami1, const char *cami2)
         alliberar(p_inode_dir, p_inode, p_entrada);
         return -1;
     }
-    alliberarInode(*p_inode, 0, 0); // ERROR
+    alliberarInode(num_inode, 0, 0); // ERROR n_inode, bloc_inode, eliminar
 
     mi_stat_f(*p_inode_dir, &estat);
 
@@ -497,6 +496,7 @@ int mi_write(const char *cami, const void *buff, unsigned int offset, unsigned i
  *  @param cami ruta que es vol mostrar el contingut
  *  @param buff buffer on hi ha la informació.
  */
+ /*
 int mi_lsdir(const char *cami, char *buff)
 {
     int cont = 0;
@@ -522,3 +522,4 @@ int mi_lsdir(const char *cami, char *buff)
 
     return 0;
 }
+*/
