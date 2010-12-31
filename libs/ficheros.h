@@ -51,3 +51,4 @@ int mi_read_f (unsigned int inod, void *buff_original, unsigned int offset, unsi
 int mi_chmod_f (unsigned int inod, unsigned int mode);
 int mi_truncar_f (unsigned int inod, unsigned int nbytes);
 int mi_stat_f (unsigned int inod, STAT *p_stat);
+int ver_stat (STAT *p_stat);

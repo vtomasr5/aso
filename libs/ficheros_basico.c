@@ -392,15 +392,15 @@ int alliberarBloc(int bloc)
             if (escriureBit(bloc, 0) == -1) { // l'alliberam en el mapa de bits
                 return -1;
             }
-            return 0;
+
+            sb.blocs_lliures++; // augmentam els la quantitat de blocs lliures
         }
-        sb.blocs_lliures++; // augmentam els la quantitat de blocs lliures
 
         if (bwrite(POSICIO_SB, (char *)&sb) == -1) { // guardam els canvis al superbloc
             return -1;
         }
     } else {
-        printf("[ficheros_basixo.c] ERROR: Aquest bloc no pertany a la zona de dades!\n");
+        printf("[ficheros_basico.c] ERROR: Aquest bloc no pertany a la zona de dades!\n");
         return -1;
     }
     return 0;
@@ -527,10 +527,9 @@ int reservarInode(int tipusInode, unsigned int permisosInode)
  *  Recórrer els punters directes i indirectes i localitza els blocs de l'inode en concret
  *  i allibera els blocs que els hi pertoca.
  *  @param inod inode en el qual volem alliberar els blocs
- *  @param bloc bloc on està situat l'inode
  *  @return nombre de blocs que pertanyen a l'inode i que estaven ocupats
  */
-int alliberarBlocInode(inode inod, int bloc)
+int alliberarBlocInode(inode inod)
 {
     int buff[N_PUNTERS_BLOC];
     int buff1[N_PUNTERS_BLOC];
@@ -539,167 +538,133 @@ int alliberarBlocInode(inode inod, int bloc)
     int i = 0;
     int j = 0;
     int k = 0;
-    int ret = -1;
+    int ret = 0;
 
-    if ((bloc >= 0) && (bloc < MAX_PUNTERS_DIRECTES - 1)) { // punters directes
-            for (i = bloc; i < MAX_PUNTERS_DIRECTES; i++) {
-                if (inod.pdirectes[i] > 0) {
-                    ret = alliberarBloc(inod.pdirectes[i]);
-                    // alliberam el bloc on esta el pdirecte
-                    if (ret == 0) {
-                        blocs++;
-                    }
-                }
-                inod.pdirectes[i] = -1;
+    // punters directes
+    for (i = 0; i < MAX_PUNTERS_DIRECTES; i++) {
+        if (inod.pdirectes[i] > 0) {
+            ret = alliberarBloc(inod.pdirectes[i]);
+            // alliberam el bloc on esta el punter directe
+            if (ret == 0) {
+                blocs++;
             }
-    } else if (bloc <= (MAX_PUNTERS_DIRECTES + N_PUNTERS_BLOC - 1)) { // punters indirectes de nivell 0
-        if (bloc >= MAX_PUNTERS_DIRECTES) {
-            bloc = bloc - MAX_PUNTERS_DIRECTES;
-        } else if (bloc < MAX_PUNTERS_DIRECTES) {
-            bloc = 0;
+        }
+        inod.pdirectes[i] = -1; // resetejam la posicio del inode
+    }
+
+    // punters indirectes nivell 0
+    if (inod.pindirectes[0] > 0) {
+        if (bread(inod.pindirectes[0], buff) == -1) {
+            return -1;
         }
 
-        if (inod.pindirectes[0] > 0) {
-            if (bread(inod.pindirectes[0], buff) == -1) {
-                return -1;
-            }
-            for (i = bloc; i < N_PUNTERS_BLOC; i++) {
-                if (buff[i] > 0) {
-                    ret = alliberarBloc(buff[i]);
-                    if (ret == 0) {
-                        blocs++;
-                        buff[i] = -1;
-                    }
-                }
-            }
-            if (bwrite(inod.pindirectes[0], buff) == -1) {
-                return -1;
-            }
-
-            if (bloc == 0) {
-                // alliberam el bloc on esta el pindirecte[0]
-                ret = alliberarBloc(inod.pindirectes[0]);
+        for (i = 0; i < N_PUNTERS_BLOC; i++) {
+            if (buff[i] > 0) {
+                ret = alliberarBloc(buff[i]);
                 if (ret == 0) {
                     blocs++;
-                    inod.pindirectes[0] = -1;
+                    buff[i] = -1;
                 }
             }
         }
-    } else if (bloc <= (MAX_PUNTERS_DIRECTES + N_PUNTERS_BLOC + (N_PUNTERS_BLOC * N_PUNTERS_BLOC) - 1)) { // punters indirectes de nivell 1
-        if (inod.pindirectes[1] > 0) {
 
-            if (bloc >= (MAX_PUNTERS_DIRECTES + N_PUNTERS_BLOC)) {
-                bloc = bloc - (MAX_PUNTERS_DIRECTES + N_PUNTERS_BLOC);
-            } else if (bloc < (MAX_PUNTERS_DIRECTES + N_PUNTERS_BLOC)) {
-                bloc = 0;
-            }
-                if (bread(inod.pindirectes[1], buff) == -1) {
-                return -1;
-            }
+        if (bwrite(inod.pindirectes[0], buff) == -1) {
+            return -1;
+        }
+    }
 
-            for (i = (bloc / N_PUNTERS_BLOC); i < N_PUNTERS_BLOC; i++) {
-                if (buff[i] > 0) {
-                    if (bread(buff[i], buff1) == -1) {
-                        return -1;
-                    }
+    // punters indirectes nivell 1
+    if (inod.pindirectes[1] > 0) {
+        if (bread(inod.pindirectes[1], buff) == -1) {
+            return -1;
+        }
 
-                    for (j = (bloc % N_PUNTERS_BLOC); j < N_PUNTERS_BLOC; j++) {
-                        if (buff1[j] > 0) {
-                            ret = alliberarBloc(buff1[j]);
-                            if (ret == 0) {
-                                blocs++;
-                                buff1[j] = -1;
-                            }
+        for (i = 0; i < N_PUNTERS_BLOC; i++) {
+            if (buff[i] > 0) {
+                if (bread(buff[i], buff1) == -1) {
+                    return -1;
+                }
+
+                for (j = 0; j < N_PUNTERS_BLOC; j++) {
+                    if (buff1[j] > 0) {
+                        ret = alliberarBloc(buff1[j]);
+                        if (ret == 0) {
+                            blocs++;
+                            buff1[j] = -1;
                         }
                     }
-
-                    if (bwrite(buff[i], buff1) == -1) {
-                        return -1;
-                    }
-
-                    ret = alliberarBloc(buff[i]);
-                    if (ret == 0) {
-                        blocs++;
-                        buff[i] = -1;
-                    }
                 }
-            }
 
-            if (bwrite(inod.pindirectes[1], buff) == -1) {
-                return -1;
-            }
+                if (bwrite(buff[i], buff1) == -1) {
+                    return -1;
+                }
 
-            if (bloc == 0) {
-                // alliberam el bloc on esta el pindirecte[1]
-                ret = alliberarBloc(inod.pindirectes[1]);
+                ret = alliberarBloc(buff[i]);
                 if (ret == 0) {
                     blocs++;
-                    inod.pindirectes[1] = -1;
+                    buff[i] = -1;
                 }
             }
         }
-    } else if (bloc <= (MAX_PUNTERS_DIRECTES + N_PUNTERS_BLOC + (N_PUNTERS_BLOC * N_PUNTERS_BLOC) + (N_PUNTERS_BLOC * N_PUNTERS_BLOC * N_PUNTERS_BLOC) - 1)) { // punters indirectes de nivell 2
-        bloc = bloc - (MAX_PUNTERS_DIRECTES + N_PUNTERS_BLOC + (N_PUNTERS_BLOC * N_PUNTERS_BLOC));
-        if (inod.pindirectes[2] > 0) {
-            if (bread(inod.pindirectes[2], buff) == -1) {
-                return -1;
-            }
 
-            for (i = bloc / (N_PUNTERS_BLOC * N_PUNTERS_BLOC); i < N_PUNTERS_BLOC; i++) {
-                if (buff[i] > 0) {
-                    if (bread(buff[i], buff1) == -1) {
-                        return -1;
-                    }
-                    bloc = bloc % (N_PUNTERS_BLOC * N_PUNTERS_BLOC);
+        if (bwrite(inod.pindirectes[1], buff) == -1) {
+            return -1;
+        }
+    }
 
-                    for (j = bloc / N_PUNTERS_BLOC; j < N_PUNTERS_BLOC; j++) {
-                        if (buff1[j] > 0) {
-                            if (bread(buff1[j], buff2) == -1) {
-                                return -1;
-                            }
+    // punters indirectes nivell 2
+    if (inod.pindirectes[2] > 0) {
+        if (bread(inod.pindirectes[2], buff) == -1) {
+            return -1;
+        }
 
-                            for (k = 0; k < N_PUNTERS_BLOC; k++) {
-                                if (buff2[k] > 0) {
-                                    ret = alliberarBloc(buff2[k]);
-                                    if (ret == 0) {
-                                        blocs++;
-                                        buff2[k] = -1;
-                                    }
+        for (i = 0; i < N_PUNTERS_BLOC; i++) {
+            if (buff[i] > 0) {
+                if (bread(buff[i], buff1) == -1) {
+                    return -1;
+                }
+
+                for (j = 0; j < N_PUNTERS_BLOC; j++) {
+                    if (buff1[j] > 0) {
+                        if (bread(buff1[j], buff2) == -1) {
+                            return -1;
+                        }
+
+                        for (k = 0; k < N_PUNTERS_BLOC; k++) {
+                            if (buff2[k] > 0) {
+                                ret = alliberarBloc(buff2[k]);
+                                if (ret == 0) {
+                                    blocs++;
+                                    buff2[k] = -1;
                                 }
                             }
-                            ret = alliberarBloc(buff1[j]);
-                            if (ret == 0) {
-                                blocs++;
-                            }
+                        }
+
+                        ret = alliberarBloc(buff1[j]);
+                        if (ret == 0) {
+                            blocs++;
                         }
                     }
-                    ret = alliberarBloc(buff[i]);
-                    if (ret == 0) {
-                        blocs++;
-                    }
                 }
-            }
 
-            if (bloc == 0) {
-                // alliberam el bloc on esta el pindirecte[2]
-                ret = alliberarBloc(inod.pindirectes[2]);
+                ret = alliberarBloc(buff[i]);
                 if (ret == 0) {
                     blocs++;
-                    inod.pindirectes[2] = -1;
                 }
             }
         }
     }
+
+    // retornam els numero de blocs alliberats
     return blocs;
 }
 
 /**
  *  Funció encarregada d'alliberar tots els blocs que pertanyen a un inode concret
  *  @param inod posició de l'inode a alliberar
- *  @param bloc bloc on està l'inode que es vol eliminar
  *  @param eliminar paràmetre que si esta a 1 s'ha de eliminar l'inode, i si, està a 0, no.
  */
-int alliberarInode(int inod, int bloc, int eliminar)
+int alliberarInode(int inod, int eliminar)
 {
     superbloc sb;
     inode in;
@@ -712,6 +677,7 @@ int alliberarInode(int inod, int bloc, int eliminar)
     }
 
     in = llegirInode(inod); // llegim l'inode a alliberar
+
     if (inod == 0) { // comprovam que l'inode no sigui l'arrel
         printf("[ficheros_basico.c] ERROR: No se pot eliminar l'inode arrel!!\n");
     } else if (in.tipus == 0) { // comprovam que l'inode no sigui lliure
@@ -720,7 +686,7 @@ int alliberarInode(int inod, int bloc, int eliminar)
         blocs_assignats = in.blocs_assignats_dades;
 
         // calculam els blocs que ocupa, mirant els punters directes i indirectes de l'inode
-        blocs_ocupats = alliberarBlocInode(in, bloc);
+        blocs_ocupats = alliberarBlocInode(in);
 
         if (eliminar == 0) { // només volem alliberar l'inode
             in.tamany = in.tamany - blocs_ocupats * TB; // tamany en bytes
@@ -728,7 +694,7 @@ int alliberarInode(int inod, int bloc, int eliminar)
                 in.tamany = 0;
             }
             in.blocs_assignats_dades = in.blocs_assignats_dades - blocs_ocupats;
-        } else if (eliminar == 1) { // definitivament volen eliminar l'inode, borram els blocs i els camps
+        } else if (eliminar == 1) { // definitivament volen eliminar l'inode, borram els blocs i resetejar els camps de l'inode
             in.tipus = 0;
             in.data_modificacio = 0;
             in.tamany = 0;
