@@ -277,6 +277,7 @@ int mi_link(const char *cami1, const char *cami2)
         alliberar(p_inode_dir, p_inode, p_entrada);
         return -1;
     }
+
     alliberarInode(num_inode, 0);
 
     printf("[directorios.c] DEBUG: *p_inode_dir = %d, *p_inode = %d, *p_entrada = %d\n", *p_inode_dir, *p_inode, *p_entrada);
@@ -377,15 +378,15 @@ int mi_dir(const char *cami, char *buffer)
             p_entrada = malloc(sizeof(int));
             *p_entrada = 0;
 
-            if (cercarEntrada(cami, p_inode_dir, p_inode, p_entrada, 0) == -1) {   //no ha encontrado el directorio
+            if (cercarEntrada(cami, p_inode_dir, p_inode, p_entrada, 0) == -1) { // no ha encontrado el directorio
                 alliberar(p_inode_dir, p_inode, p_entrada);
                 return -1;
             }
 
-            if (strcmp(cami, "/") == 0) { //si es un directorio que no sea el raiz
+            if (strcmp(cami, "/") == 0) { // si es un directorio que no sea el raiz
                 pinode = *p_inode_dir;
             } else {
-                pinode = *p_inode;  //si el directorio a listar es el raiz
+                pinode = *p_inode; // si el directorio a listar es el raiz
             }
 
             if (mi_stat_f(pinode, &estat) == -1) {
@@ -394,9 +395,9 @@ int mi_dir(const char *cami, char *buffer)
             }
 
             int n_entrades = (estat.tamany / sizeof(entrada));
-            if (n_entrades > 0) {   //si hay entradas de directorio
+            if (n_entrades > 0) { // si hay entradas de directorio
                 entrada ent[n_entrades];
-                if (mi_read_f(pinode, &ent, 0, n_entrades * sizeof(entrada)) == -1) {    //leemos todas las entradas
+                if (mi_read_f(pinode, &ent, 0, n_entrades * sizeof(entrada)) == -1) { // leemos todas las entradas
                     alliberar(p_inode_dir, p_inode, p_entrada);
                     return -1;
                 }
@@ -409,6 +410,7 @@ int mi_dir(const char *cami, char *buffer)
                 alliberar(p_inode_dir, p_inode, p_entrada);
                 return i;
             }
+            alliberar(p_inode_dir, p_inode, p_entrada);
         } else {
             printf("[directorios.c] ERROR: Això no es un directori!\n");
             return -1;

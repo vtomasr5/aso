@@ -55,7 +55,7 @@ typedef struct {
 
 /**
  * Estructura que conté els camps necessaris per a contruir un inode del sistema de fitxers.
- * Ocupa 88 bytes 
+ * Ocupa 88 bytes
  */
 typedef struct {
     unsigned char tipus;            // tipus inode (0 = Lliure, 1 = Directori, 2 = Fitxer)
@@ -88,3 +88,4 @@ int reservarInode(int, unsigned int);
 int alliberarBlocInode(inode);
 int alliberarInode(int, int);
 int traduirBlocInode(unsigned int inod, unsigned int blocLogic, char reservar);
+int contingutInode(int inod);

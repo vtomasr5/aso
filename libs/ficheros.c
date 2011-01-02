@@ -50,10 +50,9 @@ int mi_write_f (unsigned int inod, const void *buff_original, unsigned int offse
     //int primer_bloc = blocLogic;
     //int bytes_darrer_bloc = (nbytes - bytes_lliures_primer_bloc) % TB; // Numero de bytes a escriure en el darrer bloc
     int bytes_per_escriure = nbytes; //Bytes que faltan per escriure
+    memset(buff_bloc, '\0', TB);
 
     in = llegirInode(inod);
-
-    memset(buff_bloc, '\0', TB);
 
     if ((in.permisos != 6) && (in.permisos != 7)) {
         printf("[ficheros.c] ERROR: L'inode no te permisos d'escriptura!\n");
@@ -62,7 +61,7 @@ int mi_write_f (unsigned int inod, const void *buff_original, unsigned int offse
 
     blocFisic = traduirBlocInode(inod, blocLogic, '1'); // bloc físic on escriurem
 
-    memset(buff_bloc, '\0', TB);
+    printf("[ficheros.c] DEBUG: blocFisic: %d\n", blocFisic);
 
     if (blocFisic <= 0) {
         printf("[ficheros.c] ERROR: Bloc físic incorrecte\n");
@@ -182,10 +181,9 @@ int mi_read_f (unsigned int inod, void *buff_original, unsigned int offset, unsi
     //int primer_bloc = blocLogic;
     //int bytes_darrer_bloc = (nbytes - bytes_lliures_primer_bloc) % TB;
     int bytes_per_llegits = nbytes; //Bytes que faltan per escriure
+    memset(buff_bloc, '\0', TB);
 
     in = llegirInode(inod);
-
-    memset(buff_bloc, '\0', TB);
 
     if ((in.permisos != 6) && (in.permisos != 7)) { // si no tiene permisos de lectura o escritura
         printf("[ficheros.c] ERROR: L'inode no te permisos de lectura!\n");
