@@ -545,7 +545,7 @@ int alliberarBlocInode(inode inod)
     for (i = 0; i < MAX_PUNTERS_DIRECTES; i++) {
         ino = inod.pdirectes[i];
 
-        printf("[ficheros_basico.c] DEBUG: bloc (inod.pdirectes[%d]) = %d\n", i, ino);
+        //printf("[ficheros_basico.c] DEBUG: bloc (inod.pdirectes[%d]) = %d\n", i, ino);
 
         if (ino > 0) {
             ret = alliberarBloc(ino);
@@ -559,7 +559,7 @@ int alliberarBlocInode(inode inod)
 
     // punters indirectes nivell 0
     ino = inod.pindirectes[0];
-    printf("[ficheros_basico.c] DEBUG: bloc (inod.pindirectes[0]) = %d\n", ino);
+    //printf("[ficheros_basico.c] DEBUG: bloc (inod.pindirectes[0]) = %d\n", ino);
     if (ino > 0) {
         if (bread(ino, buff) == -1) {
             return -1;
@@ -582,7 +582,7 @@ int alliberarBlocInode(inode inod)
 
     // punters indirectes nivell 1
     ino = inod.pindirectes[1];
-    printf("[ficheros_basico.c] DEBUG: bloc (inod.pindirectes[1]) = %d\n", ino);
+    //printf("[ficheros_basico.c] DEBUG: bloc (inod.pindirectes[1]) = %d\n", ino);
     if (ino > 0) {
         if (bread(ino, buff) == -1) {
             return -1;
@@ -623,7 +623,7 @@ int alliberarBlocInode(inode inod)
 
     // punters indirectes nivell 2
     ino = inod.pindirectes[2];
-    printf("[ficheros_basico.c] DEBUG: bloc (inod.pindirectes[2]) = %d\n", ino);
+    //printf("[ficheros_basico.c] DEBUG: bloc (inod.pindirectes[2]) = %d\n", ino);
     if (ino > 0) {
         if (bread(ino, buff) == -1) {
             return -1;
@@ -1067,16 +1067,21 @@ int contingutInode(int inod) {
             printf("[ficheros_basico.c] INFO: Tipus desconegut!");
         }
 
+        printf("[ficheros_basico.c] INFO: L'inode te uns permisos = %d\n", in.permisos);
         printf("[ficheros_basico.c] INFO: L'inode te un tamany de %d bytes\n", in.tamany);
         printf("[ficheros_basico.c] INFO: L'inode te %d blocs assignats\n", in.blocs_assignats_dades);
+        printf("[ficheros_basico.c] INFO: L'inode te %d enllacos a directoris\n", in.links_directoris);
 
         struct tm *creacio = localtime(&in.data_creacio);
         struct tm *modificacio = localtime(&in.data_modificacio);
+        struct tm *acces = localtime(&in.data_acces);
         char *s= asctime(creacio);
         char *r= asctime(modificacio);
+        char *t= asctime(acces);
 
         printf("[ficheros_basico.c] INFO: Data de creació de l'inode = %s", s);
-        printf("[ficheros_basico.c] INFO: Fecha de modificació de l'inode = %s", r);
+        printf("[ficheros_basico.c] INFO: Data de modificació de l'inode = %s", r);
+        printf("[ficheros_basico.c] INFO: Data d'acces de l'inode = %s", t);
 
         printf("[ficheros_basico.c] INFO: pdirectes[0] apunta a: %d \n", in.pdirectes[0]);
         printf("[ficheros_basico.c] INFO: pindirectes[0] apunta a: %d \n", in.pindirectes[0]);

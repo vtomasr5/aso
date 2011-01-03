@@ -53,7 +53,7 @@ int mi_write_f (unsigned int inod, const void *buff_original, unsigned int offse
     memset(buff_bloc, '\0', TB);
 
     in = llegirInode(inod);
-
+    
     if ((in.permisos != 6) && (in.permisos != 7)) {
         printf("[ficheros.c] ERROR: L'inode no te permisos d'escriptura!\n");
         return -1;
@@ -61,8 +61,7 @@ int mi_write_f (unsigned int inod, const void *buff_original, unsigned int offse
 
     blocFisic = traduirBlocInode(inod, blocLogic, '1'); // bloc físic on escriurem
 
-    printf("[ficheros.c] DEBUG: blocFisic: %d\n", blocFisic);
-
+    printf("[ficheros.c] DEBUG: blocFisic: %d offset %d\n", blocFisic, offset);
     if (blocFisic <= 0) {
         printf("[ficheros.c] ERROR: Bloc físic incorrecte\n");
         return -1;
@@ -83,12 +82,6 @@ int mi_write_f (unsigned int inod, const void *buff_original, unsigned int offse
         }
 
         bytes_escrits = nbytes;
-
-        // actualitzam les dades de l'inode
-        in.tamany = in.tamany + bytes_escrits;
-        in.data_acces = time(NULL);
-
-        escriureInode(inod, in);
 
     } else { // cas en que escrivim en més d'un bloc
         memcpy(&buff_bloc[desplacament_primer_bloc], buff_original, TB - desplacament_primer_bloc);
@@ -147,13 +140,17 @@ int mi_write_f (unsigned int inod, const void *buff_original, unsigned int offse
             printf ("\n[ficheros.c] DARRER CAS - DEBUG: ESCRIBIM bytes_escritos: %d en el blogLogic %d \n", bytes_per_escriure, blocLogic);
 
         }
-        in = llegirInode(inod);
-
-        in.tamany = in.tamany + bytes_escrits;
-        in.data_acces = time(NULL);
-
-        escriureInode(inod, in);
     }
+    in.tamany = in.tamany + bytes_escrits;
+    in.data_acces = time(NULL);
+
+    escriureInode(inod, in);
+    /*
+    printf("[ficheros.c] DEBUG: mi_write_f() despres escriureInode()\n");
+    if  (contingutInode(inod) == -1) { // DEBUG
+        return -1;
+    }
+    */
     // retornam els bytes escrits al bloc
     return bytes_escrits;
 }
@@ -257,11 +254,21 @@ int mi_read_f (unsigned int inod, void *buff_original, unsigned int offset, unsi
         }
     }
     // actualitzam la metainformació de l'inode
-    in = llegirInode(inod);
-
+    //in = llegirInode(inod);
+    /*
+    printf("[ficheros.c] DEBUG: mi_read_f() abans escriureInode:\n");
+    if  (contingutInode(inod) == -1) { // DEBUG
+        return -1;
+    }
+    */
     in.data_acces = time(NULL);
     escriureInode(inod, in);
-
+/*
+    printf("[ficheros.c] DEBUG: mi_read_f() despres escriureInode:\n");
+    if  (contingutInode(inod) == -1) { // DEBUG
+        return -1;
+    }
+*/
     return bytes_llegits;
 }
 
@@ -365,7 +372,7 @@ int mi_stat_f (unsigned int inod, STAT *p_stat)
  *  Mostra l'estat de l'inode per pantalla
  *  @param p_stat punter a l'estructura STAT que conté informació sobre l'inode
  */
-int ver_stat (STAT *p_stat)
+int veure_stat (STAT *p_stat)
 {
     printf("\n----- INICI ESTAT del l'inode -----\n");
     printf("Tipus: %d\n", p_stat->tipus);
