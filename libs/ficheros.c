@@ -61,7 +61,7 @@ int mi_write_f (unsigned int inod, const void *buff_original, unsigned int offse
 
     blocFisic = traduirBlocInode(inod, blocLogic, '1'); // bloc físic on escriurem
 
-    printf("[ficheros.c] DEBUG: blocFisic: %d offset %d\n", blocFisic, offset);
+    printf("[ficheros.c] mi_write_f DEBUG: blocFisic: %d offset %d\n", blocFisic, offset);
     if (blocFisic <= 0) {
         printf("[ficheros.c] ERROR: Bloc físic incorrecte\n");
         return -1;

@@ -237,13 +237,15 @@ int mi_creat(const char *cami, unsigned int mode)
         alliberar(p_inode_dir, p_inode, p_entrada);
         return -1;
     }
+    
     alliberar(p_inode_dir, p_inode, p_entrada);
     return 0;
 }
 
 /**
- *  Funció que crea un enllaç d'una entrada de directori (cami1) a
- *  l'inode especificat per una altra entrada de directori (cami2).
+ *  Funció que crea un enllaç des de l'inode de cami1 (no ha d'existir) a
+ *  l'inode especificat per cami2, de tal manera que al acabar l'execució
+ *  els dos camins facin referència al mateix inode.
  *  @param cami1 ruta que enllaçada a cami2
  *  @param cami2 ruta enllaçada a l'inode de cami1
  */
@@ -266,9 +268,10 @@ int mi_link(const char *cami1, const char *cami2)
         alliberar(p_inode_dir, p_inode, p_entrada);
         return -1;
     }
-
-    printf("[directorios.c] mi_link DEBUG: *p_inode_dir = %d, *p_inode = %d, *p_entrada = %d\n", *p_inode_dir, *p_inode, *p_entrada);
+    num_inode = *p_inode; // copia puntero del inodo encontrado
     
+    printf("[directorios.c] mi_link DEBUG: *p_inode_dir = %d, *p_inode = %d, *p_entrada = %d\n", *p_inode_dir, *p_inode, *p_entrada);
+
     inode inod = llegirInode(num_inode);
     inod.links_directoris++;
     escriureInode(num_inode, inod);
@@ -282,16 +285,19 @@ int mi_link(const char *cami1, const char *cami2)
         alliberar(p_inode_dir, p_inode, p_entrada);
         return -1;
     }
-	num_inode = *p_inode; // copia puntero del inodo encontrado
-	/*
+    //num_inode = *p_inode; // copia puntero del inodo encontrado
+
+    /*
     printf("[directorios.c] mi_link DEBUG: Abans d'alliberar Inode: %d\n",num_inode);
     if  (contingutInode(num_inode) == -1) { // DEBUG
         return -1;
     }
     */
+    
     alliberarInode(num_inode, 0);
 
-    printf("[directorios.c] mi_link DEBUG: Despres d'alliberar Inode\n");
+    printf("[directorios.c] mi_link DEBUG: Despres d'alliberar Inode:\n");
+
     if  (contingutInode(num_inode) == -1) { // DEBUG
         return -1;
     }
@@ -299,27 +305,38 @@ int mi_link(const char *cami1, const char *cami2)
     printf("[directorios.c] mi_link DEBUG: *p_inode_dir = %d, *p_inode = %d, *p_entrada = %d,num_inode = %d\n", *p_inode_dir, *p_inode, *p_entrada, num_inode);
 
     mi_stat_f(*p_inode_dir, &estat);
+    
+    printf("[directorios.c] mi_link DEBUG antes de leer: ent.inode = %d\n", ent.inode);
 
     int bllegits = mi_read_f(*p_inode_dir, &ent, (*p_entrada) * sizeof(entrada), sizeof(entrada));
-    
-    printf("[directorios.c] DEBUG: bytes llegits = %d\n", bllegits);
+    if (bllegits == -1) {
+        printf("[directorios.c] ERROR: Error de lectura a mi_read_f()\n");
+        return -1;
+    }
+	ent.inode = num_inode; // cambiamos su numero de inodo por la entrada del cami1
 	
-    ent.inode = num_inode; // cambiamos su numero de inodo por la entrada del cami 1
-  
-    printf("[directorios.c] mi_link DEBUG: ent.nom = %s, ent.inode = %d\n",   ent.nom,ent.inode);
-    
-    int bescrits = mi_write_f(*p_inode_dir, &ent, (*p_entrada) * sizeof(entrada), sizeof(entrada));
-    
-    printf("[directorios.c] DEBUG: bytes escrits = %d\n", bescrits);
+    printf("[directorios.c] DEBUG: bytes llegits = %d\n", bllegits);
+    printf("[directorios.c] mi_link DEBUG antes de escribir: ent.inode = %d\n", ent.inode);
 
+    printf("[directorios.c] mi_link DEBUG: ent.nom = %s, ent.inode = %d\n",   ent.nom,ent.inode);
+
+    int bescrits = mi_write_f(*p_inode_dir, &ent, (*p_entrada) * sizeof(entrada), sizeof(entrada));
+    if  (bescrits == -1) {
+        printf("[directorios.c] ERROR: Error d'escriptura a mi_write_f()\n");
+        return -1;
+    }
+
+    // printf("[directorios.c] DEBUG: bytes escrits = %d\n", bescrits);
+    printf("[directorios.c] mi_link DEBUG despues de escribir: ent.inode = %d\n", ent.inode);
     alliberar(p_inode_dir, p_inode, p_entrada);
+
     printf("[directorios.c] DEBUG: mi_link realitzat correctament.\n");
     return 0;
 }
 
 /**
- *  Funció que elimina l'entrada de directori. Si només hi ha un link elimina el propi
- *  fitxer o directori.
+ *  Funció que elimina l'entrada de directori. Si només hi ha un enllaç elimina
+ *  el propi fitxer o directori.
  *  @param cami Ruta que ha de borrar.
  */
 int mi_unlink(const char *cami)
@@ -327,6 +344,7 @@ int mi_unlink(const char *cami)
     uint *p_inode_dir, *p_inode, *p_entrada;
     STAT estat;
     entrada ent;
+    int num_inode = 0;
 
     p_inode_dir = malloc(sizeof(uint));
     *p_inode_dir = 0;
@@ -339,11 +357,14 @@ int mi_unlink(const char *cami)
         alliberar(p_inode_dir, p_inode, p_entrada);
         return -1;
     }
-    inode inod = llegirInode(*p_inode);
 
+    inode inod = llegirInode(*p_inode);
+    num_inode = *p_inode;
+
+    // si només hi ha un enllaç al directori
     if (inod.links_directoris == 1) {
-        printf("[directorioc.c] INFO: Només queda un enllaç, borram el fitxer.\n");
-        alliberarInode(*p_inode, 0);
+        printf("[directorioc.c] INFO: Només queda un enllaç, borram el fitxer/directori.\n");
+        alliberarInode(num_inode, 1); // eliminam el directori complemtament '1'
 
         printf("[directorios.c] DEBUG: *p_inode_dir = %d, *p_inode = %d, *p_entrada = %d\n", *p_inode_dir, *p_inode, *p_entrada);
 
@@ -356,9 +377,9 @@ int mi_unlink(const char *cami)
             mi_truncar_f(*p_inode_dir, estat.tamany - sizeof(entrada));
             mi_write_f(*p_inode_dir, &ent, sizeof(entrada) * (*p_entrada), sizeof(entrada));
         }
-    } else {
+    } else { // hi ha més d'un enllaç de directori
         inod.links_directoris--;
-        escriureInode(*p_inode, inod);
+        escriureInode(num_inode, inod);
 
         printf("[directorios.c] DEBUG: *p_inode_dir = %d, *p_inode = %d, *p_entrada = %d\n", *p_inode_dir, *p_inode, *p_entrada);
 
@@ -372,6 +393,7 @@ int mi_unlink(const char *cami)
             mi_write_f(*p_inode_dir, &ent, sizeof(entrada) * (*p_entrada), sizeof(entrada));
         }
     }
+
     alliberar(p_inode_dir, p_inode, p_entrada);
     printf("[directorios.c] DEBUG: mi_unlink realitzat correctament.\n");
     return 0;
@@ -387,10 +409,10 @@ int mi_dir(const char *cami, char *buffer)
 {
     int longitut = strlen(cami);
     STAT estat;
-    int pinode;
+    int pinode = 0;
 
     if (longitut > 0) {
-        if (cami[longitut-1] == '/') { // es un directori
+        if (cami[longitut-1] == '/') { // si es un directori
             uint *p_inode_dir, *p_inode, *p_entrada;
 
             p_inode_dir = malloc(sizeof(uint));
@@ -408,18 +430,15 @@ int mi_dir(const char *cami, char *buffer)
             if (strcmp(cami, "/") == 0) { // si es un directorio que no sea el raiz
                 pinode = *p_inode_dir;
             } else {
-                pinode = *p_inode; // si el directorio a listar es el raiz
+                pinode = *p_inode; // si el directorio a listar es la raiz
             }
 
-            if (mi_stat_f(pinode, &estat) == -1) {
-                alliberar(p_inode_dir, p_inode, p_entrada);
-                return -1;
-            }
+            mi_stat_f(pinode, &estat);
 
-            int n_entrades = (estat.tamany / sizeof(entrada));
+            int n_entrades = estat.tamany / sizeof(entrada);
             if (n_entrades > 0) { // si hay entradas de directorio
                 entrada ent[n_entrades];
-                if (mi_read_f(pinode, &ent, 0, n_entrades * sizeof(entrada)) == -1) { // leemos todas las entradas
+                if (mi_read_f(pinode, &ent, 0, (n_entrades * sizeof(entrada))) == -1) { // leemos todas las entradas
                     alliberar(p_inode_dir, p_inode, p_entrada);
                     return -1;
                 }
@@ -432,6 +451,7 @@ int mi_dir(const char *cami, char *buffer)
                 alliberar(p_inode_dir, p_inode, p_entrada);
                 return i;
             }
+
             alliberar(p_inode_dir, p_inode, p_entrada);
         } else {
             printf("[directorios.c] ERROR: Això no es un directori!\n");
@@ -442,7 +462,7 @@ int mi_dir(const char *cami, char *buffer)
 }
 
 /**
- *  Funció que canvia els permisos a una ruta especificade per paràmetre.
+ *  Funció que canvia els permisos a una ruta especificada per paràmetre.
  *  @param cami ruta que es vol modificar
  *  @param mode permisos que es volen assignar a la ruta
  */
@@ -497,7 +517,9 @@ int mi_read(const char *cami, void *buff, unsigned int offset, unsigned int nbyt
         return -1;
     }
 
-    mi_read_f(p_inode, buff, offset, nbytes);
+    if (mi_read_f(p_inode, buff, offset, nbytes) == -1) {
+        return -1;
+    }
 
     return 0;
 }
@@ -543,7 +565,7 @@ int mi_lsdir(const char *cami, char *buff)
         printf("\n");
     }
 
-    printf(" --- Contingut de %s\n ---", cami);
+    printf(" --- Contingut de '%s'\n ---", cami);
 
     // imprimimos el contenido del directorio
     for (cont = 0; cont < BUFFER_DIR; cont++) {

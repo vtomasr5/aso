@@ -689,11 +689,11 @@ int alliberarInode(int inod, int eliminar)
     if (bread(POSICIO_SB, (char *)&sb) == -1) { // llegim el superbloc
         return -1;
     }
-
+/*
     if  (contingutInode(inod) == -1) { // DEBUG
         return -1;
     }
-
+*/
     in = llegirInode(inod); // llegim l'inode a alliberar
 
     if (inod == 0) { // comprovam que l'inode no sigui l'arrel
