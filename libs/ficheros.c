@@ -299,8 +299,8 @@ int mi_chmod_f (unsigned int inod, unsigned int mode)
  *  @param inod posicio del inode que s'ha de truncar
  *  @param nbytes nombre de bytes que s'han de truncar
  */
-int mi_truncar_f(unsigned int inod, unsigned int nbytes){
-
+int mi_truncar_f(unsigned int inod, unsigned int nbytes) 
+{
 	inode in = llegirInode(inod);
 	int darrer_bloc = in.tamany / TB; //ultimo bloque a truncar
 	if ((in.tamany % TB) == 0) {
