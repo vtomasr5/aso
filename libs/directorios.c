@@ -358,8 +358,8 @@ int mi_unlink(const char *cami)
         return -1;
     }
 
-    inode inod = llegirInode(*p_inode);
     num_inode = *p_inode;
+    inode inod = llegirInode(*p_inode);
 
     // si només hi ha un enllaç al directori
     if (inod.links_directoris == 1) {

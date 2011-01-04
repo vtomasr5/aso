@@ -11,8 +11,7 @@
 
 int main(int argc, char *argv[])
 {
-    //int tam = 2000;
-    //unsigned char buffer[tam];
+    //char buffer[BUFFER_DIR];
 
     if (argc != 2) {
         printf("[mi_mkfs.c] ERROR: Arguments incorrectes. Ex: ./cercar ../disco.imagen\n");
@@ -24,15 +23,28 @@ int main(int argc, char *argv[])
         return -1;
     }
 
+    // proves
     printf("nnnnnnnnnnnnnnnnnn creat /dir2/dir3/fichero nnnnnnnnnnnnnnnnnnnnnn\n");
     mi_creat("/dir2/dir3/fichero", 7);
 
-    printf("nnnnnnnnnnnnnnnnnn creat /dir4/ nnnnnnnnnnnnnnnnnnnnnnnnnn\n");
-    mi_creat("/dir4/", 7);
+    printf("nnnnnnnnnnnnnnnnnn creat /dir3/ nnnnnnnnnnnnnnnnnnnnnn\n");
+    mi_creat("/dir3/", 7);
 
     printf("nnnnnnnnnnnnnnnnnnn mi link nnnnnnnnnnnnnnnnnnnnnnnnn\n");
-    mi_link("/dir4/","/dir2/dir3/");
+    mi_link("/dir4/","/dir3/"); // dir4 no tiene que existir
     
+    printf("nnnnnnnnnnnnnnnnnn creat /dir4/ nnnnnnnnnnnnnnnnnnnnnnnnnn\n");
+    mi_creat("/dir4/", 7);
+    
+    printf("nnnnnnnnnnnnnnnnnn creat /dir3/ nnnnnnnnnnnnnnnnnnnnnnnnnn\n");
+    mi_creat("/dir3/", 7);
+    
+    printf("nnnnnnnnnnnnnnnnnnn mi unlink nnnnnnnnnnnnnnnnnnnnnnnnn\n");
+    mi_unlink("/dir4/");
+	
+    //printf("nnnnnnnnnnnnnnnnnnn mi dir nnnnnnnnnnnnnnnnnnnnnnnnn\n");
+    //mi_dir("/dir2/dir3/", buffer);
+
     // desmontam es FS
     if (bumount() == -1) {
         return -1;

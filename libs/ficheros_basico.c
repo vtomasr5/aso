@@ -685,6 +685,7 @@ int alliberarInode(int inod, int eliminar)
     inode in;
     int blocs_ocupats = 0;
     int i = 0;
+    int tam = 0;
 
     if (bread(POSICIO_SB, (char *)&sb) == -1) { // llegim el superbloc
         return -1;
@@ -708,11 +709,14 @@ int alliberarInode(int inod, int eliminar)
         printf("[ficheros_basico.c] DEBUG: blocs ocupats per l'inode = %d\n", blocs_ocupats);
 
         if (eliminar == 0) { // només volem alliberar l'inode
-            in.tamany = in.tamany - (blocs_ocupats * TB); // nou tamany en bytes
-            if (in.tamany < 0) {
-                in.tamany = 0;
+            tam = in.tamany - (blocs_ocupats * TB); // nou tamany en bytes
+            if (tam < 0) {
+                tam = 0;
             }
+            
+            in.tamany = tam;
             in.blocs_assignats_dades -= blocs_ocupats;
+            
         } else if (eliminar == 1) { // definitivament volen eliminar l'inode, borram els blocs i resetejam els camps de l'inode
             in.tipus = 0;
             in.permisos = 0;

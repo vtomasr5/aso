@@ -299,50 +299,47 @@ int mi_chmod_f (unsigned int inod, unsigned int mode)
  *  @param inod posicio del inode que s'ha de truncar
  *  @param nbytes nombre de bytes que s'han de truncar
  */
-int mi_truncar_f (unsigned int inod, unsigned int nbytes)
-{
-    inode in = llegirInode(inod);
-    int max_punters = MAX_PUNTERS_DIRECTES + N_PUNTERS_BLOC + (N_PUNTERS_BLOC * N_PUNTERS_BLOC) +
-                (N_PUNTERS_BLOC * N_PUNTERS_BLOC * N_PUNTERS_BLOC); // 16.843.020
-    int blocs_conservar = 0;
-    int blocs_llegits = 0;
+int mi_truncar_f(unsigned int inod, unsigned int nbytes){
 
-    if (nbytes > in.tamany) {
-        printf("[ficheros.c] ERROR: No se pot truncar un fitxer més gran que el seu tamany\n");
-        return -1;
+	inode in = llegirInode(inod);
+	int darrer_bloc = in.tamany / TB; //ultimo bloque a truncar
+	if ((in.tamany % TB) == 0) {
+		darrer_bloc -= 1;
     }
-
-    if (nbytes == 0) {
-        alliberarInode(inod, 0);
-
-        in = llegirInode(inod);
-        //printf("[ficheros.c] DEBUG: tamany inode abans %d\n", in.tamany);
-        in.tamany = nbytes;
-        //printf("[ficheros.c] DEBUG: tamany inode despres %d\n", in.tamany);
-        escriureInode(inod, in);
-    } else {
-        blocs_conservar = (nbytes / TB) + 1;
-
-        int i, bf;
-        for (i = 0; i < max_punters; i++) {
-            bf = traduirBlocInode(inod, i, '0');
-
-            if (bf > 0) {
-                blocs_llegits++;
-            }
-
-            if (blocs_llegits == blocs_conservar) {
-                alliberarInode(inod, 0);
-                in = llegirInode(inod);
-                //printf("[ficheros.c] DEBUG: tamany inode abans %d\n", in.tamany);
-                in.tamany = nbytes;
-                //printf("[ficheros.c] DEBUG: tamany inode despres %d\n", in.tamany);
-                escriureInode(inod, in);
-            }
-        }
+    printf("[ficheros.c - mi_truncar_f] DEBUG: Darrer bloc = %d\n", darrer_bloc);
+	int bloc_conservar = nbytes / TB; // ultimo bloque a conservar
+	if (nbytes % TB == 0) {
+		bloc_conservar -= 1;
     }
-    return 0;
+    printf("[ficheros.c - mi_truncar_f] DEBUG: Blocs conservar = %d\n", bloc_conservar);
+	int i;
+	for(i = bloc_conservar + 1; i <= darrer_bloc; i++) {
+		int bfisic = traduirBlocInode(inod, i, '0');
+		printf("[ficheros.c - mi_truncar_f] DEBUG: bfisic = %d\n", bfisic);
+		if (bfisic > 0) {	
+			if (alliberarBloc(bfisic) == -1) {
+			    printf("[ficheros.c] ERROR: No s'ha pogut alliberar el bloc!\n");
+			    return -1;
+			}
+			
+			in = llegirInode(inod);
+			in.blocs_assignats_dades--;
+		}
+
+		if ((i == darrer_bloc) && (in.tamany % TB != 0)) { // si ultima vez se trunca un trozo de bloque
+			in.tamany -= in.tamany % TB;
+		} else {
+			in.tamany -= TB;
+		}
+	}
+	
+	printf("[ficheros.c - mi_truncar_f] DEBUG: nbytes = %d\n", nbytes);
+	in.tamany = nbytes;
+	escriureInode(inod, in);
+	
+	return 0;
 }
+
 
 /**
  *  Retorna la metainformació d'un fitxer o directori. STAT es l'estructura que
