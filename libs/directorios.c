@@ -435,6 +435,7 @@ int mi_dir(const char *cami, char *buff) {
 
             if (ent.inode > 0) {
                 aux = llegirInode(ent.inode);
+
                 if (aux.tipus != 0) {
                     strcat(buff,"    ");
                     strcat(buff, ent.nom);
@@ -560,13 +561,13 @@ int mi_lsdir(const char *cami, char *buff)
 {
     int cont = 0;
 
-    for(cont = 0; cont < 14; cont++) {
+    for(cont = 0; cont < 2; cont++) {
         printf("\n");
     }
 
-    printf(" --- Contingut de '%s' ---\n", cami);
+    printf("##### Contingut de '%s' #####\n", cami);
 
-    // imprimimos el contenido del directorio
+    // imprimim el contingut del directori per pantalla
     for (cont = 0; cont < BUFFER_DIR; cont++) {
         if (buff[cont] == ':') {
             printf("\n");
@@ -575,7 +576,7 @@ int mi_lsdir(const char *cami, char *buff)
         }
     }
 
-    for(cont = 0; cont < 5; cont++) {
+    for(cont = 0; cont < 2; cont++) {
         printf("\n");
     }
 

@@ -29,6 +29,7 @@ int main(int argc, char *argv[])
     // proves
     printf("nnnnnnnnnnnnnnnnnn creat /dir2/dir3/fichero nnnnnnnnnnnnnnnnnnnnnn\n");
     mi_creat("/dir2/dir3/fichero", 7);
+    mi_creat("/dir2/dir3/fitxer", 7);
 
     printf("nnnnnnnnnnnnnnnnnn creat /dir3/ nnnnnnnnnnnnnnnnnnnnnn\n");
     mi_creat("/dir3/", 7);
@@ -38,6 +39,7 @@ int main(int argc, char *argv[])
 
     printf("nnnnnnnnnnnnnnnnnn creat /dir4/fichero nnnnnnnnnnnnnnnnnnnnnn\n");
     mi_creat("/dir4/fichero", 7);
+    mi_creat("/dir4/fitxer", 7);
 
     printf("nnnnnnnnnnnnnnnnnnn mi dir nnnnnnnnnnnnnnnnnnnnnnnnn\n");
     m = mi_dir("/dir4/", buffer);
@@ -46,14 +48,14 @@ int main(int argc, char *argv[])
     printf("nnnnnnnnnnnnnnnnnnn mi lsdir nnnnnnnnnnnnnnnnnnnnnnnnn\n");
     mi_lsdir("/dir4/", buffer);
 
-    printf("nnnnnnnnnnnnnnnnnn creat /dir4/ nnnnnnnnnnnnnnnnnnnnnnnnnn\n");
-    mi_creat("/dir4/", 7);
+    //printf("nnnnnnnnnnnnnnnnnn creat /dir4/ nnnnnnnnnnnnnnnnnnnnnnnnnn\n");
+    //mi_creat("/dir4/", 7);
 
     printf("nnnnnnnnnnnnnnnnnn creat /dir3/ nnnnnnnnnnnnnnnnnnnnnnnnnn\n");
     mi_creat("/dir3/", 7); // per veure info
 
-    printf("nnnnnnnnnnnnnnnnnnn mi unlink nnnnnnnnnnnnnnnnnnnnnnnnn\n");
-    mi_unlink("/dir4/"); // borrar entrada
+    //printf("nnnnnnnnnnnnnnnnnnn mi unlink nnnnnnnnnnnnnnnnnnnnnnnnn\n");
+    //mi_unlink("/dir4/"); // borrar entrada
 
     printf("nnnnnnnnnnnnnnnnnnn mi dir nnnnnnnnnnnnnnnnnnnnnnnnn\n");
     m = mi_dir("/dir2/dir3/", buffer);
