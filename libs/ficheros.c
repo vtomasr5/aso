@@ -53,7 +53,7 @@ int mi_write_f (unsigned int inod, const void *buff_original, unsigned int offse
     memset(buff_bloc, '\0', TB);
 
     in = llegirInode(inod);
-    
+
     if ((in.permisos != 6) && (in.permisos != 7)) {
         printf("[ficheros.c] ERROR: L'inode no te permisos d'escriptura!\n");
         return -1;
@@ -299,45 +299,50 @@ int mi_chmod_f (unsigned int inod, unsigned int mode)
  *  @param inod posicio del inode que s'ha de truncar
  *  @param nbytes nombre de bytes que s'han de truncar
  */
-int mi_truncar_f(unsigned int inod, unsigned int nbytes) 
+int mi_truncar_f(unsigned int inod, unsigned int nbytes)
 {
-	inode in = llegirInode(inod);
-	int darrer_bloc = in.tamany / TB; //ultimo bloque a truncar
-	if ((in.tamany % TB) == 0) {
-		darrer_bloc -= 1;
+    inode in = llegirInode(inod);
+    int darrer_bloc = in.tamany / TB; //ultimo bloque a truncar
+
+    if ((in.tamany % TB) == 0) {
+        darrer_bloc -= 1;
     }
+
     printf("[ficheros.c - mi_truncar_f] DEBUG: Darrer bloc = %d\n", darrer_bloc);
-	int bloc_conservar = nbytes / TB; // ultimo bloque a conservar
-	if (nbytes % TB == 0) {
-		bloc_conservar -= 1;
+    int bloc_conservar = nbytes / TB; // ultimo bloque a conservar
+
+    if (nbytes % TB == 0) {
+        bloc_conservar -= 1;
     }
     printf("[ficheros.c - mi_truncar_f] DEBUG: Blocs conservar = %d\n", bloc_conservar);
-	int i;
-	for(i = bloc_conservar + 1; i <= darrer_bloc; i++) {
-		int bfisic = traduirBlocInode(inod, i, '0');
-		printf("[ficheros.c - mi_truncar_f] DEBUG: bfisic = %d\n", bfisic);
-		if (bfisic > 0) {	
-			if (alliberarBloc(bfisic) == -1) {
-			    printf("[ficheros.c] ERROR: No s'ha pogut alliberar el bloc!\n");
-			    return -1;
-			}
-			
-			in = llegirInode(inod);
-			in.blocs_assignats_dades--;
-		}
 
-		if ((i == darrer_bloc) && (in.tamany % TB != 0)) { // si ultima vez se trunca un trozo de bloque
-			in.tamany -= in.tamany % TB;
-		} else {
-			in.tamany -= TB;
-		}
-	}
-	
-	printf("[ficheros.c - mi_truncar_f] DEBUG: nbytes = %d\n", nbytes);
-	in.tamany = nbytes;
-	escriureInode(inod, in);
-	
-	return 0;
+    int i;
+    for(i = bloc_conservar + 1; i <= darrer_bloc; i++) {
+        int bfisic = traduirBlocInode(inod, i, '0');
+        printf("[ficheros.c - mi_truncar_f] DEBUG: bfisic = %d\n", bfisic);
+
+        if (bfisic > 0) {
+            if (alliberarBloc(bfisic) == -1) {
+                printf("[ficheros.c] ERROR: No s'ha pogut alliberar el bloc!\n");
+                return -1;
+            }
+
+            in = llegirInode(inod);
+            in.blocs_assignats_dades--;
+        }
+
+        if ((i == darrer_bloc) && (in.tamany % TB != 0)) { // si ultima vez se trunca un trozo de bloque
+            in.tamany -= in.tamany % TB;
+        } else {
+            in.tamany -= TB;
+        }
+    }
+
+    printf("[ficheros.c - mi_truncar_f] DEBUG: nbytes = %d\n", nbytes);
+    in.tamany = nbytes;
+    escriureInode(inod, in);
+
+    return 0;
 }
 
 
@@ -362,24 +367,5 @@ int mi_stat_f (unsigned int inod, STAT *p_stat)
     p_stat->blocs_assignats_dades = in.blocs_assignats_dades;
     p_stat->links_directoris = in.links_directoris;
 
-    return 0;
-}
-
-/**
- *  Mostra l'estat de l'inode per pantalla
- *  @param p_stat punter a l'estructura STAT que conté informació sobre l'inode
- */
-int veure_stat (STAT *p_stat)
-{
-    printf("\n----- INICI ESTAT del l'inode -----\n");
-    printf("Tipus: %d\n", p_stat->tipus);
-    printf("Permisos: %d\n", p_stat->permisos);
-    printf("Tamany: %d\n", p_stat->tamany);
-    //printf("Data creació: %d\n", p_stat->data_creacio);
-    //printf("Data modificació: %d\n", p_stat->data_modificacio);
-    //printf("Data accés: %d\n", p_stat->data_acces);
-    printf("Blocks assignats dades: %d\n", p_stat->blocs_assignats_dades);
-    printf("Enllacos directoris: %d\n", p_stat->links_directoris);
-    printf("----- FI ESTAT del l'inode -----\n\n");
     return 0;
 }
