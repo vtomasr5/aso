@@ -1,6 +1,15 @@
 *.o
 *~
 mi_mkfs
+mi_ls
+mi_ln
+mi_stat
+mi_rm
+mi_dir
+mi_cat
+mi_write
+mi_chmod
+mi_creat
 disco.imagen
 infosb
 infomb
