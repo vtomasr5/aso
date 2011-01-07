@@ -369,3 +369,28 @@ int mi_stat_f (unsigned int inod, STAT *p_stat)
 
     return 0;
 }
+
+/**
+* Mostra l'estat de l'inode per pantalla
+* @param p_stat punter a l'estructura STAT que conté informació sobre l'inode
+*/
+void veure_estat (STAT *p_stat)
+{
+    printf("Tipus: %d\n", p_stat->tipus);
+    printf("Permisos: %d\n", p_stat->permisos);
+    printf("Tamany: %d\n", p_stat->tamany);
+
+    struct tm *creacio = localtime(&p_stat->data_creacio);
+    struct tm *modificacio = localtime(&p_stat->data_modificacio);
+    struct tm *acces = localtime(&p_stat->data_acces);
+
+    char *c = asctime(creacio);
+    char *m = asctime(modificacio);
+    char *a = asctime(acces);
+
+    printf("Data creació: %s", c);
+    printf("Data modificació: %s", m);
+    printf("Data accés: %s", a);
+    printf("Blocks assignats dades: %d\n", p_stat->blocs_assignats_dades);
+    printf("Enllacos directoris: %d\n", p_stat->links_directoris);
+}

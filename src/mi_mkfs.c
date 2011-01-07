@@ -45,7 +45,7 @@
 int main(int argc, char *argv[])
 {
     if (argc != 3) {
-        printf("[mi_mkfs.c] ERROR: Arguments incorrectes. Ex: mi_mkfs nomFS num_blocs\n");
+        printf("[mi_mkfs.c] ERROR: Arguments incorrectes. Ex: mi_chmod nomFS num_blocs\n");
         exit(-1);
     }
 
@@ -93,11 +93,7 @@ int main(int argc, char *argv[])
         printf("[mi_mkfs.c] ERROR: Error cridant a reservarInode");
         return -1;
     }
-    /*
-    int blocFisic = traduirBlocInode(r, 0, '1'); // bloc físic on escriurem
-	printf("[mi_mkfs.c] R: %d blocFisic : %d\n\n",r,blocFisic);
-	*/
-	
+
     if (infoSB() == -1) { // mostram el contingut del superbloc
         printf("[mi_mkfs.c] ERROR: Error cridant a infoSB");
         return -1;

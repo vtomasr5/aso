@@ -26,10 +26,7 @@
  *  @date 11/10/2010
  */
 
-#include "definicions.h"
 #include "ficheros_basico.h"
-#include "bloques.h"
-#include <time.h>
 
 /**
  *  Estructura que conté la informació d'estat sobre els inodes dels fitxers i directoris
@@ -41,7 +38,6 @@ typedef struct {
     time_t data_creacio;            // data de creació
     time_t data_modificacio;        // data de modificació
     time_t data_acces;              // data del darrer accés
-    //unsigned int blocs_lliures;     // nombre de blocs lliures
     unsigned int blocs_assignats_dades;   // nombre de blocs físics assignats a la zona de dades
     unsigned int links_directoris;
 } STAT;
@@ -51,3 +47,4 @@ int mi_read_f (unsigned int inod, void *buff_original, unsigned int offset, unsi
 int mi_chmod_f (unsigned int inod, unsigned int mode);
 int mi_truncar_f (unsigned int inod, unsigned int nbytes);
 int mi_stat_f (unsigned int inod, STAT *p_stat);
+void veure_estat (STAT *p_stat);

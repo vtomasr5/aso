@@ -128,7 +128,7 @@ int cercarEntrada(const char *cami_parcial, unsigned int *p_inode_dir, unsigned 
         }
         i++;
     }
-    printf("i = %d\n", i);
+    //printf("i = %d\n", i);
     if (trobat) {
         if ((strlen(cami_final) == 0) || (strcmp(cami_final, "/") == 0)) { // si solo queda una entrada en el camino (fichero o directorio)
             printf("[directorios.c] DEBUG: TROBAT - p_inode : %d | p_entrada: %d \n", *p_inode, *p_entrada);
@@ -250,6 +250,7 @@ int mi_link(const char *cami1, const char *cami2)
 {
     uint *p_inode_dir, *p_inode, *p_entrada;
     uint num_inode = 0;
+    uint aux = 0;
     entrada ent;
     STAT estat;
 
@@ -283,12 +284,7 @@ int mi_link(const char *cami1, const char *cami2)
         alliberar(p_inode_dir, p_inode, p_entrada);
         return -1;
     }
-    //num_inode = *p_inode; // copia puntero del inodo encontrado
-
-    //printf("[directorios.c] mi_link DEBUG: Abans d'alliberar Inode: %d\n",num_inode);
-    //if  (contingutInode(num_inode) == -1) { // DEBUG
-    //    return -1;
-    //}
+    aux = *p_inode; // inode crear que s'ha d'eliminar després d'haver fet el link a l'altra inode
 
     printf("[directorios.c] mi_link DEBUG: *p_inode_dir = %d, *p_inode = %d, *p_entrada = %d,num_inode = %d\n", *p_inode_dir, *p_inode, *p_entrada, num_inode);
 
@@ -318,10 +314,10 @@ int mi_link(const char *cami1, const char *cami2)
     printf("[directorios.c] mi_link DEBUG despues de escribir: ent.nom = %s, ent.inode = %d\n", ent.nom, ent.inode);
     alliberar(p_inode_dir, p_inode, p_entrada);
 
-    alliberarInode(num_inode, 0); // alliberam l'inode ja que ara apunta a un altra inode
+    alliberarInode(aux, 0); // alliberam l'inode ja que ara apunta a un altra inode
 
     printf("[directorios.c] mi_link DEBUG: Despres d'alliberar Inode:\n");
-    if  (contingutInode(num_inode) == -1) { // DEBUG
+    if  (contingutInode(aux) == -1) { // DEBUG
         return -1;
     }
 

@@ -48,7 +48,7 @@ int bmount(const char *nom_fs)
         printf("[bloques.c] ERROR: No s'ha pogut montar\n");
         return -1;
     } else {
-        printf("[bloques.c] INFO: FS montat\n");
+        printf("\n[bloques.c] INFO: FS montat\n");
         return descriptor;
     }
 }
@@ -63,7 +63,7 @@ int bumount()
         printf("[bloques.c] ERROR: No s'ha pogut desmontar\n");
         return -1; // error
     } else {
-        printf("[bloques.c] INFO: FS desmontat\n");
+        printf("[bloques.c] INFO: FS desmontat\n\n");
         return 0; // tot ok
     }
 }

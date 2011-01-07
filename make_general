@@ -7,7 +7,7 @@ cd $ASO
 rm disco.imagen
 make clean
 make
-./mi_mkfs disco.imagen 20000
+./src/mi_mkfs disco.imagen 20000
 cd $TEST
 sh make_tests
 echo "OK GENERAL"

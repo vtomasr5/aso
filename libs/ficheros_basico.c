@@ -1078,13 +1078,13 @@ int contingutInode(int inod) {
         struct tm *creacio = localtime(&in.data_creacio);
         struct tm *modificacio = localtime(&in.data_modificacio);
         struct tm *acces = localtime(&in.data_acces);
-        char *s= asctime(creacio);
-        char *r= asctime(modificacio);
-        char *t= asctime(acces);
+        char *c = asctime(creacio);
+        char *m = asctime(modificacio);
+        char *a = asctime(acces);
 
-        printf("[ficheros_basico.c] INFO: Data de creació de l'inode = %s", s);
-        printf("[ficheros_basico.c] INFO: Data de modificació de l'inode = %s", r);
-        printf("[ficheros_basico.c] INFO: Data d'acces de l'inode = %s", t);
+        printf("[ficheros_basico.c] INFO: Data de creació de l'inode = %s", c);
+        printf("[ficheros_basico.c] INFO: Data de modificació de l'inode = %s", m);
+        printf("[ficheros_basico.c] INFO: Data d'acces de l'inode = %s", a);
 
         printf("[ficheros_basico.c] INFO: pdirectes[0] apunta a: %d \n", in.pdirectes[0]);
         printf("[ficheros_basico.c] INFO: pindirectes[0] apunta a: %d \n", in.pindirectes[0]);
