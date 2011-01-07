@@ -128,7 +128,7 @@ int cercarEntrada(const char *cami_parcial, unsigned int *p_inode_dir, unsigned 
         }
         i++;
     }
-    //printf("i = %d\n", i);
+
     if (trobat) {
         if ((strlen(cami_final) == 0) || (strcmp(cami_final, "/") == 0)) { // si solo queda una entrada en el camino (fichero o directorio)
             printf("[directorios.c] DEBUG: TROBAT - p_inode : %d | p_entrada: %d \n", *p_inode, *p_entrada);
@@ -224,11 +224,6 @@ int mi_creat(const char *cami, unsigned int mode)
         inode in = llegirInode(num_inode);
         in.permisos = mode;
         escriureInode(num_inode, in);
-/*
-        if  (contingutInode(num_inode) == -1) { // DEBUG
-            return -1;
-        }
-*/
     } else {
         printf("[directorios.c] DEBUG: No s'ha trobat l'entrada!\n");
         alliberar(p_inode_dir, p_inode, p_entrada);
@@ -315,12 +310,12 @@ int mi_link(const char *cami1, const char *cami2)
     alliberar(p_inode_dir, p_inode, p_entrada);
 
     alliberarInode(aux, 0); // alliberam l'inode ja que ara apunta a un altra inode
-
+/*
     printf("[directorios.c] mi_link DEBUG: Despres d'alliberar Inode:\n");
     if  (contingutInode(aux) == -1) { // DEBUG
         return -1;
     }
-
+*/
     printf("[directorios.c] DEBUG: mi_link realitzat correctament.\n");
     return 0;
 }
@@ -357,68 +352,32 @@ int mi_unlink(const char *cami)
     if (inod.links_directoris == 1) {
         printf("[directorioc.c] INFO: Només queda un enllaç, borram el fitxer/directori.\n");
         alliberarInode(num_inode, 1); // eliminam el directori complemtament '1'
-
-        printf("[directorios.c] DEBUG: *p_inode_dir = %d, *p_inode = %d, *p_entrada = %d\n", *p_inode_dir, *p_inode, *p_entrada);
-
-        mi_stat_f(*p_inode_dir, &estat);
-
-        if ((*p_entrada + 1) * sizeof(entrada) == estat.tamany) {
-            if (mi_truncar_f(*p_inode_dir, estat.tamany - sizeof(entrada)) == -1) {
-                printf("[directorios.c - mi_unlink] ERROR: mi_truncar_f1()\n");
-                return -1;
-            }
-        } else {
-            if (mi_read_f(*p_inode_dir, &ent, estat.tamany - sizeof(entrada), sizeof(entrada)) == -1) {
-                printf("[directorios.c - mi_unlink] ERROR: mi_read_f1()\n");
-                return -1;
-            }
-            if (mi_truncar_f(*p_inode_dir, estat.tamany - sizeof(entrada)) == -1) {
-                printf("[directorios.c - mi_unlink] ERROR: mi_truncar_f2()\n");
-                return -1;
-            }
-            if (mi_write_f(*p_inode_dir, &ent, sizeof(entrada) * (*p_entrada), sizeof(entrada)) == -1) {
-                printf("[directorios.c - mi_unlink] ERROR: mi_write_f1()\n");
-                return -1;
-            }
-        }
-
-        printf("[directorios.c] mi_link DEBUG: Només hi havia un enllac:\n");
-        if  (contingutInode(num_inode) == -1) { // DEBUG
-            return -1;
-        }
     } else { // hi ha més d'un enllaç de directori
         inod.links_directoris--;
         escriureInode(num_inode, inod);
+    }
+    printf("[directorios.c] DEBUG: *p_inode_dir = %d, *p_inode = %d, *p_entrada = %d\n", *p_inode_dir, *p_inode, *p_entrada);
 
-        printf("[directorios.c] DEBUG: *p_inode_dir = %d, *p_inode = %d, *p_entrada = %d\n", *p_inode_dir, *p_inode, *p_entrada);
+    mi_stat_f(*p_inode_dir, &estat);
 
-        mi_stat_f(*p_inode_dir, &estat);
-
-        if ((*p_entrada + 1) * sizeof(entrada) == estat.tamany) {
-            if (mi_truncar_f(*p_inode_dir, estat.tamany - sizeof(entrada)) == -1) {
-                printf("[directorios.c - mi_unlink] ERROR: mi_truncar_f3()\n");
-                return -1;
-            }
-        } else {
-            if (mi_read_f(*p_inode_dir, &ent, estat.tamany - sizeof(entrada), sizeof(entrada)) == -1) {
-                printf("[directorios.c - mi_unlink] ERROR: mi_read_f2()\n");
-                return -1;
-            }
-            if (mi_truncar_f(*p_inode_dir, estat.tamany - sizeof(entrada)) == -1) {
-                printf("[directorios.c - mi_unlink] ERROR: mi_truncar_f4()\n");
-                return -1;
-            }
-            if (mi_write_f(*p_inode_dir, &ent, sizeof(entrada) * (*p_entrada), sizeof(entrada)) == -1) {
-                printf("[directorios.c - mi_unlink] ERROR: mi_write_f2()\n");
-                return -1;
-            }
-        }
-
-        printf("[directorios.c] mi_link DEBUG: Només hi havia més d'un enllac:\n");
-        if  (contingutInode(num_inode) == -1) { // DEBUG
+    if ((*p_entrada + 1) * sizeof(entrada) == estat.tamany) {
+        if (mi_truncar_f(*p_inode_dir, estat.tamany - sizeof(entrada)) == -1) {
+            printf("[directorios.c - mi_unlink] ERROR: mi_truncar_f1()\n");
             return -1;
         }
-
+    } else {
+        if (mi_read_f(*p_inode_dir, &ent, estat.tamany - sizeof(entrada), sizeof(entrada)) == -1) {
+            printf("[directorios.c - mi_unlink] ERROR: mi_read_f()\n");
+            return -1;
+        }
+        if (mi_truncar_f(*p_inode_dir, estat.tamany - sizeof(entrada)) == -1) {
+            printf("[directorios.c - mi_unlink] ERROR: mi_truncar_f2()\n");
+            return -1;
+        }
+        if (mi_write_f(*p_inode_dir, &ent, sizeof(entrada) * (*p_entrada), sizeof(entrada)) == -1) {
+            printf("[directorios.c - mi_unlink] ERROR: mi_write_f()\n");
+            return -1;
+        }
     }
 
     alliberar(p_inode_dir, p_inode, p_entrada);
@@ -484,6 +443,9 @@ int mi_dir(const char *cami, char *buff) {
                 return 0;
             }
         }
+    } else {
+        printf("[directorios.c] ERROR: Això no es un directori!\n");
+        return -1;
     }
     // retornam el numero d'entrades que conté el directori
     return bytes_llegits / sizeof(entrada);

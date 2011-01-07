@@ -54,7 +54,7 @@ int mi_write_f (unsigned int inod, const void *buff_original, unsigned int offse
 
     in = llegirInode(inod);
 
-    if ((in.permisos != 6) && (in.permisos != 7)) {
+    if ((in.permisos != 6) && (in.permisos != 7) && (in.permisos != 2) && (in.permisos != 3)) {
         printf("[ficheros.c] ERROR: L'inode no te permisos d'escriptura!\n");
         return -1;
     }
@@ -184,7 +184,7 @@ int mi_read_f (unsigned int inod, void *buff_original, unsigned int offset, unsi
 
     in = llegirInode(inod);
 
-    if ((in.permisos != 6) && (in.permisos != 7)) { // si no tiene permisos de lectura o escritura
+    if ((in.permisos != 6) && (in.permisos != 7) && (in.permisos != 4) && (in.permisos != 5)) { // si no tiene permisos de lectura
         printf("[ficheros.c] ERROR: L'inode no te permisos de lectura!\n");
         return -1;
     }
