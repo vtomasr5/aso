@@ -713,10 +713,9 @@ int alliberarInode(int inod, int eliminar)
             if (tam < 0) {
                 tam = 0;
             }
-            
+
             in.tamany = tam;
             in.blocs_assignats_dades -= blocs_ocupats;
-            
         } else if (eliminar == 1) { // definitivament volen eliminar l'inode, borram els blocs i resetejam els camps de l'inode
             in.tipus = 0;
             in.permisos = 0;
