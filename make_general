@@ -1,5 +1,6 @@
 #!/bin/bash
 
+export PATH=$PATH:src/
 rm disco.imagen
 make clean
 make

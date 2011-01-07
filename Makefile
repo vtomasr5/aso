@@ -7,6 +7,7 @@ OBJ_EXE = src/mi_mkfs.o src/mi_chmod.o src/mi_ls.o src/mi_stat.o src/mi_cat.o sr
 OBJ = $(OBJ_EXE) $(OBJ_LIB)
 CC = gcc
 CFLAGS = -Wall -O1 -ggdb
+EXEC = src/mi_mkfs src/mi_chmod src/mi_ls src/mi_stat src/mi_cat src/mi_ln src/mi_rm src/mi_creat src/mi_write
 
 all: mi_mkfs mi_chmod mi_ls mi_stat mi_cat mi_ln mi_rm mi_creat mi_write
 
@@ -53,5 +54,6 @@ mi_write: src/mi_write.c $(OBJ_LIB)
 
 clean:
 	rm -f $(OBJ)
+	rm -f $(EXEC)
 
 .PHONY : clean

@@ -5,7 +5,6 @@ mi_ls
 mi_ln
 mi_stat
 mi_rm
-mi_dir
 mi_cat
 mi_write
 mi_chmod

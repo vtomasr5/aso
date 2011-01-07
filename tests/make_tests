@@ -2,6 +2,14 @@
 
 OBJ="../libs/ficheros_basico.o ../libs/bloques.o ../libs/ficheros.o ../libs/directorios.o"
 
+rm -f infosb
+rm -f infomb
+rm -f RWBits
+rm -f RWBlocs
+rm -f RWInodes
+rm -f traduir
+rm -f cercar
+
 gcc -Wall -O1 -ggdb infosb.c ${OBJ} -o infosb
 gcc -Wall -O1 -ggdb infomb.c ${OBJ} -o infomb
 gcc -Wall -O1 -ggdb RWBits.c ${OBJ} -o RWBits
