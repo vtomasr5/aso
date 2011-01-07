@@ -148,7 +148,7 @@ int cercarEntrada(const char *cami_parcial, unsigned int *p_inode_dir, unsigned 
             printf("[directorios.c] DEBUG: reservar = %c\n", reservar);
             entrada entra;
             STAT estat2;
-            int tipus_inode;
+            uint tipus_inode;
 
             if (strlen(cami_final) == 0) {
                 tipus_inode = 2;
@@ -584,7 +584,6 @@ int mi_write(const char *cami, const void *buff, unsigned int offset, unsigned i
  *  @param cami ruta que es vol mostrar el contingut
  *  @param buff buffer on hi ha la informació.
  */
-
 int mi_lsdir(const char *cami, char *buff)
 {
     int cont = 0;

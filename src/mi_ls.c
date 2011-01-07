@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
     memset(buffer, '\0', BUFFER_DIR);
 
     if (argc != 3) {
-        printf("[mi_ls.c] ERROR: Arguments incorrectes. Ex: mi_ls nomFS\n");
+        printf("[mi_ls.c] ERROR: Arguments incorrectes. Ex: mi_ls nomFS cami\n");
         exit(-1);
     }
 

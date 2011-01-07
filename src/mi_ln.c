@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
     if (mi_link(argv[2], argv[3]) == -1) {
         return -1;
     } else {
-        printf("[mi_ln.c] INFO: Enllaç realitzat correctament");
+        printf("[mi_ln.c] INFO: Enllaç realitzat correctament.\n");
     }
 
     // desmontam es FS

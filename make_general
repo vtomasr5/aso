@@ -1,13 +1,9 @@
 #!/bin/bash
 
-ASO="/home/vjuan/uib/ASO/aso"
-TEST="tests"
-
-cd $ASO
 rm disco.imagen
 make clean
 make
 ./src/mi_mkfs disco.imagen 20000
-cd $TEST
-sh make_tests
+cd tests
+./make_tests
 echo "OK GENERAL"

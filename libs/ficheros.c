@@ -89,11 +89,14 @@ int mi_write_f (unsigned int inod, const void *buff_original, unsigned int offse
         if (bwrite(blocFisic, buff_bloc) == -1) {
             return -1;
         }
+
         bytes_escrits = bytes_lliures_primer_bloc;
         bytes_per_escriure -= bytes_escrits;
-        blocLogic++;
-        int i;
 
+        blocLogic++;
+        //memset(buff_bloc, '\0', TB); // DEBUG
+
+        int i;
         for (i = blocLogic; i < darrer_bloc_logic; i++) { //el problema era <= , debia ser <, sino escribia un bloque intermedio mas
             blocFisic = traduirBlocInode(inod, i, '1');
 
@@ -108,8 +111,11 @@ int mi_write_f (unsigned int inod, const void *buff_original, unsigned int offse
             if (bwrite(blocFisic, buff_bloc) == -1) {
                 return -1;
             }
+
            bytes_escrits += TB;
            bytes_per_escriure -= TB; //bytes que faltan por escribir
+
+           memset(buff_bloc, '\0', TB); // DEBUG
         }
         blocLogic = i;
         printf("[ficheros.c] DEBUG: salimos de los casos intermedios | blocLogic : %d \n", blocLogic);
@@ -128,6 +134,7 @@ int mi_write_f (unsigned int inod, const void *buff_original, unsigned int offse
                 return -1;
             }
 
+            //memset(buff_bloc, '\0', TB); // DEBUG
             memcpy(&buff_bloc, buff_original + bytes_escrits, bytes_per_escriure);
             //memcpy(buff_bloc, &buff_original[(TB - desplacament_primer_bloc) + (darrer_bloc_logic - primer_bloc - 1) * TB], bytes_per_escriure);
 
@@ -141,16 +148,11 @@ int mi_write_f (unsigned int inod, const void *buff_original, unsigned int offse
 
         }
     }
+
     in.tamany = in.tamany + bytes_escrits;
     in.data_acces = time(NULL);
-
     escriureInode(inod, in);
-    /*
-    printf("[ficheros.c] DEBUG: mi_write_f() despres escriureInode()\n");
-    if  (contingutInode(inod) == -1) { // DEBUG
-        return -1;
-    }
-    */
+
     // retornam els bytes escrits al bloc
     return bytes_escrits;
 }
@@ -212,6 +214,7 @@ int mi_read_f (unsigned int inod, void *buff_original, unsigned int offset, unsi
         bytes_per_llegits -= bytes_llegits;
 
         blocLogic++;
+        //memset(buff_bloc, '\0', TB); // DEBUG
         int i;
         for (i = blocLogic; i < darrer_bloc_logic; i++) {
             blocFisic = traduirBlocInode(inod, i, '0');
@@ -230,12 +233,14 @@ int mi_read_f (unsigned int inod, void *buff_original, unsigned int offset, unsi
 
             bytes_llegits += TB;
             bytes_per_llegits -= TB; //bytes que faltan por escribir
+
+            memset(buff_bloc, '\0', TB); // DEBUG
         }
 
         // el darrer bloc
         if (bytes_per_llegits > 0) {
             blocLogic++;
-
+            //memset(buff_bloc, '\0', TB); // DEBUG
             blocFisic = traduirBlocInode(inod, blocLogic, '0');
 
             if (blocFisic <= 0) {
@@ -253,22 +258,12 @@ int mi_read_f (unsigned int inod, void *buff_original, unsigned int offset, unsi
             bytes_llegits += bytes_per_llegits;
         }
     }
+
     // actualitzam la metainformació de l'inode
-    //in = llegirInode(inod);
-    /*
-    printf("[ficheros.c] DEBUG: mi_read_f() abans escriureInode:\n");
-    if  (contingutInode(inod) == -1) { // DEBUG
-        return -1;
-    }
-    */
+    in = llegirInode(inod);
     in.data_acces = time(NULL);
     escriureInode(inod, in);
-/*
-    printf("[ficheros.c] DEBUG: mi_read_f() despres escriureInode:\n");
-    if  (contingutInode(inod) == -1) { // DEBUG
-        return -1;
-    }
-*/
+
     return bytes_llegits;
 }
 

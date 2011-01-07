@@ -1,4 +1,4 @@
-//      mi_rm.c
+//      mi_write.c
 //
 //      Copyright 2010 Vicenç Juan Tomàs Montserrat <vtomasr5@gmail.com>
 //      Copyright 2010 Toni Mulet Escobar <t.mulet@gmail.com>
@@ -20,8 +20,8 @@
 //      MA 02110-1301, USA.
 
 /**
- *  @file mi_rm.c
- *  @brief Elimina un enllaç entre dos directoris o elimina el directori completament.
+ *  @file mi_write.c
+ *  @brief Escriu a un fitxer.
  *  @date 07/01/2011
  */
 
@@ -29,8 +29,12 @@
 
 int main(int argc, char *argv[])
 {
-    if (argc != 3) {
-        printf("[mi_rm.c] ERROR: Arguments incorrectes. Ex: mi_rm nomFS cami\n");
+    char *buff;
+    int offset;
+    int nbytes;
+
+    if (argc != 6) {
+        printf("[mi_write.c] ERROR: Arguments incorrectes. Ex: mi_write nomFS cami buff offset nbytes\n");
         exit(-1);
     }
 
@@ -40,10 +44,14 @@ int main(int argc, char *argv[])
     }
 
     // codi
-    if (mi_unlink(argv[2]) == -1) {
+    offset = atoi(argv[4]);
+    nbytes = atoi(argv[5]);
+    buff = argv[3];
+
+    if (mi_write(argv[2], buff, offset, nbytes) == -1) {
         return -1;
     } else {
-        printf("[mi_rm.c] INFO: S'ha eliminat correctament\n");
+        printf("[mi_write.c] INFO: S'ha escrit correctament.\n");
     }
 
     // desmontam es FS

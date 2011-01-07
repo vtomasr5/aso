@@ -59,13 +59,12 @@ typedef struct {
  * Ocupa 88 bytes
  */
 typedef struct {
-    unsigned char tipus;            // tipus inode (0 = Lliure, 1 = Directori, 2 = Fitxer)
+    unsigned int tipus;            // tipus inode (0 = Lliure, 1 = Directori, 2 = Fitxer)
     unsigned int permisos;         // permisos (lectura(r), escriptura(w) i execucio(x))
     unsigned int tamany;            // tamany de l'inode en Bytes lògics
     time_t data_creacio;            // data de creació
     time_t data_modificacio;        // data de modificació
     time_t data_acces;              // data del darrer accés
-    //unsigned int blocs_lliures;     // nombre de blocs lliures
     unsigned int blocs_assignats_dades;   // nombre de blocs físics assignats a la zona de dades
     unsigned int links_directoris;
     unsigned int pdirectes[MAX_PUNTERS_DIRECTES];       // punters a blocs directes
@@ -77,7 +76,7 @@ int tamMB(unsigned int);   // tamany del mapa de bits
 int tamAI(unsigned int);   // tamany del l'array de i-nodes
 int initSB(unsigned int);  // inicialització del superbloc
 int initMB();  // inicialització mapa de bits
-int initAI(unsigned int);  // inicialització array d'inodes
+int initAI();  // inicialització array d'inodes
 int infoSB();
 int escriureBit(int, int);
 int llegirBit(int);
@@ -85,7 +84,7 @@ int reservarBloc();
 int alliberarBloc(int);
 int escriureInode(int, inode);
 inode llegirInode(int);
-int reservarInode(int, unsigned int);
+int reservarInode(unsigned int, unsigned int);
 int alliberarBlocInode(inode);
 int alliberarInode(int, int);
 int traduirBlocInode(unsigned int inod, unsigned int blocLogic, char reservar);

@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
     if (mi_creat(argv[2], mode) == -1) {
         return -1;
     } else {
-        printf("[mi_ln.c] INFO: El fitxer o directori s'ha creat correctament.");
+        printf("[mi_creat.c] INFO: El fitxer o directori s'ha creat correctament.\n");
     }
 
     // desmontam es FS
