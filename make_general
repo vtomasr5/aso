@@ -2,10 +2,10 @@
 
 export PATH=$PATH:"src/"
 
-rm disco.imagen
+rm -f disco.imagen
 make clean
 make
-./src/mi_mkfs disco.imagen 20000
+./src/mi_mkfs disco.imagen 40000
 cd tests
 ./make_tests
 echo "OK GENERAL"

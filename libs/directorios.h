@@ -34,7 +34,7 @@
 typedef struct {
     char nom[60]; // este campo "nom" no incluye el camino de directorios, ni el carácter de separación '/'
     unsigned int inode; // numero d'inode al qual fa referència
-} entrada;
+} entrada; // sizeof entrada = 64
 
 int extreureCami(const char *cami, char *inicial, char *final);
 int cercarEntrada(const char *cami_parcial, unsigned int *p_inode_dir, unsigned int *p_inode, unsigned int *p_entrada, char reservar);

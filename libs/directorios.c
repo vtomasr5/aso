@@ -104,17 +104,22 @@ int cercarEntrada(const char *cami_parcial, unsigned int *p_inode_dir, unsigned 
 
     mi_stat_f(*p_inode_dir, &estat); // llegim la informació de l'inode i la guardam en sa varible estat
     printf("[directorios.c] DEBUG: p_inode_dir = %d\n", *p_inode_dir);
+    printf("[directorios.c] DEBUG: estat.tamany = %d\n", estat.tamany);
 
     int num_ent = estat.tamany / sizeof(entrada); // leemos todas las entradas del directorio
 
     entrada ent[num_ent]; // definimos un array de entradas de directorio que contiene el numero de entradas del inodo leido
 
-    mi_read_f(*p_inode_dir, &ent, 0, num_ent * sizeof(entrada)); // leemos las entradas del directorio y las guardamos en el "buffer" ent
+    if (estat.tamany > 0) {
+        int llegits = mi_read_f(*p_inode_dir, &ent, 0, num_ent * sizeof(entrada)); // leemos las entradas del directorio y las guardamos en el "buffer" ent
+        printf("[directorios.c] DEBUG: bytes llegits de entrada (ent) = %d\n", llegits);
+    }
 
     int k;
     for (k = 0; k < length(ent); k++) {
         printf("[directorios.c]  DEBUG: ----> Entrada directori: nom = %s || inode = %d\n", ent[k].nom, ent[k].inode);
     }
+
     printf("\n[directorios.c] DEBUG: cercarEntrada - numero d'entrades: %d\n", num_ent);
 
     while ((trobat == 0) && (i < num_ent)) { // se busca la entrada
@@ -131,7 +136,7 @@ int cercarEntrada(const char *cami_parcial, unsigned int *p_inode_dir, unsigned 
 
     if (trobat) {
         if ((strlen(cami_final) == 0) || (strcmp(cami_final, "/") == 0)) { // si solo queda una entrada en el camino (fichero o directorio)
-            printf("[directorios.c] DEBUG: TROBAT - p_inode : %d | p_entrada: %d \n", *p_inode, *p_entrada);
+            printf("[directorios.c] DEBUG: TROBAT - p_inode: %d , p_entrada: %d \n", *p_inode, *p_entrada);
             inode inod = llegirInode(*p_inode);
 
             if (((inod.tipus == 1) && (strcmp(cami_final, "/") == 0)) || ((inod.tipus == 2) && (strlen(cami_final) == 0))) {//es un fichero o directorio
@@ -168,11 +173,15 @@ int cercarEntrada(const char *cami_parcial, unsigned int *p_inode_dir, unsigned 
 
             int n_ent = estat2.tamany / sizeof(entrada); // calculam el numero d'entrades
 
-            mi_write_f(*p_inode_dir, &entra, n_ent * sizeof(entrada), sizeof(entrada)); // escrivim els canvis
+            if (mi_write_f(*p_inode_dir, &entra, n_ent * sizeof(entrada), sizeof(entrada)) == -1) { // escrivim els canvis
+                printf("[directorios.c] ERROR: No s'ha pogut escriure!\n");
+                return -1;
+            }
 
-            *p_inode = entra.inode;
+            *p_inode = r;
             *p_entrada = estat2.tamany / sizeof(entrada);
             printf("[directorios.c] DEBUG: num de l'inode reservat = %d, cami = %s \n", r, cami_inicial);
+
             if ((strlen(cami_final) == 0) || (strcmp(cami_final, "/") == 0)) {  // si hemos acabado o lo ultimo es una "/"
                 return 0;
             } else {
@@ -340,7 +349,7 @@ int mi_unlink(const char *cami)
     *p_inode = 0;
     *p_entrada = 0;
 
-    if (cercarEntrada(cami, p_inode_dir, p_inode, p_entrada, 0) == -1) {
+    if (cercarEntrada(cami, p_inode_dir, p_inode, p_entrada, '0') == -1) {
         alliberar(p_inode_dir, p_inode, p_entrada);
         return -1;
     }
@@ -403,7 +412,7 @@ int mi_dir(const char *cami, char *buff) {
     memset(buff, '\0', BUFFER_DIR); // resetejam
     p_inode_dir = p_inode = p_entrada = 0;
 
-    if (cercarEntrada(cami, &p_inode_dir, &p_inode, &p_entrada, 0) == -1) {
+    if (cercarEntrada(cami, &p_inode_dir, &p_inode, &p_entrada, '0') == -1) {
         printf("[directorios.c] ERROR: Entrada no trobada!!\n");
         return -1;
     }
@@ -460,7 +469,7 @@ int mi_chmod(const char *cami, unsigned char mode)
 {
     uint p_inode, p_entrada, p_inode_dir = 0;
 
-    if (cercarEntrada(cami, &p_inode_dir, &p_inode, &p_entrada, 0) == -1) { // busca el inodo de la ultima entrada de la ruta y la deposita en p_inode
+    if (cercarEntrada(cami, &p_inode_dir, &p_inode, &p_entrada, '0') == -1) { // busca el inodo de la ultima entrada de la ruta y la deposita en p_inode
         printf("[directorios.c] ERROR: No s'ha trobat el camí!!\n");
         return -1;
     }
@@ -475,13 +484,13 @@ int mi_chmod(const char *cami, unsigned char mode)
 /**
  *  Funció que recull la metainformació del l'inode del camí que se li passa per paràmetre.
  *  @param cami ruta que ha de consultar
- *  @param p_stat on es guarda la informació del l'inode
+ *  @param p_stat esctructura on es guarda la informació del l'inode
  */
 int mi_stat(const char *cami, STAT *p_stat)
 {
     uint p_inode, p_entrada, p_inode_dir = 0;
 
-    if (cercarEntrada(cami, &p_inode_dir, &p_inode, &p_entrada, 0) == -1) {
+    if (cercarEntrada(cami, &p_inode_dir, &p_inode, &p_entrada, '0') == -1) {
         printf("[directorios.c] ERROR: No s'ha trobat el camí!!\n");
         return -1;
     }
@@ -497,21 +506,23 @@ int mi_stat(const char *cami, STAT *p_stat)
  *  @param buff buffer on guarda la informació
  *  @param offset nombre de bytes de desplaçament
  *  @param nbytes nombre de bytes que ha de llegir
+ *  @return nombre de bytes que ha llegit
  */
 int mi_read(const char *cami, void *buff, unsigned int offset, unsigned int nbytes)
 {
     uint p_inode, p_entrada, p_inode_dir = 0;
 
-    if (cercarEntrada(cami, &p_inode_dir, &p_inode, &p_entrada, 0) == -1) {
+    if (cercarEntrada(cami, &p_inode_dir, &p_inode, &p_entrada, '0') == -1) {
         printf("[directorios.c] ERROR: No s'ha trobat el camí!!\n");
         return -1;
     }
 
-    if (mi_read_f(p_inode, buff, offset, nbytes) == -1) {
+    int llegits = mi_read_f(p_inode, buff, offset, nbytes);
+    if (llegits == -1) {
         return -1;
     }
 
-    return 0;
+    return llegits;
 }
 
 /**
@@ -520,25 +531,24 @@ int mi_read(const char *cami, void *buff, unsigned int offset, unsigned int nbyt
  *  @param cami ruta que d'on llegeix la informació
  *  @param buff buffer on guarda la informació
  *  @param offset nombre de bytes de desplaçament
- *  @param nbytes nombre de bytes que ha de llegir
+ *  @param nbytes nombre de bytes que ha d'escriure
+ *  @return nombre de bytes que ha escrits
  */
 int mi_write(const char *cami, const void *buff, unsigned int offset, unsigned int nbytes)
 {
     uint p_inode, p_entrada, p_inode_dir = 0;
 
-    if (cercarEntrada(cami, &p_inode_dir, &p_inode, &p_entrada, 0) == -1) {
+    if (cercarEntrada(cami, &p_inode_dir, &p_inode, &p_entrada, '0') == -1) {
         printf("[directorios.c] ERROR: No s'ha trobat el camí!!\n");
         return -1;
     }
 
     int escrits = mi_write_f(p_inode, buff, offset, nbytes);
-    if (escrits != 1) {
-        return escrits;
-    } else {
+    if (escrits == -1) {
         return -1;
     }
 
-    return 0;
+    return escrits;
 }
 
 /**

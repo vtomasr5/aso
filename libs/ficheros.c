@@ -94,18 +94,16 @@ int mi_write_f (unsigned int inod, const void *buff_original, unsigned int offse
         bytes_per_escriure -= bytes_escrits;
 
         blocLogic++;
-        //memset(buff_bloc, '\0', TB); // DEBUG
 
         int i;
         for (i = blocLogic; i < darrer_bloc_logic; i++) { //el problema era <= , debia ser <, sino escribia un bloque intermedio mas
-            blocFisic = traduirBlocInode(inod, i, '1');
+            memcpy(&buff_bloc, buff_original + bytes_escrits, TB);
 
+            blocFisic = traduirBlocInode(inod, i, '1');
             if (blocFisic <= 0) {
                 printf("[ficheros.c] ERROR: Bloc físic incorrecte\n");
                 return -1;
             }
-
-            memcpy(&buff_bloc, buff_original + bytes_escrits, TB);
 
             // Escrivim directament TB bytes al bloc
             if (bwrite(blocFisic, buff_bloc) == -1) {
@@ -122,9 +120,9 @@ int mi_write_f (unsigned int inod, const void *buff_original, unsigned int offse
 
         // cas darrer bloc
         if (bytes_per_escriure > 0) {
+            memset(buff_bloc, '\0', TB); // DEBUG
 
             blocFisic = traduirBlocInode(inod, blocLogic, '1');
-
             if (blocFisic <= 0) {
                 printf("[ficheros.c] ERROR: Bloc físic incorrecte\n");
                 return -1;
@@ -134,7 +132,6 @@ int mi_write_f (unsigned int inod, const void *buff_original, unsigned int offse
                 return -1;
             }
 
-            //memset(buff_bloc, '\0', TB); // DEBUG
             memcpy(&buff_bloc, buff_original + bytes_escrits, bytes_per_escriure);
             //memcpy(buff_bloc, &buff_original[(TB - desplacament_primer_bloc) + (darrer_bloc_logic - primer_bloc - 1) * TB], bytes_per_escriure);
 
@@ -149,8 +146,10 @@ int mi_write_f (unsigned int inod, const void *buff_original, unsigned int offse
         }
     }
 
+    in = llegirInode(inod);
     in.tamany = in.tamany + bytes_escrits;
     in.data_acces = time(NULL);
+    in.data_modificacio = time(NULL);
     escriureInode(inod, in);
 
     // retornam els bytes escrits al bloc
@@ -179,7 +178,7 @@ int mi_read_f (unsigned int inod, void *buff_original, unsigned int offset, unsi
     //int blocs_intermitjos = (nbytes - bytes_lliures_primer_bloc) / TB;
     //int primer_bloc = blocLogic;
     //int bytes_darrer_bloc = (nbytes - bytes_lliures_primer_bloc) % TB;
-    int bytes_per_llegits = nbytes; //Bytes que faltan per escriure
+    int bytes_per_llegir = nbytes; // bytes que falten per llegir
     memset(buff_bloc, '\0', TB);
 
     in = llegirInode(inod);
@@ -202,19 +201,21 @@ int mi_read_f (unsigned int inod, void *buff_original, unsigned int offset, unsi
         return -1;
     }
 
+    printf("desplacament_primer_bloc = %d\n", desplacament_primer_bloc);
+    printf("bytes_lliures_primer_bloc = %d\n", bytes_lliures_primer_bloc);
+
     if (nbytes <= bytes_lliures_primer_bloc) { // només llegim un bloc
         memcpy(buff_original, &buff_bloc[desplacament_primer_bloc], nbytes);
 
         bytes_llegits = nbytes;
-        bytes_per_llegits -= bytes_llegits; //Aqui no fa falta
     } else { // tenim més d'un bloc a llegir
         memcpy(buff_original, &buff_bloc[desplacament_primer_bloc], bytes_lliures_primer_bloc);
 
         bytes_llegits = bytes_lliures_primer_bloc;
-        bytes_per_llegits -= bytes_llegits;
+        bytes_per_llegir -= bytes_llegits;
 
         blocLogic++;
-        //memset(buff_bloc, '\0', TB); // DEBUG
+        memset(buff_bloc, '\0', TB); // DEBUG
         int i;
         for (i = blocLogic; i < darrer_bloc_logic; i++) {
             blocFisic = traduirBlocInode(inod, i, '0');
@@ -229,18 +230,18 @@ int mi_read_f (unsigned int inod, void *buff_original, unsigned int offset, unsi
             }
 
             //memcpy(buff_original + (TB - darrer_byte) + (i - primer_bloc - 1) * TB, buff_bloc, TB);
-            memcpy(buff_original + bytes_per_llegits, &buff_bloc, TB);
+            memcpy(buff_original + bytes_llegits, &buff_bloc, TB); // + bytes_per_llegir
 
             bytes_llegits += TB;
-            bytes_per_llegits -= TB; //bytes que faltan por escribir
+            bytes_per_llegir -= TB; //bytes que faltan por escribir
 
             memset(buff_bloc, '\0', TB); // DEBUG
         }
 
         // el darrer bloc
-        if (bytes_per_llegits > 0) {
+        if (bytes_per_llegir > 0) {
             blocLogic++;
-            //memset(buff_bloc, '\0', TB); // DEBUG
+            memset(buff_bloc, '\0', TB); // DEBUG
             blocFisic = traduirBlocInode(inod, blocLogic, '0');
 
             if (blocFisic <= 0) {
@@ -253,9 +254,9 @@ int mi_read_f (unsigned int inod, void *buff_original, unsigned int offset, unsi
             }
 
             //memcpy(buff_original + desplacament_primer_bloc + (blocLogic - primer_bloc - 1) * TB, buff_bloc, bytes_darrer_bloc);
-            memcpy(buff_original + bytes_per_llegits, &buff_bloc, bytes_per_llegits);
+            memcpy(buff_original + bytes_llegits, &buff_bloc, bytes_per_llegir); // + bytes_per_llegir
 
-            bytes_llegits += bytes_per_llegits;
+            bytes_llegits += bytes_per_llegir;
         }
     }
 
@@ -280,6 +281,7 @@ int mi_chmod_f (unsigned int inod, unsigned int mode)
 
     in.permisos = mode;
     in.data_modificacio = time(NULL);
+    in.data_acces = time(NULL);
 
     if (escriureInode(inod, in) == -1) {
         return -1;
@@ -297,33 +299,35 @@ int mi_chmod_f (unsigned int inod, unsigned int mode)
 int mi_truncar_f(unsigned int inod, unsigned int nbytes)
 {
     inode in = llegirInode(inod);
-    int darrer_bloc = in.tamany / TB; //ultimo bloque a truncar
 
+    int darrer_bloc = in.tamany / TB; // ultimo bloque a truncar
     if ((in.tamany % TB) == 0) {
         darrer_bloc -= 1;
     }
 
     printf("[ficheros.c - mi_truncar_f] DEBUG: Darrer bloc = %d\n", darrer_bloc);
-    int bloc_conservar = nbytes / TB; // ultimo bloque a conservar
 
+    int bloc_conservar = nbytes / TB; // ultimo bloque a conservar
     if (nbytes % TB == 0) {
-        bloc_conservar -= 1;
+        bloc_conservar -= 1; // si es exacto
     }
+
     printf("[ficheros.c - mi_truncar_f] DEBUG: Blocs conservar = %d\n", bloc_conservar);
 
     int i;
-    for(i = bloc_conservar + 1; i <= darrer_bloc; i++) {
+    for (i = bloc_conservar + 1; i <= darrer_bloc; i++) {
         int bfisic = traduirBlocInode(inod, i, '0');
         printf("[ficheros.c - mi_truncar_f] DEBUG: bfisic = %d\n", bfisic);
 
         if (bfisic > 0) {
-            if (alliberarBloc(bfisic) == -1) {
+            if (alliberarBloc(bfisic) == -1) { // alliberam el bloc
                 printf("[ficheros.c] ERROR: No s'ha pogut alliberar el bloc!\n");
                 return -1;
             }
 
             in = llegirInode(inod);
             in.blocs_assignats_dades--;
+            escriureInode(inod, in);
         }
 
         if ((i == darrer_bloc) && (in.tamany % TB != 0)) { // si ultima vez se trunca un trozo de bloque
@@ -334,6 +338,7 @@ int mi_truncar_f(unsigned int inod, unsigned int nbytes)
     }
 
     printf("[ficheros.c - mi_truncar_f] DEBUG: nbytes = %d\n", nbytes);
+    in = llegirInode(inod);
     in.tamany = nbytes;
     escriureInode(inod, in);
 
