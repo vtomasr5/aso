@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
     FILE *file;
 
     if (argc != 3) {
-        printf("[mi_cat.c] ERROR: Arguments incorrectes. Ex: mi_cat nomFS cami\n");
+        printf("[mi_cat.c] ERROR: Arguments incorrectes. Ex: mi_cat <nomFS> <cami>\n");
         exit(-1);
     }
 
@@ -49,21 +49,27 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    printf("\n");
+    if (estat.tipus != 1) {
+        if (estat.tamany > 0) {
+            printf("\n");
 
-    int i;
-    for (i = 0; (i * TB) < estat.tamany; i++) {
-        if (mi_read(argv[2], buff, (i * TB), TB) != -1) {
-            file = fopen("/dev/stdout", "w");
-            fwrite (buff, 1, TB, file);
-            //fprintf([mi_cat.c] DEBUG: stdout: "%s", buff);
-            fclose (file);
+            int i;
+            for (i = 0; (i * TB) < estat.tamany; i++) {
+                if (mi_read(argv[2], buff, (i * TB), TB) != -1) {
+                    file = fopen("/dev/stdout", "w");
+                    fwrite (buff, 1, TB, file);
+                    fclose (file);
+                }
+                memset(buff,'\0', TB);
+            }
+
+            printf("\n");
+        } else {
+            printf("[mi_cat.c] INFO: Aquest fitxer esta buit.\n");
         }
-
-        memset(buff,'\0', TB);
+    } else {
+        printf("[mi_cat.c] ERROR: No se pot fet un 'mi_cat' sobre un directori!\n");
     }
-
-    printf("\n");
 
     // desmontam es FS
     if (bumount() == -1) {

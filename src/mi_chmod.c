@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
     unsigned short int mode;
 
     if (argc != 4) {
-        printf("[mi_chmod.c] ERROR: Arguments incorrectes. Ex: mi_chmod nomFS ruta permisos_nous\n");
+        printf("[mi_chmod.c] ERROR: Arguments incorrectes. Ex: mi_chmod <nomFS> <cami> <permisos_nous>\n");
         exit(-1);
     }
 
@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
     if (mi_chmod(argv[2], mode) == -1) {
         return -1;
     } else {
-        printf("\nPermisos canviats correctament\n\n");
+        printf("\n[mi_chmod.c] INFO: Permisos canviats correctament\n\n");
     }
 
     // desmontam es FS

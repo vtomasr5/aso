@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
     int nbytes;
 
     if (argc != 6) {
-        printf("[mi_write.c] ERROR: Arguments incorrectes. Ex: mi_write nomFS cami buff offset nbytes\n");
+        printf("[mi_write.c] ERROR: Arguments incorrectes. Ex: mi_write <nomFS> <cami> <buff> <offset> <nbytes>\n");
         exit(-1);
     }
 

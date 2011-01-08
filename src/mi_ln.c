@@ -30,7 +30,7 @@
 int main(int argc, char *argv[])
 {
     if (argc != 4) {
-        printf("[mi_ln.c] ERROR: Arguments incorrectes. Ex: mi_ln nomFS cami1 cami2\n");
+        printf("[mi_ln.c] ERROR: Arguments incorrectes. Ex: mi_ln <nomFS> <cami_nou> <cami_existent>\n");
         exit(-1);
     }
 

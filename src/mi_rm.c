@@ -30,7 +30,7 @@
 int main(int argc, char *argv[])
 {
     if (argc != 3) {
-        printf("[mi_rm.c] ERROR: Arguments incorrectes. Ex: mi_rm nomFS cami\n");
+        printf("[mi_rm.c] ERROR: Arguments incorrectes. Ex: mi_rm <nomFS> <cami>\n");
         exit(-1);
     }
 

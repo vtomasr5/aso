@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
     STAT estat;
 
     if (argc != 3) {
-        printf("[mi_stat.c] ERROR: Arguments incorrectes. Ex: mi_stat nomFS cami\n");
+        printf("[mi_stat.c] ERROR: Arguments incorrectes. Ex: mi_stat <nomFS> <cami>\n");
         exit(-1);
     }
 
@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
     if (mi_stat(argv[2], &estat) == -1) {
         return -1;
     } else {
-        printf("Estat del camí '%s':\n", argv[2]);
+        printf("\nEstat del camí '%s':\n", argv[2]);
         printf("\n");
         veure_estat(&estat);
         printf("\n");
