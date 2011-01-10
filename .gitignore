@@ -9,6 +9,7 @@ mi_cat
 mi_write
 mi_chmod
 mi_creat
+simulacion
 disco.imagen
 infosb
 infomb
@@ -17,5 +18,5 @@ RWBlocs
 RWInodes
 traduir
 cercar
-docs/*
+docs
 documentacio.html

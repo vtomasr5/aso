@@ -3,13 +3,13 @@
 
 # variables
 OBJ_LIB = libs/bloques.o libs/ficheros_basico.o libs/ficheros.o libs/directorios.o
-OBJ_EXE = src/mi_mkfs.o src/mi_chmod.o src/mi_ls.o src/mi_stat.o src/mi_cat.o src/mi_ln.o src/mi_rm.o src/mi_creat.o src/mi_write
+OBJ_EXE = src/mi_mkfs.o src/mi_chmod.o src/mi_ls.o src/mi_stat.o src/mi_cat.o src/mi_ln.o src/mi_rm.o src/mi_creat.o src/mi_write.o src/simulacion.o
 OBJ = $(OBJ_EXE) $(OBJ_LIB)
 CC = gcc
 CFLAGS = -Wall -O1 -ggdb
-EXEC = src/mi_mkfs src/mi_chmod src/mi_ls src/mi_stat src/mi_cat src/mi_ln src/mi_rm src/mi_creat src/mi_write
+EXEC = src/mi_mkfs src/mi_chmod src/mi_ls src/mi_stat src/mi_cat src/mi_ln src/mi_rm src/mi_creat src/mi_write src/simulacion
 
-all: mi_mkfs mi_chmod mi_ls mi_stat mi_cat mi_ln mi_rm mi_creat mi_write
+all: mi_mkfs mi_chmod mi_ls mi_stat mi_cat mi_ln mi_rm mi_creat mi_write simulacion
 
 # biblioteques
 directorios.o: libs/directorios.c libs/directorios.h
@@ -51,6 +51,9 @@ mi_creat: src/mi_creat.c $(OBJ_LIB)
 
 mi_write: src/mi_write.c $(OBJ_LIB)
 	$(CC) -o src/mi_write src/mi_write.c $(OBJ_LIB)
+
+simulacion: src/simulacion.c $(OBJ_LIB)
+	$(CC) -o src/simulacion src/simulacion.c $(OBJ_LIB)
 
 clean:
 	rm -f $(OBJ)
