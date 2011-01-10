@@ -172,7 +172,7 @@ int mi_read_f (unsigned int inod, void *buff_original, unsigned int offset, unsi
     int blocLogic = offset / TB; // primer bloc logic
     int blocFisic;
     int darrer_bloc_logic = ((offset + nbytes) - 1 )/ TB; // darrer bloc logic
-   // int darrer_byte = (offset + nbytes) - 1;
+    // int darrer_byte = (offset + nbytes) - 1;
     int desplacament_primer_bloc = offset % TB; // desplaçament del primer bloc. On es comença a llegir
     int bytes_lliures_primer_bloc = TB - desplacament_primer_bloc; // nombre de bytes a escriure al primer bloc
     //int blocs_intermitjos = (nbytes - bytes_lliures_primer_bloc) / TB;
@@ -201,8 +201,8 @@ int mi_read_f (unsigned int inod, void *buff_original, unsigned int offset, unsi
         return -1;
     }
 
-    printf("desplacament_primer_bloc = %d\n", desplacament_primer_bloc);
-    printf("bytes_lliures_primer_bloc = %d\n", bytes_lliures_primer_bloc);
+    //~ printf("desplacament_primer_bloc = %d\n", desplacament_primer_bloc);
+    //~ printf("bytes_lliures_primer_bloc = %d\n", bytes_lliures_primer_bloc);
 
     if (nbytes <= bytes_lliures_primer_bloc) { // només llegim un bloc
         memcpy(buff_original, &buff_bloc[desplacament_primer_bloc], nbytes);
@@ -315,7 +315,7 @@ int mi_truncar_f(unsigned int inod, unsigned int nbytes)
     printf("[ficheros.c - mi_truncar_f] DEBUG: Blocs conservar = %d\n", bloc_conservar);
 
     int i;
-    for (i = bloc_conservar + 1; i <= darrer_bloc; i++) {
+    for (i = bloc_conservar + 1; i <= darrer_bloc; i++) { // recorremos los bloques que queremos liberar
         int bfisic = traduirBlocInode(inod, i, '0');
         printf("[ficheros.c - mi_truncar_f] DEBUG: bfisic = %d\n", bfisic);
 
@@ -325,12 +325,11 @@ int mi_truncar_f(unsigned int inod, unsigned int nbytes)
                 return -1;
             }
 
-            in = llegirInode(inod);
             in.blocs_assignats_dades--;
-            escriureInode(inod, in);
+            //escriureInode(inod, in); // guardamos los cambios
         }
 
-        if ((i == darrer_bloc) && (in.tamany % TB != 0)) { // si ultima vez se trunca un trozo de bloque
+        if ((i == darrer_bloc) && (in.tamany % TB != 0)) { // si es la ultima vez se trunca un trozo de bloque
             in.tamany -= in.tamany % TB;
         } else {
             in.tamany -= TB;
@@ -338,7 +337,6 @@ int mi_truncar_f(unsigned int inod, unsigned int nbytes)
     }
 
     printf("[ficheros.c - mi_truncar_f] DEBUG: nbytes = %d\n", nbytes);
-    in = llegirInode(inod);
     in.tamany = nbytes;
     escriureInode(inod, in);
 
@@ -376,7 +374,14 @@ int mi_stat_f (unsigned int inod, STAT *p_stat)
 */
 void veure_estat (STAT *p_stat)
 {
-    printf("Tipus: %d\n", p_stat->tipus);
+    char *tipus = NULL;
+
+    if (p_stat->tipus == 1) {
+        tipus = "(d)";
+    } else if (p_stat->tipus == 2) {
+        tipus = "(f)";
+    }
+    printf("Tipus: %d %s\n", p_stat->tipus, tipus);
     printf("Permisos: %d\n", p_stat->permisos);
     printf("Tamany: %d\n", p_stat->tamany);
 

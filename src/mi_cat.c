@@ -57,7 +57,9 @@ int main(int argc, char *argv[])
             for (i = 0; (i * TB) < estat.tamany; i++) {
                 if (mi_read(argv[2], buff, (i * TB), TB) != -1) {
                     file = fopen("/dev/stdout", "w");
-                    fwrite (buff, 1, TB, file);
+                    if (fwrite (buff, 1, TB, file) == -1) { // escriu de tamany TB cada un de 1 byte de llarg, al fluxe file obtenint les dades de buff.
+                        return -1;
+                    }
                     fclose (file);
                 }
                 memset(buff,'\0', TB);

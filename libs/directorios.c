@@ -109,7 +109,7 @@ int cercarEntrada(const char *cami_parcial, unsigned int *p_inode_dir, unsigned 
     int num_ent = estat.tamany / sizeof(entrada); // leemos todas las entradas del directorio
 
     entrada ent[num_ent]; // definimos un array de entradas de directorio que contiene el numero de entradas del inodo leido
-
+    //memset(&ent, '\0', sizeof(entrada));
     if (estat.tamany > 0) {
         int llegits = mi_read_f(*p_inode_dir, &ent, 0, num_ent * sizeof(entrada)); // leemos las entradas del directorio y las guardamos en el "buffer" ent
         printf("[directorios.c] DEBUG: bytes llegits de entrada (ent) = %d\n", llegits);
@@ -156,16 +156,15 @@ int cercarEntrada(const char *cami_parcial, unsigned int *p_inode_dir, unsigned 
             uint tipus_inode;
 
             if (strlen(cami_final) == 0) {
-                tipus_inode = 2;
+                tipus_inode = 2; // fitxer
             } else {
-                tipus_inode = 1;
+                tipus_inode = 1; // directori
             }
 
             int r = 0;
             if ((r = reservarInode(tipus_inode, 7)) == -1) { // reservam els inodes de cada directori/fitxer del cami parcial
                 return -1;
             }
-            printf("[directorios.c] DEBUG: inode reservat r = %d\n", r);
 
             entra.inode = r;
             strcpy(entra.nom, cami_inicial); // copiam el camí a l'entrada de directori
@@ -180,7 +179,7 @@ int cercarEntrada(const char *cami_parcial, unsigned int *p_inode_dir, unsigned 
 
             *p_inode = r;
             *p_entrada = estat2.tamany / sizeof(entrada);
-            printf("[directorios.c] DEBUG: num de l'inode reservat = %d, cami = %s \n", r, cami_inicial);
+            printf("[directorios.c] DEBUG: inode reservat = %d, cami = %s, p_entrada = %u \n", r, cami_inicial, *p_entrada);
 
             if ((strlen(cami_final) == 0) || (strcmp(cami_final, "/") == 0)) {  // si hemos acabado o lo ultimo es una "/"
                 return 0;
@@ -319,12 +318,7 @@ int mi_link(const char *cami1, const char *cami2)
     alliberar(p_inode_dir, p_inode, p_entrada);
 
     alliberarInode(aux, 0); // alliberam l'inode ja que ara apunta a un altra inode
-/*
-    printf("[directorios.c] mi_link DEBUG: Despres d'alliberar Inode:\n");
-    if  (contingutInode(aux) == -1) { // DEBUG
-        return -1;
-    }
-*/
+
     printf("[directorios.c] DEBUG: mi_link realitzat correctament.\n");
     return 0;
 }
@@ -337,9 +331,9 @@ int mi_link(const char *cami1, const char *cami2)
 int mi_unlink(const char *cami)
 {
     uint *p_inode_dir, *p_inode, *p_entrada;
-    STAT estat;
     entrada ent;
-    int num_inode = 0;
+    int res_tipus = 0;
+    inode in;
 
     p_inode_dir = malloc(sizeof(uint));
     p_inode = malloc(sizeof(uint));
@@ -349,51 +343,178 @@ int mi_unlink(const char *cami)
     *p_inode = 0;
     *p_entrada = 0;
 
-    if (cercarEntrada(cami, p_inode_dir, p_inode, p_entrada, '0') == -1) {
+    if (strcmp(cami, "/") == 0) { // caso de eliminar "/"
+        printf("[directorios.c] ERROR: No pots borrar l'arrel '/'\n");
         alliberar(p_inode_dir, p_inode, p_entrada);
         return -1;
     }
 
-    num_inode = *p_inode;
-    inode inod = llegirInode(*p_inode);
-
-    // si només hi ha un enllaç al directori
-    if (inod.links_directoris == 1) {
-        printf("[directorioc.c] INFO: Només queda un enllaç, borram el fitxer/directori.\n");
-        alliberarInode(num_inode, 1); // eliminam el directori complemtament '1'
-    } else { // hi ha més d'un enllaç de directori
-        inod.links_directoris--;
-        escriureInode(num_inode, inod);
-    }
-    printf("[directorios.c] DEBUG: *p_inode_dir = %d, *p_inode = %d, *p_entrada = %d\n", *p_inode_dir, *p_inode, *p_entrada);
-
-    mi_stat_f(*p_inode_dir, &estat);
-
-    if ((*p_entrada + 1) * sizeof(entrada) == estat.tamany) {
-        if (mi_truncar_f(*p_inode_dir, estat.tamany - sizeof(entrada)) == -1) {
-            printf("[directorios.c - mi_unlink] ERROR: mi_truncar_f1()\n");
-            return -1;
-        }
-    } else {
-        if (mi_read_f(*p_inode_dir, &ent, estat.tamany - sizeof(entrada), sizeof(entrada)) == -1) {
-            printf("[directorios.c - mi_unlink] ERROR: mi_read_f()\n");
-            return -1;
-        }
-        if (mi_truncar_f(*p_inode_dir, estat.tamany - sizeof(entrada)) == -1) {
-            printf("[directorios.c - mi_unlink] ERROR: mi_truncar_f2()\n");
-            return -1;
-        }
-        if (mi_write_f(*p_inode_dir, &ent, sizeof(entrada) * (*p_entrada), sizeof(entrada)) == -1) {
-            printf("[directorios.c - mi_unlink] ERROR: mi_write_f()\n");
-            return -1;
-        }
+    res_tipus = cercarEntrada(cami, p_inode_dir, p_inode, p_entrada, '0');
+    if (res_tipus == -1) {
+        printf("[directorios.c] ERROR: No s'ha pogut trobar l'entrada!\n");
+        alliberar(p_inode_dir, p_inode, p_entrada);
+        return -1;
     }
 
+    // leemos el directorio
+    in = llegirInode(*p_inode_dir);
+
+    // si no tiene enlaces, o bien es un fichero o bien es un directorio sin links
+    if (in.links_directoris == 1) {
+        mi_read_f(*p_inode_dir, &ent, in.tamany - sizeof(entrada), sizeof(entrada)); // in.tam - sizeof(struct entrada) = numero de bytes de offset
+        mi_write_f(*p_inode_dir, &ent, *p_entrada * sizeof(entrada), sizeof(entrada));
+        mi_truncar_f(*p_inode_dir, in.tamany - sizeof(entrada));
+
+        alliberarInode(*p_inode, 1); // lo eliminamos completamente
+
+        printf("[directorios.c] INFO: El camí '%s' s'ha borrat correctament.\n", cami);
+        alliberar(p_inode_dir, p_inode, p_entrada);
+        return 0;
+    } else if (in.links_directoris > 1) { // si tiene mas de 1 enlace de directorio (es un directorio)
+        inode in2;
+        char inicial[60];
+        memset(inicial, '\0', 60);
+        int llegits = 0;
+
+        in2 = llegirInode(*p_inode);
+
+        in2.links_directoris--;
+        escriureInode(*p_inode, in2);
+        printf("in2.tamany = %d\n", in2.tamany);
+
+        // mientras queden directorios y ficheros dentro del directorio que tratamos
+        while (in2.tamany > 0) {
+            strcpy(inicial, cami);
+            llegits = mi_read_f(*p_inode, &ent, 0 * sizeof(entrada), sizeof(entrada));
+            strcat(inicial, ent.nom);
+            in2 = llegirInode(ent.inode);
+
+            if (in2.tipus == 1) {  // si es directorio
+                strcat(inicial, "/");
+            }
+
+            // borramos las entradas contenidas en el directorio
+            if (mi_unlink(inicial) == -1) {
+                alliberar(p_inode_dir, p_inode, p_entrada);
+                return -1;
+            }
+
+            in2 = llegirInode(*p_inode);
+        }
+
+        mi_read_f(*p_inode_dir, &ent, in.tamany - sizeof(entrada), sizeof(entrada));
+        mi_write_f(*p_inode_dir, &ent, *p_entrada * sizeof(entrada), sizeof(entrada));
+        mi_truncar_f(*p_inode_dir, in.tamany - sizeof(entrada));
+
+        alliberarInode(*p_inode, 1);
+
+        printf("[directorios.c] INFO: El camí '%s' s'ha borrat correctament.\n", cami);
+
+        //alliberar(p_inode_dir, p_inode, p_entrada);
+        //return 0;
+    }
+
+    printf("[directorios.c] INFO: El camí '%s' s'ha borrat correctament.\n", cami);
     alliberar(p_inode_dir, p_inode, p_entrada);
-    printf("[directorios.c] DEBUG: mi_unlink realitzat correctament.\n");
     return 0;
 }
+/*
+int mi_unlink(const char *cami)
+{
+    uint *p_inode_dir, *p_inode, *p_entrada;
+    entrada ent;
+    int res_tipus = 0;
+    inode in;
 
+    p_inode_dir = malloc(sizeof(uint));
+    p_inode = malloc(sizeof(uint));
+    p_entrada = malloc(sizeof(uint));
+
+    *p_inode_dir = 0;
+    *p_inode = 0;
+    *p_entrada = 0;
+
+    if (strcmp(cami, "/") == 0) { // caso de eliminar "/"
+        printf("[directorios.c] ERROR: No pots borrar l'arrel '/'\n");
+        alliberar(p_inode_dir, p_inode, p_entrada);
+        return -1;
+    }
+
+    res_tipus = cercarEntrada(cami, p_inode_dir, p_inode, p_entrada, '0');
+    if (res_tipus == -1) {
+        printf("[directorios.c] ERROR: No s'ha pogut trobar l'entrada!\n");
+        alliberar(p_inode_dir, p_inode, p_entrada);
+        return -1;
+    }
+
+    // leemos el directorio
+    //~ in = llegirInode(*p_inode_dir);
+    in = llegirInode(*p_inode);
+
+    if (in.links_directoris == 1) {
+
+    } else if (in.links_directoris > 1) {
+        in.links_directoris--;
+        escriureInode(*p_inode_dir);
+    }
+
+    // si es fichero
+    if (res_tipus == 1) {
+        mi_read_f(*p_inode_dir, &ent, in.tamany - sizeof(entrada), sizeof(entrada)); // in.tam - sizeof(struct entrada) = numero de bytes de offset
+        mi_write_f(*p_inode_dir, &ent, *p_entrada * sizeof(entrada), sizeof(entrada));
+        mi_truncar_f(*p_inode_dir, in.tamany - sizeof(entrada));
+
+        alliberarInode(*p_inode, 1); // lo eliminamos completamente
+
+        printf("[directorios.c] INFO: El camí '%s' s'ha borrat correctament.\n", cami);
+        alliberar(p_inode_dir, p_inode, p_entrada);
+        return 0;
+    } else if (res_tipus == 2) { // si es el último directorio
+        inode in2;
+        char inicial[80];
+        memset(inicial, '\0', 80);
+
+        in2 = llegirInode(*p_inode);
+
+        // mientras queden directorios y ficheros dentro del directorio que tratamos
+        while (in2.tamany > 0) {
+
+            int leidos;
+            strcpy(inicial, cami);
+            leidos = mi_read_f(*p_inode, &ent, 0 * sizeof(entrada), sizeof(entrada));
+            strcat(inicial, ent.nom);
+            in2 = llegirInode(ent.inode);
+
+            if (in2.tipus == 1) {
+                strcat(inicial, "/");
+            }
+
+            // borramos las entradas contenidas en el directorio
+            if (mi_unlink(inicial) == -1) {
+                alliberar(p_inode_dir, p_inode, p_entrada);
+                return -1;
+            }
+
+            in2 = llegirInode(*p_inode);
+        }
+
+        mi_read_f(*p_inode_dir, &ent, in.tamany - sizeof(entrada), sizeof(entrada));
+        mi_write_f(*p_inode_dir, &ent, *p_entrada * sizeof(entrada), sizeof(entrada));
+        mi_truncar_f(*p_inode_dir, in.tamany - sizeof(entrada));
+
+        alliberarInode(*p_inode, 1);
+
+        printf("[directorios.c] INFO: El camí '%s' s'ha borrat correctament.\n", cami);
+
+        //alliberar(p_inode_dir, p_inode, p_entrada);
+        //return 0;
+    }
+
+    printf("[directorios.c] INFO: El camí '%s' s'ha borrat correctament.\n", cami);
+    alliberar(p_inode_dir, p_inode, p_entrada);
+    return 0;
+}
+*/
 /**
  *  Funció que escriu el contingut del directori 'cami' dins el buffer.
  *  @param cami Ruta que ha de llegir
@@ -407,6 +528,7 @@ int mi_dir(const char *cami, char *buff) {
     char num_bytes[40];
 
     entrada ent;
+    memset(&ent, '\0', sizeof(entrada));
     inode in, aux;
 
     memset(buff, '\0', BUFFER_DIR); // resetejam
