@@ -21,8 +21,8 @@
 
 /**
  *  @file simulacion.c
- *  @brief Simulació de 100 procesos que escriuen de forma concurrent en el
- *  sistema de fitxers amb les llibreries implementades anteriorment.
+ *  @brief Programa simulador que crea 100 procesos que escriuen de forma simultanea en el
+ *  sistema de fitxers que utilitza les llibreries implementades anteriorment.
  *  @date 10/01/2011
  */
 
@@ -38,7 +38,7 @@
 
 #define PROCESOS 100
 #define N_VEGADES 50
-#define TAM 1024
+#define TAM 200 // llargaria nom cami
 
 typedef struct {
     int data;
@@ -50,20 +50,19 @@ typedef struct {
 int acabados = 0;
 
 /**
- *  Funció que s'encarrega de que no quedin processos zombies
+ *  Funció que s'encarrega de que no quedin processos zombies.
  *  @param s
  */
-void reaper(int s)
+void enterrador(int s)
 {
-    while(wait3(NULL, WNOHANG, NULL) > 0) {
+    while (wait3(NULL, WNOHANG, NULL) > 0) {
         acabados++;
     }
-    printf("[simulacion.c] INFO: Procesos %d de %d acabats\n", acabados, PROCESOS);
+    printf("[simulacion.c] INFO: Processos acabats: %d de %d\n", acabados, PROCESOS);
 }
 
 /**
- *  Funció que crea 100 procesos que
- *
+ *  Funció que crea 100 procesos que escriuen de forma concurrent en el sistema de fitxers.
  *  @param num_proces PID del procés que arranca
  *  @param fitxer Fitxer que es crea
  */
@@ -74,14 +73,16 @@ int proces(int num_proces, char *fitxer)
     registre reg;
     int rand; // numero del random
 
+    printf("[simulacion.c] INFO: Inici proces.\n");
+
     sprintf(nom_carpeta, "%s", fitxer);
     sprintf(nom_carpeta, "%sproceso_%d/", nom_carpeta, getpid());
+    sprintf(nom_carpeta, "%sprueba.dat", nom_carpeta);
 
     srandom(getpid());
+    //printf("[simulacion.c] DEBUG: Carpeta: %s\n", &nom_carpeta[0]);
 
-    if (mi_creat(nom_carpeta, 7) != -1) {
-        sprintf(nom_carpeta, "%sprueba.dat", nom_carpeta);
-
+    if (mi_creat(nom_carpeta, 7) != -1) { // cream les carpetes dels processos
         for (i = 0; i < N_VEGADES; i++) {
             rand = (random() % sizeof(registre)) * sizeof(registre);
             reg.data = time(NULL);
@@ -89,12 +90,13 @@ int proces(int num_proces, char *fitxer)
             reg.escriptura = i + 1;
             reg.pos_registre = rand;
 
-            if (mi_write(nom_carpeta, &reg, rand, sizeof(registre)) == -1) {
-                printf("[simulacion.c] ERROR: Hi ha hagut un error d'escriptura\n");
-                return -1;
-            }
+            mi_write(nom_carpeta, &reg, rand, sizeof(registre));
+            //~ if (mi_write(nom_carpeta, &reg, rand, sizeof(registre)) == -1) {
+                //~ printf("[simulacion.c] ERROR: Hi ha hagut un error d'escriptura\n");
+                //~ return -1;
+            //~ }
 
-            printf("[simulacion.c] INFO: Proces: %d, escric el registre: %d, a la posició: %d.\n", reg.pid, i + 1, reg.pos_registre);
+            printf("[simulacion.c] INFO: Proces: %d, escric el registre: %d, a la posicio: %d.\n", reg.pid, i + 1, reg.pos_registre);
             usleep(50000); // 0.05s
         }
     } else {
@@ -105,35 +107,35 @@ int proces(int num_proces, char *fitxer)
 }
 
 /**
- *
- *
+ *  Funció que verifica que les escriptures de forma concurrent s'han realitzar
+ *  de la forma correcta.
  */
 int verificar() {
     int proces, escriptures, p_escriptura, pos_p_escriptura, d_escriptura, pos_d_escriptura, posicio_menor, pos_menor_posicio, posicio_major, pos_major_posicio;
     registre reg;
     entrada ent;
     STAT estat, estat2;
-    char aux[30];
-    char dir1[100]; // simul_ddmmaahhmmss
-    char dir2[100];
+    char aux[TAM];
+    char dir1[TAM]; // simul_ddmmaahhmmss
+    char dir2[TAM];
     int i, j;
 
-    memset(aux, '\0', 30);
-    memset(dir1, '\0', 100);
-    memset(dir2, '\0', 100);
+    memset(aux, '\0', TAM);
+    memset(dir1, '\0', TAM);
+    memset(dir2, '\0', TAM);
 
-    printf("\n");
+    printf("[simulacion.c] INFO: Inici verificacio.\n");
     if (mi_read("/", &ent, 0, sizeof(entrada)) == -1) { // llegim '/'
-        printf("[simulacion.c] ERROR: Error de lectura!\n");
+        printf("[simulacion.c] ERROR: Error de lectura1!\n");
         return -1;
     }
 
     sprintf(dir1, "/%s/", ent.nom);
     mi_stat(dir1, &estat);
-
+    printf("[simulacion.c] DEBUG: dir1 %s\n", &dir1[0]);
     for (i = 0; i < (estat.tamany / sizeof(entrada)); i++) { // recorrem totes les entrades
-        if (mi_read(dir1, &ent, i * sizeof(entrada), sizeof(entrada)) == -1) {
-            printf("[simulacion.c] ERROR: Error de lectura!\n");
+        if (mi_read(dir1, &ent, i * sizeof(entrada), sizeof(entrada)) == -1) { // llegim totes les entrades una a una
+            printf("[simulacion.c] ERROR: Error de lectura2!\n");
             return -1;
         }
         sprintf(dir2, "%s%s/prueba.dat", dir1, ent.nom); // direccio completa
@@ -155,7 +157,7 @@ int verificar() {
             reg.data = reg.pid = reg.escriptura = reg.pos_registre = 0;
 
             if (mi_read(dir2, &reg, j * sizeof(registre), sizeof(registre)) == -1) {
-                printf("[simulacion.c] ERROR: Error de lectura!\n");
+                printf("[simulacion.c] ERROR: Error de lectura3!\n");
                 return -1;
             }
 
@@ -218,7 +220,8 @@ int main(int argc, char **argv)
 
     memset(nom_carpeta, '\0', TAM);
 
-    signal(SIGCHLD,reaper); // senyal per als zombies
+    signal(SIGCHLD, enterrador); // senyal per als zombies
+
     acabados = 0;
     hora = time(NULL);
     t = localtime(&hora);
@@ -227,12 +230,11 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    // cream sa carpeta inicial /simul...
     sprintf(nom_carpeta, "/simul_%d%d%d%d%d%d/", t->tm_year+1900, t->tm_mon+1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
-
+    // cream sa carpeta inicial /simul...
     if (mi_creat(nom_carpeta, 7) != -1) {
         for (i = 0; i < PROCESOS; i++) {
-            if (fork() == 0) {
+            if (fork() == 0) { // es creen els 100 processos
                 proces(i, nom_carpeta);
                 exit(0);
             }

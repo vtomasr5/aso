@@ -9,6 +9,7 @@ rm -f RWBlocs
 rm -f RWInodes
 rm -f traduir
 rm -f cercar
+rm -f truncar
 
 gcc -Wall -O1 -ggdb infosb.c ${OBJ} -o infosb
 gcc -Wall -O1 -ggdb infomb.c ${OBJ} -o infomb
@@ -17,4 +18,5 @@ gcc -Wall -O1 -ggdb RWBlocs.c ${OBJ} -o RWBlocs
 gcc -Wall -O1 -ggdb RWInodes.c ${OBJ} -o RWInodes
 gcc -Wall -O1 -ggdb traduir.c ${OBJ} -o traduir
 gcc -Wall -O1 -ggdb cercar.c ${OBJ} -o cercar
+gcc -Wall -O1 -ggdb truncar.c ${OBJ} -o truncar
 echo "OK TEST"

@@ -99,7 +99,7 @@ int cercarEntrada(const char *cami_parcial, unsigned int *p_inode_dir, unsigned 
     }
 
     if (extreureCami(cami_parcial, cami_inicial, cami_final) == -1) {
-        printf("[directorios.c] ERROR: Camí incorrecte\n");
+        printf("[directorios.c] ERROR: Cami incorrecte\n");
         return -1;
     }
 
@@ -234,7 +234,10 @@ int mi_creat(const char *cami, unsigned int mode)
         //modificam els permisos del fitxer o directori
         inode in = llegirInode(num_inode);
         in.permisos = mode;
-        escriureInode(num_inode, in);
+
+        if (escriureInode(num_inode, in) == -1) {
+            return -1;
+        }
     } else {
         printf("[directorios.c] DEBUG: No s'ha trobat l'entrada!\n");
         alliberar(p_inode_dir, p_inode, p_entrada);
@@ -279,7 +282,9 @@ int mi_link(const char *cami1, const char *cami2)
 
     inode inod = llegirInode(num_inode);
     inod.links_directoris++;
-    escriureInode(num_inode, inod);
+    if (escriureInode(num_inode, inod) == -1) {
+        return -1;
+    }
 
     *p_inode_dir = 0;
     *p_inode = 0;
@@ -370,7 +375,7 @@ int mi_unlink(const char *cami)
 
         alliberarInode(*p_inode, 1); // lo eliminamos completamente
 
-        printf("[directorios.c] INFO: El camí '%s' s'ha borrat correctament.\n", cami);
+        printf("[directorios.c] INFO: El cami '%s' s'ha borrat correctament.\n", cami);
         alliberar(p_inode_dir, p_inode, p_entrada);
         return 0;
     } else if (in.links_directoris > 1) { // si tiene mas de 1 enlace de directorio (es un directorio)
@@ -382,7 +387,9 @@ int mi_unlink(const char *cami)
         in2 = llegirInode(*p_inode);
 
         in2.links_directoris--;
-        escriureInode(*p_inode, in2);
+        if (escriureInode(*p_inode, in2) == -1) {
+            return -1;
+        }
         printf("in2.tamany = %d\n", in2.tamany);
 
         // mientras queden directorios y ficheros dentro del directorio que tratamos
@@ -411,13 +418,13 @@ int mi_unlink(const char *cami)
 
         alliberarInode(*p_inode, 1);
 
-        printf("[directorios.c] INFO: El camí '%s' s'ha borrat correctament.\n", cami);
+        printf("[directorios.c] INFO: El cami '%s' s'ha borrat correctament.\n", cami);
 
         //alliberar(p_inode_dir, p_inode, p_entrada);
         //return 0;
     }
 
-    printf("[directorios.c] INFO: El camí '%s' s'ha borrat correctament.\n", cami);
+    printf("[directorios.c] INFO: El cami '%s' s'ha borrat correctament.\n", cami);
     alliberar(p_inode_dir, p_inode, p_entrada);
     return 0;
 }
@@ -595,7 +602,7 @@ int mi_chmod(const char *cami, unsigned char mode)
     uint p_inode, p_entrada, p_inode_dir = 0;
 
     if (cercarEntrada(cami, &p_inode_dir, &p_inode, &p_entrada, '0') == -1) { // busca el inodo de la ultima entrada de la ruta y la deposita en p_inode
-        printf("[directorios.c] ERROR: No s'ha trobat el camí!!\n");
+        printf("[directorios.c] ERROR: No s'ha trobat el cami!!\n");
         return -1;
     }
 
@@ -616,7 +623,7 @@ int mi_stat(const char *cami, STAT *p_stat)
     uint p_inode, p_entrada, p_inode_dir = 0;
 
     if (cercarEntrada(cami, &p_inode_dir, &p_inode, &p_entrada, '0') == -1) {
-        printf("[directorios.c] ERROR: No s'ha trobat el camí!!\n");
+        printf("[directorios.c] ERROR: No s'ha trobat el cami!!\n");
         return -1;
     }
 
@@ -638,7 +645,7 @@ int mi_read(const char *cami, void *buff, unsigned int offset, unsigned int nbyt
     uint p_inode, p_entrada, p_inode_dir = 0;
 
     if (cercarEntrada(cami, &p_inode_dir, &p_inode, &p_entrada, '0') == -1) {
-        printf("[directorios.c] ERROR: No s'ha trobat el camí!!\n");
+        printf("[directorios.c] ERROR: No s'ha trobat el cami!!\n");
         return -1;
     }
 
@@ -664,7 +671,7 @@ int mi_write(const char *cami, const void *buff, unsigned int offset, unsigned i
     uint p_inode, p_entrada, p_inode_dir = 0;
 
     if (cercarEntrada(cami, &p_inode_dir, &p_inode, &p_entrada, '0') == -1) {
-        printf("[directorios.c] ERROR: No s'ha trobat el camí!!\n");
+        printf("[directorios.c] ERROR: No s'ha trobat el cami!!\n");
         return -1;
     }
 
