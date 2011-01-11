@@ -21,7 +21,7 @@
 
 /**
  *  @file ficheros_basico.c
- *  @brief Conté els funcions de baix nivell que tracten directament amb el sistema de fitxers.\n
+ *  @brief Conté les funcions de baix nivell que tracten directament amb el sistema de fitxers.\n
  *  En aquest nivell es poden realitzar operacions que permenten inicialitzar l'esctructura
  *  del sistema de fixers, tal com la creació i posterior inicialitzacio del superbloc utilitzant
  *  l'estructura amb la informació adequada, creació i inicialització del mapa de bits otorgant

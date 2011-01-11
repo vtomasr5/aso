@@ -21,7 +21,7 @@
 
 /**
  *  @file directorios.c
- *  @brief Conté els funcions sobre directoris de més alt nivell que interactuen amb el sistema de fitxers.
+ *  @brief Conté les funcions sobre directoris de més alt nivell que interactuen amb el sistema de fitxers.
  *  S'implementen les funcions necessàries per a cercar les entrades dels directoris,
  *  crear o eliminar fitxers i llegir i escriure en el sistema de fitxers.
  *  @date 10/12/2010
@@ -31,6 +31,9 @@
 
 // per saber el nombre d'elements que té un array
 #define length(x) (sizeof(x) / sizeof(x[0]))
+
+// semàfor (mutex) encarregat d'assegurar exlusió mutua al SB, MB i AI.
+int mutex;
 
 /**
  *  Funció que estreu el camí de la ruta que se li passa com a paràmetre i que

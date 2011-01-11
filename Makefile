@@ -2,7 +2,7 @@
 # Un sistema de fitxers
 
 # variables
-OBJ_LIB = libs/bloques.o libs/ficheros_basico.o libs/ficheros.o libs/directorios.o
+OBJ_LIB = libs/bloques.o libs/ficheros_basico.o libs/ficheros.o libs/directorios.o libs/semaforos.o
 OBJ_EXE = src/mi_mkfs.o src/mi_chmod.o src/mi_ls.o src/mi_stat.o src/mi_cat.o src/mi_ln.o src/mi_rm.o src/mi_creat.o src/mi_write.o src/simulacion.o
 OBJ = $(OBJ_EXE) $(OBJ_LIB)
 CC = gcc
@@ -12,6 +12,9 @@ EXEC = src/mi_mkfs src/mi_chmod src/mi_ls src/mi_stat src/mi_cat src/mi_ln src/m
 all: mi_mkfs mi_chmod mi_ls mi_stat mi_cat mi_ln mi_rm mi_creat mi_write simulacion
 
 # biblioteques
+semaforos.o: libs/semaforos.c libs/semaforos.h
+	$(CC) $(CFLAGS) -c libs/semaforos.c
+
 directorios.o: libs/directorios.c libs/directorios.h
 	$(CC) $(CFLAGS) -c libs/directorios.c
 

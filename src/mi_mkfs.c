@@ -33,6 +33,7 @@
 #include "../libs/bloques.h"
 #include "../libs/definicions.h"
 #include "../libs/ficheros_basico.h"
+#include "../libs/semaforos.h"
 
 /**
  *  Punt d'inici del programa mi_mkfs. Es comproven els paràmetres, es monta l'arxiu virtual,
@@ -45,7 +46,7 @@
 int main(int argc, char *argv[])
 {
     if (argc != 3) {
-        printf("[mi_mkfs.c] ERROR: Arguments incorrectes. Ex: mi_chmod nomFS num_blocs\n");
+        printf("[mi_mkfs.c] ERROR: Arguments incorrectes. Ex: mi_chmod <nomFS> <num_blocs>\n");
         exit(-1);
     }
 

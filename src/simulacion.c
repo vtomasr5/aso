@@ -62,7 +62,7 @@ void reaper(int s)
 }
 
 /**
- *
+ *  Funció que crea 100 procesos que
  *
  *  @param num_proces PID del procés que arranca
  *  @param fitxer Fitxer que es crea
@@ -75,7 +75,7 @@ int proces(int num_proces, char *fitxer)
     int rand; // numero del random
 
     sprintf(nom_carpeta, "%s", fitxer);
-    sprintf(nom_carpeta, "%s proceso_%d/", nom_carpeta, getpid());
+    sprintf(nom_carpeta, "%sproceso_%d/", nom_carpeta, getpid());
 
     srandom(getpid());
 
@@ -83,7 +83,7 @@ int proces(int num_proces, char *fitxer)
         sprintf(nom_carpeta, "%sprueba.dat", nom_carpeta);
 
         for (i = 0; i < N_VEGADES; i++) {
-            rand = (random() % 1024) * sizeof(registre);
+            rand = (random() % sizeof(registre)) * sizeof(registre);
             reg.data = time(NULL);
             reg.pid = getpid();
             reg.escriptura = i + 1;
@@ -94,11 +94,11 @@ int proces(int num_proces, char *fitxer)
                 return -1;
             }
 
-            printf("[simulacion.c] INFO: Proces: %d, escric el regirtre: %d, a la posició: %d.\n", reg.pid, i + 1, rand);
+            printf("[simulacion.c] INFO: Proces: %d, escric el registre: %d, a la posició: %d.\n", reg.pid, i + 1, reg.pos_registre);
             usleep(50000); // 0.05s
         }
     } else {
-        printf("[simulacion.c] ERROR: No s'ha pogut crear el cami '%s'\n", nom_carpeta);
+        printf("[simulacion.c] ERROR: No s'ha pogut crear el cami2 '%s'\n", nom_carpeta);
         return -1;
     }
     return 0;
@@ -108,9 +108,95 @@ int proces(int num_proces, char *fitxer)
  *
  *
  */
-void verificar()
-{
+int verificar() {
+    int proces, escriptures, p_escriptura, pos_p_escriptura, d_escriptura, pos_d_escriptura, posicio_menor, pos_menor_posicio, posicio_major, pos_major_posicio;
+    registre reg;
+    entrada ent;
+    STAT estat, estat2;
+    char aux[30];
+    char dir1[100]; // simul_ddmmaahhmmss
+    char dir2[100];
+    int i, j;
 
+    memset(aux, '\0', 30);
+    memset(dir1, '\0', 100);
+    memset(dir2, '\0', 100);
+
+    printf("\n");
+    if (mi_read("/", &ent, 0, sizeof(entrada)) == -1) { // llegim '/'
+        printf("[simulacion.c] ERROR: Error de lectura!\n");
+        return -1;
+    }
+
+    sprintf(dir1, "/%s/", ent.nom);
+    mi_stat(dir1, &estat);
+
+    for (i = 0; i < (estat.tamany / sizeof(entrada)); i++) { // recorrem totes les entrades
+        if (mi_read(dir1, &ent, i * sizeof(entrada), sizeof(entrada)) == -1) {
+            printf("[simulacion.c] ERROR: Error de lectura!\n");
+            return -1;
+        }
+        sprintf(dir2, "%s%s/prueba.dat", dir1, ent.nom); // direccio completa
+        mi_stat(dir2, &estat2); // lectura de la informacio de l'arcxiu
+
+        proces = escriptures = p_escriptura = pos_p_escriptura = d_escriptura = pos_d_escriptura = posicio_menor = pos_menor_posicio = posicio_major = pos_major_posicio = 0;
+
+        p_escriptura = time(NULL);
+        posicio_menor = estat2.tamany;
+
+        int k = 8;
+        while (k < strlen(ent.nom)) {
+            aux[k-8] = ent.nom[k];
+            k++;
+        }
+
+        proces = atoi(aux);
+        for (j = 0; j < estat2.tamany / sizeof(registre); j++) { // recorrem els registres
+            reg.data = reg.pid = reg.escriptura = reg.pos_registre = 0;
+
+            if (mi_read(dir2, &reg, j * sizeof(registre), sizeof(registre)) == -1) {
+                printf("[simulacion.c] ERROR: Error de lectura!\n");
+                return -1;
+            }
+
+            struct tm *t = localtime((time_t*)reg.data);
+            char *d = asctime(t);
+
+            if (reg.pid != 0) {
+                if (reg.pid == proces) { // validam
+                    escriptures++;
+                }
+                if (reg.data < p_escriptura) {
+                    p_escriptura = atoi(d);
+                    pos_p_escriptura = reg.escriptura;
+                }
+                if (reg.data > d_escriptura) {
+                    d_escriptura = atoi(d);
+                    pos_d_escriptura = reg.escriptura;
+                }
+                if (reg.pos_registre < posicio_menor) {
+                    posicio_menor = reg.pos_registre;
+                    pos_menor_posicio = reg.escriptura;
+                }
+                if (reg.pos_registre > posicio_major) {
+                    posicio_major = reg.pos_registre;
+                    pos_major_posicio = reg.escriptura;
+                }
+
+            printf("[simulacion.c] DEBUG: data: %d, pid: %d, escriptura: %d, pos_registre: %d\n", reg.data, reg.pid, reg.escriptura, reg.pos_registre);
+            }
+        }
+        printf("####################################################################\n");
+        printf("[simulacion.c] INFO: Proces: %d\n", i + 1);
+        printf("[simulacion.c] INFO: PID: %d\n", proces);
+        printf("[simulacion.c] INFO: Escriptures: %d\n", escriptures);
+        printf("[simulacion.c] INFO: Primera escriptura a les: %d, en la posicio de l'escriptura: %d\n", p_escriptura, pos_p_escriptura);
+        printf("[simulacion.c] INFO: Darrera escriptura a les: %d, en la posicio de l'escriptura: %d\n", d_escriptura, pos_d_escriptura);
+        printf("[simulacion.c] INFO: Menor posicio de l'escriptura: %d, en la posicio de l'escriptura: %d\n", posicio_menor, pos_menor_posicio);
+        printf("[simulacion.c] INFO: Major posicio de l'escritura: %d, en la posicio de l'escriptura: %d\n\n", posicio_major, pos_major_posicio);
+    }
+
+    return 0;
 }
 
 /**
@@ -156,29 +242,15 @@ int main(int argc, char **argv)
         while (acabados < PROCESOS) {
             pause();
         }
+    } else {
+        printf("[simulacion.c] ERROR: No s'ha pogut crear el cami1 '%s'\n", nom_carpeta);
+        return -1;
     }
 
-    verificar();
+    verificar(); // verificam les escriptures
 
     if (bumount() == -1) {
         return -1;
     }
     return 0;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
