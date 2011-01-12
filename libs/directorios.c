@@ -112,7 +112,7 @@ int cercarEntrada(const char *cami_parcial, unsigned int *p_inode_dir, unsigned 
     int num_ent = estat.tamany / sizeof(entrada); // leemos todas las entradas del directorio
 
     entrada ent[num_ent]; // definimos un array de entradas de directorio que contiene el numero de entradas del inodo leido
-    //memset(&ent, '\0', sizeof(entrada));
+
     if (estat.tamany > 0) {
         int llegits = mi_read_f(*p_inode_dir, &ent, 0, num_ent * sizeof(entrada)); // leemos las entradas del directorio y las guardamos en el "buffer" ent
         printf("[directorios.c] DEBUG: bytes llegits de entrada (ent) = %d\n", llegits);
@@ -180,8 +180,8 @@ int cercarEntrada(const char *cami_parcial, unsigned int *p_inode_dir, unsigned 
                 return -1;
             }
 
-            *p_inode = r;
-            *p_entrada = estat2.tamany / sizeof(entrada);
+            *p_inode = r; // l'inode reservar es el seu inode (p_inode)
+            *p_entrada = (estat2.tamany / sizeof(entrada)) + 1;
             printf("[directorios.c] DEBUG: inode reservat = %d, cami = %s, p_entrada = %u \n", r, cami_inicial, *p_entrada);
 
             if ((strlen(cami_final) == 0) || (strcmp(cami_final, "/") == 0)) {  // si hemos acabado o lo ultimo es una "/"
@@ -297,7 +297,7 @@ int mi_link(const char *cami1, const char *cami2)
     }
     aux = *p_inode; // inode crear que s'ha d'eliminar després d'haver fet el link a l'altra inode
 
-    printf("[directorios.c] mi_link DEBUG: *p_inode_dir = %d, *p_inode = %d, *p_entrada = %d,num_inode = %d\n", *p_inode_dir, *p_inode, *p_entrada, num_inode);
+    printf("[directorios.c] mi_link DEBUG: *p_inode_dir = %d, *p_inode = %d, *p_entrada = %d, num_inode = %d\n", *p_inode_dir, *p_inode, *p_entrada, num_inode);
 
     mi_stat_f(*p_inode_dir, &estat);
 
@@ -313,6 +313,7 @@ int mi_link(const char *cami1, const char *cami2)
 
     printf("[directorios.c] DEBUG: bytes llegits = %d\n", bllegits);
 
+    printf("[directorios.c] mi_link DEBUG Estat.tamany = %d\n", estat.tamany);
     printf("[directorios.c] mi_link DEBUG: despres de llegir/abans d'escriure: ent.nom = %s, ent.inode = %d\n", ent.nom, ent.inode);
 
     int bescrits = mi_write_f(*p_inode_dir, &ent, (*p_entrada) * sizeof(entrada), sizeof(entrada));
@@ -323,7 +324,7 @@ int mi_link(const char *cami1, const char *cami2)
 
     printf("[directorios.c] DEBUG: bytes escrits = %d\n", bescrits);
     printf("[directorios.c] mi_link DEBUG despues de escribir: ent.nom = %s, ent.inode = %d\n", ent.nom, ent.inode);
-    alliberar(p_inode_dir, p_inode, p_entrada);
+    alliberar(p_inode_dir, p_inode, p_entrada); // alliberam memoria
 
     alliberarInode(aux, 0); // alliberam l'inode ja que ara apunta a un altra inode
 
