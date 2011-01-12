@@ -51,6 +51,7 @@ int main(int argc, char *argv[])
 
     if (estat.tipus != 1) { // si no es un directori
         if (estat.tamany > 0) { // si no esta buit
+            printf("Contingut:\n");
             printf("\n");
 
             int i;
@@ -65,7 +66,7 @@ int main(int argc, char *argv[])
                 memset(buff,'\0', TB);
             }
 
-            printf("\n");
+            printf("\n\n");
         } else {
             printf("[mi_cat.c] INFO: Aquest fitxer esta buit.\n");
         }

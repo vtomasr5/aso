@@ -22,6 +22,7 @@
 /**
  *  @file mi_rm.c
  *  @brief Elimina un enllaç entre dos directoris o elimina el directori completament.
+ *  També elimina els fitxers.
  *  @date 07/01/2011
  */
 
@@ -41,7 +42,7 @@ int main(int argc, char *argv[])
 
     // codi
     if (mi_unlink(argv[2]) == -1) {
-        return -1;
+        printf("[mi_rm.c] ERROR: No s'ha pogut eliminar!\n");
     } else {
         printf("[mi_rm.c] INFO: S'ha eliminat correctament\n");
     }

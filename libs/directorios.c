@@ -385,15 +385,16 @@ int mi_unlink(const char *cami)
         memset(inicial, '\0', 60);
         int llegits = 0;
 
+        // llegim l'inode
         in2 = llegirInode(*p_inode);
 
         in2.links_directoris--;
         if (escriureInode(*p_inode, in2) == -1) {
             return -1;
         }
-        printf("in2.tamany = %d\n", in2.tamany);
+        printf("[directorios.c] DEBUG: in2.tamany = %d\n", in2.tamany);
 
-        // mientras queden directorios y ficheros dentro del directorio que tratamos
+        // mientras queden directorios y ficheros dentro del directorio que tratamos, los eliminamos
         while (in2.tamany > 0) {
             strcpy(inicial, cami);
             llegits = mi_read_f(*p_inode, &ent, 0 * sizeof(entrada), sizeof(entrada));
@@ -443,7 +444,6 @@ int mi_dir(const char *cami, char *buff) {
     char num_bytes[40];
 
     entrada ent;
-    memset(&ent, '\0', sizeof(entrada));
     inode in, aux;
 
     memset(buff, '\0', BUFFER_DIR); // resetejam
@@ -474,9 +474,9 @@ int mi_dir(const char *cami, char *buff) {
                     strcat(buff, ent.nom);
 
                     if (aux.tipus == 1) {
-                        strcat(buff, "/ (d) ");
-                    } else if(aux.tipus == 2) {
-                        strcat(buff, " (f) ");
+                        strcat(buff, "/ (d)");
+                    } else if (aux.tipus == 2) {
+                        strcat(buff, " (f)");
                         memset(num_bytes, '\0', 40);
                         sprintf(num_bytes, ", Tamany = %d bytes", aux.tamany); // escrivim dins num_bytes
                         strcat(buff, num_bytes);
