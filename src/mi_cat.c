@@ -51,19 +51,15 @@ int main(int argc, char *argv[])
 
     if (estat.tipus != 1) { // si no es un directori
         if (estat.tamany > 0) { // si no esta buit
-            printf("Contingut:\n");
             printf("\n");
 
             int i;
             for (i = 0; (i * TB) < estat.tamany; i++) {
-                if (mi_read(argv[2], buff, (i * TB), TB) != -1) {
-                    file = fopen("/dev/stdout", "w");
-                    if (fwrite (buff, 1, TB, file) == -1) { // escriu de tamany TB cada un de 1 byte, al fluxe file obtenint les dades de buff.
-                        return -1;
-                    }
-                    fclose (file);
+                if (mi_read(argv[2], buff, (i * TB), TB) != -1) { // BUG
+                    //printf("[mi_cat.c] ERROR: No s'ha pogut llegir! (mi_read(%s, buff, %d, %d)\n", argv[2], (i*TB), TB);
+                    return -1;
                 }
-                memset(buff,'\0', TB);
+                write(1, buff, TB);
             }
 
             printf("\n\n");

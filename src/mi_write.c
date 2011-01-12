@@ -49,6 +49,7 @@ int main(int argc, char *argv[])
     buff = argv[3];
 
     if (mi_write(argv[2], buff, offset, nbytes) == -1) {
+        printf("[mi_write.c] ERROR: No s'ha pogut escriure!\n");
         return -1;
     } else {
         printf("[mi_write.c] INFO: S'ha escrit correctament.\n");

@@ -164,12 +164,13 @@ int cercarEntrada(const char *cami_parcial, unsigned int *p_inode_dir, unsigned 
                 tipus_inode = 1; // directori
             }
 
-            int r = 0;
-            if ((r = reservarInode(tipus_inode, 7)) == -1) { // reservam els inodes de cada directori/fitxer del cami parcial
+            // reservam els inodes de cada directori/fitxer del cami parcial
+            int r = reservarInode(tipus_inode, 7);
+            if (r == -1) {
                 return -1;
             }
 
-            entra.inode = r;
+            entra.inode = r; // entrada de directori de l'inode reservat
             strcpy(entra.nom, cami_inicial); // copiam el camí a l'entrada de directori
             mi_stat_f(*p_inode_dir, &estat2); // obtenim la informació de l'inode
 
@@ -181,7 +182,7 @@ int cercarEntrada(const char *cami_parcial, unsigned int *p_inode_dir, unsigned 
             }
 
             *p_inode = r; // l'inode reservar es el seu inode (p_inode)
-            *p_entrada = (estat2.tamany / sizeof(entrada)) + 1;
+            *p_entrada = (estat2.tamany / sizeof(entrada));
             printf("[directorios.c] DEBUG: inode reservat = %d, cami = %s, p_entrada = %u \n", r, cami_inicial, *p_entrada);
 
             if ((strlen(cami_final) == 0) || (strcmp(cami_final, "/") == 0)) {  // si hemos acabado o lo ultimo es una "/"
@@ -190,9 +191,7 @@ int cercarEntrada(const char *cami_parcial, unsigned int *p_inode_dir, unsigned 
                 *p_inode_dir = *p_inode; // ara p_inode_dir es el directori que conté fitxers
                 return cercarEntrada(cami_final, p_inode_dir, p_inode, p_entrada, reservar); // cridada recursiva
             }
-        } else {
-            return -1;
-        }
+        } // else reservar = '0'
     }
     return 0;
 }
@@ -228,7 +227,6 @@ int mi_creat(const char *cami, unsigned int mode)
 
     // realment com que no troba l'entrada de directori, la crea
     if (cercarEntrada(cami, p_inode_dir, p_inode, p_entrada, '1') != -1) {
-        printf("[directorios.c] DEBUG: mi_creat - Cami %s creat\n", cami);
         num_inode = *p_inode;
 
         //modificam els permisos del fitxer o directori
@@ -238,6 +236,7 @@ int mi_creat(const char *cami, unsigned int mode)
         if (escriureInode(num_inode, in) == -1) {
             return -1;
         }
+        printf("[directorios.c] DEBUG: mi_creat - Cami %s creat\n", cami);
     } else {
         printf("[directorios.c] DEBUG: No s'ha trobat l'entrada!\n");
         alliberar(p_inode_dir, p_inode, p_entrada);
@@ -272,7 +271,7 @@ int mi_link(const char *cami1, const char *cami2)
     *p_entrada = 0;
 
     if (cercarEntrada(cami2, p_inode_dir, p_inode, p_entrada, '1') == -1) {
-        printf("[directorios.c] ERROR: No s'ha trobat l'entrada!\n");
+        printf("[directorios.c] ERROR: No s'ha trobat l'entrada, el link no s'ha pogut realitzar!!\n");
         alliberar(p_inode_dir, p_inode, p_entrada);
         return -1;
     }
@@ -291,12 +290,13 @@ int mi_link(const char *cami1, const char *cami2)
     *p_entrada = 0;
 
     if (cercarEntrada(cami1, p_inode_dir, p_inode, p_entrada, '1') == -1) {
-        printf("[directorios.c] ERROR: El link no s'ha pogut realitzar!!\n");
+        printf("[directorios.c] ERROR: No s'ha trobat l'entrada, el link no s'ha pogut realitzar!!\n");
         alliberar(p_inode_dir, p_inode, p_entrada);
         return -1;
     }
     aux = *p_inode; // inode crear que s'ha d'eliminar després d'haver fet el link a l'altra inode
 
+    alliberarInode(aux, 0); // alliberam l'inode ja que ara apunta a un altra inode
     printf("[directorios.c] mi_link DEBUG: *p_inode_dir = %d, *p_inode = %d, *p_entrada = %d, num_inode = %d\n", *p_inode_dir, *p_inode, *p_entrada, num_inode);
 
     mi_stat_f(*p_inode_dir, &estat);
@@ -326,8 +326,6 @@ int mi_link(const char *cami1, const char *cami2)
     printf("[directorios.c] mi_link DEBUG despues de escribir: ent.nom = %s, ent.inode = %d\n", ent.nom, ent.inode);
     alliberar(p_inode_dir, p_inode, p_entrada); // alliberam memoria
 
-    alliberarInode(aux, 0); // alliberam l'inode ja que ara apunta a un altra inode
-
     printf("[directorios.c] DEBUG: mi_link realitzat correctament.\n");
     return 0;
 }
@@ -341,7 +339,7 @@ int mi_unlink(const char *cami)
 {
     uint *p_inode_dir, *p_inode, *p_entrada;
     entrada ent;
-    int res_tipus = 0;
+    int res = 0;
     inode in;
 
     p_inode_dir = malloc(sizeof(uint));
@@ -358,8 +356,8 @@ int mi_unlink(const char *cami)
         return -1;
     }
 
-    res_tipus = cercarEntrada(cami, p_inode_dir, p_inode, p_entrada, '0');
-    if (res_tipus == -1) {
+    res = cercarEntrada(cami, p_inode_dir, p_inode, p_entrada, '0');
+    if (res == -1) {
         printf("[directorios.c] ERROR: No s'ha pogut trobar l'entrada!\n");
         alliberar(p_inode_dir, p_inode, p_entrada);
         return -1;
@@ -437,7 +435,8 @@ int mi_unlink(const char *cami)
  *  @param buffer Buffer on ha de guardar la informació.
  *  @return El nombre de fitxers que hi ha dins el directori
  */
-int mi_dir(const char *cami, char *buff) {
+int mi_dir(const char *cami, char *buff)
+{
     uint p_inode_dir, p_inode, p_entrada;
     int longitut = strlen(cami);
     int bytes_llegits = 0;

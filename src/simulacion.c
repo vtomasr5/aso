@@ -78,7 +78,7 @@ int proces(int num_proces, char *fitxer)
     sprintf(nom_carpeta, "%sprueba.dat", nom_carpeta);
 
     srandom(getpid());
-    //printf("[simulacion.c] DEBUG: Carpeta: %s\n", &nom_carpeta[0]);
+    printf("[simulacion.c] DEBUG: Carpeta: %s\n", &nom_carpeta[0]);
 
     if (mi_creat(nom_carpeta, 7) != -1) { // cream les carpetes dels processos
         for (i = 0; i < N_VEGADES; i++) {

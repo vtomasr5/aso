@@ -44,11 +44,8 @@ int mi_write_f (unsigned int inod, const void *buff_original, unsigned int offse
     int blocLogic = offset / TB; // primer bloc (logic) on escriurem
     int blocFisic;
     int darrer_bloc_logic = ((offset + nbytes) - 1) / TB; //ultim bloc on escriuremdesplacament_primer_bloc
-    //int darrer_byte = (offset + nbytes - 1); // darrer byte on escriurem
     int desplacament_primer_bloc = offset % TB; // Offset del primer bloc. Punt d'inici del primer bloc
     int bytes_lliures_primer_bloc = TB - desplacament_primer_bloc; // Numero de bytes a escriure en el primer bloc
-    //int primer_bloc = blocLogic;
-    //int bytes_darrer_bloc = (nbytes - bytes_lliures_primer_bloc) % TB; // Numero de bytes a escriure en el darrer bloc
     int bytes_per_escriure = nbytes; //Bytes que faltan per escriure
     memset(buff_bloc, '\0', TB);
 
@@ -69,12 +66,11 @@ int mi_write_f (unsigned int inod, const void *buff_original, unsigned int offse
 
     in = llegirInode(inod);
 
-    if (bread(blocFisic, buff_bloc) == -1) {
-        return -1;
-    }
-
     // únicament tenim que escriure en un bloc
     if (nbytes <= bytes_lliures_primer_bloc) {
+        if (bread(blocFisic, buff_bloc) == -1) {
+            return -1;
+        }
         memcpy(&buff_bloc[desplacament_primer_bloc], buff_original, nbytes);
 
         if (bwrite(blocFisic, buff_bloc) == -1) {
@@ -84,6 +80,9 @@ int mi_write_f (unsigned int inod, const void *buff_original, unsigned int offse
         bytes_escrits = nbytes;
 
     } else { // cas en que escrivim en més d'un bloc
+        if (bread(blocFisic, buff_bloc) == -1) {
+            return -1;
+        }
         memcpy(&buff_bloc[desplacament_primer_bloc], buff_original, TB - desplacament_primer_bloc);
 
         if (bwrite(blocFisic, buff_bloc) == -1) {
@@ -142,12 +141,11 @@ int mi_write_f (unsigned int inod, const void *buff_original, unsigned int offse
             bytes_escrits += bytes_per_escriure; //sumamos los bytes que faltaban por escribir al total hasta ahora.
 
             printf ("\n[ficheros.c] DARRER CAS - DEBUG: ESCRIBIM bytes_escritos: %d en el blogLogic %d \n", bytes_per_escriure, blocLogic);
-
         }
     }
 
     //in = llegirInode(inod);
-    in.tamany = in.tamany + bytes_escrits;
+    in.tamany += bytes_escrits;
     in.data_acces = time(NULL);
     in.data_modificacio = time(NULL);
     if (escriureInode(inod, in) == -1) {
@@ -174,12 +172,8 @@ int mi_read_f (unsigned int inod, void *buff_original, unsigned int offset, unsi
     int blocLogic = offset / TB; // primer bloc logic
     int blocFisic;
     int darrer_bloc_logic = ((offset + nbytes) - 1 )/ TB; // darrer bloc logic
-    // int darrer_byte = (offset + nbytes) - 1;
     int desplacament_primer_bloc = offset % TB; // desplaçament del primer bloc. On es comença a llegir
     int bytes_lliures_primer_bloc = TB - desplacament_primer_bloc; // nombre de bytes a escriure al primer bloc
-    //int blocs_intermitjos = (nbytes - bytes_lliures_primer_bloc) / TB;
-    //int primer_bloc = blocLogic;
-    //int bytes_darrer_bloc = (nbytes - bytes_lliures_primer_bloc) % TB;
     int bytes_per_llegir = nbytes; // bytes que falten per llegir
     memset(buff_bloc, '\0', TB);
 
@@ -199,18 +193,18 @@ int mi_read_f (unsigned int inod, void *buff_original, unsigned int offset, unsi
         return -1;
     }
 
-    if (bread(blocFisic, buff_bloc) == -1) {
-        return -1;
-    }
-
-    //~ printf("desplacament_primer_bloc = %d\n", desplacament_primer_bloc);
-    //~ printf("bytes_lliures_primer_bloc = %d\n", bytes_lliures_primer_bloc);
-
     if (nbytes <= bytes_lliures_primer_bloc) { // només llegim un bloc
+        if (bread(blocFisic, buff_bloc) == -1) {
+            return -1;
+        }
         memcpy(buff_original, &buff_bloc[desplacament_primer_bloc], nbytes);
 
         bytes_llegits = nbytes;
     } else { // tenim més d'un bloc a llegir
+        if (bread(blocFisic, buff_bloc) == -1) {
+            return -1;
+        }
+
         memcpy(buff_original, &buff_bloc[desplacament_primer_bloc], bytes_lliures_primer_bloc);
 
         bytes_llegits = bytes_lliures_primer_bloc;

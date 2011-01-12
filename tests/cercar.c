@@ -16,7 +16,6 @@ int main(int argc, char *argv[])
     int m = -3; // inicialitzacio diferent per a provar que s'actualitza el valor
 
     memset(buffer, '\0', BUFFER_DIR);
-    memset(buff, 'a', 100);
 
     if (argc != 2) {
         printf("[cercar.c] ERROR: Arguments incorrectes. Ex: ./cercar ../disco.imagen\n");
@@ -32,17 +31,10 @@ int main(int argc, char *argv[])
     printf("nnnnnnnnnnnnnnnnnn creat /dir1/fichero nnnnnnnnnnnnnnnnnnnnnn\n");
     mi_creat("/dir1/fichero", 7);
 
-    memset(buffer, '\0', BUFFER_DIR); // reset buffer
-
-    printf("nnnnnnnnnnnnnnnnnnn mi dir /dir1 nnnnnnnnnnnnnnnnnnnnnnnnn\n");
-    m = mi_dir("/dir1/", buffer);
-    printf("[cercar.c] DEBUG: num fitxers dins el directori = %d\n", m);
-
-    printf("nnnnnnnnnnnnnnnnnnn mi lsdir /dir1 nnnnnnnnnnnnnnnnnnnnnnnnn\n");
-    mi_lsdir("/dir1/", buffer);
+    memset(buff, 'a', 100); // escrivim aaa...aaa 100 vegades dins el fitxer
 
     printf("nnnnnnnnnnnnnnnnnnn mi write /dir1/fichero nnnnnnnnnnnnnnnnnnnnnnnnn\n");
-    mi_write("/dir1/fichero", buff, 10, 100);
+    mi_write("/dir1/fichero", buff, 0, 100);
 
     memset(buffer, '\0', BUFFER_DIR); // reset buffer
 
@@ -53,10 +45,12 @@ int main(int argc, char *argv[])
     printf("nnnnnnnnnnnnnnnnnnn mi lsdir /dir1 nnnnnnnnnnnnnnnnnnnnnnnnn\n");
     mi_lsdir("/dir1/", buffer);
 
-    printf("nnnnnnnnnnnnnnnnnnn mi read /dir1/fichero nnnnnnnnnnnnnnnnnnnnnnnnn\n");
-    mi_read("/dir1/fichero", buff, 10, 100);
+    memset(buff, '\0', 100); // netejam el buffer
 
-    printf("[cercar.c] INFO: Contingut buff: %s\n", buff);
+    printf("nnnnnnnnnnnnnnnnnnn mi cat /dir1/fichero nnnnnnnnnnnnnnnnnnnnnnnnn\n");
+    mi_read("/dir1/fichero", buff, 0, 50); // llegim nomes 50 aa..aa del fitxer
+
+    printf("[cercar.c] INFO: Contingut buff (cat): %s\n", buff); // virualitzam les 50 aa..aa per pantalla
 
     // desmontam es FS
     if (bumount() == -1) {
