@@ -36,6 +36,12 @@ int main(int argc, char *argv[])
         exit(-1);
     }
 
+    mode = atoi(argv[3]);
+    if (mode < 0 || mode > 7) {
+        printf("[mi_creat.c] ERROR: Permissos incorrectes!\n");
+        return -1;
+    }
+
     // montam es FS
     if (bmount(argv[1]) == -1) {
         return -1;

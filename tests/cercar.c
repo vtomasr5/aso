@@ -11,9 +11,9 @@
 
 int main(int argc, char *argv[])
 {
-    char buff[100];
+    //char buff[100];
     char buffer[BUFFER_DIR];
-    int m = -3; // inicialitzacio diferent per a provar que s'actualitza el valor
+    //int m = -3; // inicialitzacio diferent per a provar que s'actualitza el valor
 
     memset(buffer, '\0', BUFFER_DIR);
 
@@ -31,6 +31,8 @@ int main(int argc, char *argv[])
     printf("nnnnnnnnnnnnnnnnnn creat /dir1/fichero nnnnnnnnnnnnnnnnnnnnnn\n");
     mi_creat("/dir1/fichero", 7);
 
+    mi_link("/dir2/","/dir1/");
+/*
     memset(buff, 'a', 100); // escrivim aaa...aaa 100 vegades dins el fitxer
 
     printf("nnnnnnnnnnnnnnnnnnn mi write /dir1/fichero nnnnnnnnnnnnnnnnnnnnnnnnn\n");
@@ -48,10 +50,10 @@ int main(int argc, char *argv[])
     memset(buff, '\0', 100); // netejam el buffer
 
     printf("nnnnnnnnnnnnnnnnnnn mi cat /dir1/fichero nnnnnnnnnnnnnnnnnnnnnnnnn\n");
-    mi_read("/dir1/fichero", buff, 0, 50); // llegim nomes 50 aa..aa del fitxer
+    mi_read("/dir1/fichero", buff, 0, 5); // llegim nomes 50 aa..aa del fitxer
 
     printf("[cercar.c] INFO: Contingut buff (cat): %s\n", buff); // virualitzam les 50 aa..aa per pantalla
-
+*/
     // desmontam es FS
     if (bumount() == -1) {
         return -1;
