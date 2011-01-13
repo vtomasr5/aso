@@ -75,31 +75,33 @@ int proces(int num_proces, char *fitxer)
 
     sprintf(nom_carpeta, "%s", fitxer);
     sprintf(nom_carpeta, "%sproceso_%d/", nom_carpeta, getpid());
-    sprintf(nom_carpeta, "%sprueba.dat", nom_carpeta);
 
     srandom(getpid());
     printf("[simulacion.c] DEBUG: Carpeta: %s\n", &nom_carpeta[0]);
 
-    if (mi_creat(nom_carpeta, 7) != -1) { // cream les carpetes dels processos
-        for (i = 0; i < N_VEGADES; i++) {
-            rand = (random() % sizeof(registre)) * sizeof(registre);
-            reg.data = time(NULL);
-            reg.pid = getpid();
-            reg.escriptura = i + 1;
-            reg.pos_registre = rand;
+    if (mi_creat(nom_carpeta, 7) != -1) {
+        sprintf(nom_carpeta, "%sprueba.dat", nom_carpeta); // afegim a la ruta el nom del fitxer
 
-            //~ mi_write(nom_carpeta, &reg, rand, sizeof(registre));
-            if (mi_write(nom_carpeta, &reg, rand, sizeof(registre)) == -1) {
-                printf("[simulacion.c] ERROR: Hi ha hagut un error d'escriptura\n");
-                return -1;
+        if (mi_creat(nom_carpeta, 7) != -1) { // cream les carpetes dels processos
+            for (i = 0; i < N_VEGADES; i++) {
+                rand = (random() % sizeof(registre)) * sizeof(registre);
+                reg.data = time(NULL);
+                reg.pid = getpid();
+                reg.escriptura = i + 1;
+                reg.pos_registre = rand;
+
+                if (mi_write(nom_carpeta, &reg, rand, sizeof(registre)) == -1) {
+                    printf("[simulacion.c] ERROR: Hi ha hagut un error d'escriptura\n");
+                    return -1;
+                }
+
+                printf("[simulacion.c] INFO: Proces: %d, escric el registre: %d, a la posicio: %d.\n", reg.pid, i + 1, reg.pos_registre);
+                usleep(50000); // 0.05s
             }
-
-            printf("[simulacion.c] INFO: Proces: %d, escric el registre: %d, a la posicio: %d.\n", reg.pid, i + 1, reg.pos_registre);
-            usleep(50000); // 0.05s
+        } else {
+            printf("[simulacion.c] ERROR: No s'ha pogut crear el cami2 '%s'\n", nom_carpeta);
+            return -1;
         }
-    } else {
-        printf("[simulacion.c] ERROR: No s'ha pogut crear el cami2 '%s'\n", nom_carpeta);
-        return -1;
     }
     return 0;
 }

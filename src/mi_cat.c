@@ -55,10 +55,12 @@ int main(int argc, char *argv[])
 
             int i;
             for (i = 0; (i * TB) < estat.tamany; i++) {
-                if (mi_read(argv[2], buff, (i * TB), TB) != -1) { // BUG
-                    //printf("[mi_cat.c] ERROR: No s'ha pogut llegir! (mi_read(%s, buff, %d, %d)\n", argv[2], (i*TB), TB);
+                if (mi_read(argv[2], buff, (i * TB), TB) == -1) {
+                    printf("[mi_cat.c] ERROR: No s'ha pogut llegir!\n");
                     return -1;
                 }
+                //file = fopen("/dev/stdout", "w");
+                //fwrite(buff, TB, 1, file);
                 write(1, buff, TB);
             }
 

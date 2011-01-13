@@ -28,6 +28,7 @@
  */
 
 #include "directorios.h"
+#include "semaforos.h"
 
 // per saber el nombre d'elements que té un array
 #define length(x) (sizeof(x) / sizeof(x[0]))
@@ -182,7 +183,7 @@ int cercarEntrada(const char *cami_parcial, unsigned int *p_inode_dir, unsigned 
             }
 
             *p_inode = r; // l'inode reservar es el seu inode (p_inode)
-            *p_entrada = (estat2.tamany / sizeof(entrada));
+            *p_entrada = estat2.tamany / sizeof(entrada);
             printf("[directorios.c] DEBUG: inode reservat = %d, cami = %s, p_entrada = %u \n", r, cami_inicial, *p_entrada);
 
             if ((strlen(cami_final) == 0) || (strcmp(cami_final, "/") == 0)) {  // si hemos acabado o lo ultimo es una "/"
@@ -191,7 +192,9 @@ int cercarEntrada(const char *cami_parcial, unsigned int *p_inode_dir, unsigned 
                 *p_inode_dir = *p_inode; // ara p_inode_dir es el directori que conté fitxers
                 return cercarEntrada(cami_final, p_inode_dir, p_inode, p_entrada, reservar); // cridada recursiva
             }
-        } // else reservar = '0'
+        } else {
+            return -1; // entrada no trobada
+        }
     }
     return 0;
 }
@@ -224,6 +227,8 @@ int mi_creat(const char *cami, unsigned int mode)
     *p_inode_dir = 0;
     *p_inode = 0;
     *p_entrada = 0;
+
+    //esperarSemafor(mutex, 0, 0);
 
     // realment com que no troba l'entrada de directori, la crea
     if (cercarEntrada(cami, p_inode_dir, p_inode, p_entrada, '1') != -1) {
