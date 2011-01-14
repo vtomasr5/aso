@@ -13,7 +13,7 @@ int main(int argc, char *argv[])
 {
     //char buff[100];
     char buffer[BUFFER_DIR];
-    //int m = -3; // inicialitzacio diferent per a provar que s'actualitza el valor
+    int m = -3; // inicialitzacio diferent per a provar que s'actualitza el valor
 
     memset(buffer, '\0', BUFFER_DIR);
 
@@ -32,6 +32,15 @@ int main(int argc, char *argv[])
     mi_creat("/dir1/fichero", 7);
 
     mi_link("/dir2/","/dir1/");
+
+    memset(buffer, '\0', BUFFER_DIR); // reset buffer
+
+    printf("nnnnnnnnnnnnnnnnnnn mi dir /dir1 nnnnnnnnnnnnnnnnnnnnnnnnn\n");
+    m = mi_dir("/dir1/", buffer);
+    printf("[cercar.c] DEBUG: num fitxers dins el directori = %d\n", m);
+
+    printf("nnnnnnnnnnnnnnnnnnn mi lsdir /dir1 nnnnnnnnnnnnnnnnnnnnnnnnn\n");
+    mi_lsdir("/dir1/", buffer);
 /*
     memset(buff, 'a', 100); // escrivim aaa...aaa 100 vegades dins el fitxer
 
