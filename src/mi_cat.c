@@ -33,6 +33,9 @@ int main(int argc, char *argv[])
     unsigned char buff[TB];
     memset(buff, '\0', TB);
     FILE *file;
+    int lectures = 0;
+    uint p_inode_dir, p_inode, p_entrada;
+    p_inode_dir = p_inode = p_entrada = 0;
 
     if (argc != 3) {
         printf("[mi_cat.c] ERROR: Arguments incorrectes. Ex: mi_cat <nomFS> <cami>\n");
@@ -41,6 +44,11 @@ int main(int argc, char *argv[])
 
     // montam es FS
     if (bmount(argv[1]) == -1) {
+        return -1;
+    }
+
+    if (cercarEntrada(argv[2], &p_inode_dir, &p_inode, &p_entrada, '0') == -1) {
+        printf("[mi_cat.c] ERROR: No s'ha trobat l'entrada!\n");
         return -1;
     }
 
@@ -53,15 +61,21 @@ int main(int argc, char *argv[])
         if (estat.tamany > 0) { // si no esta buit
             printf("\n");
 
-            int i;
-            for (i = 0; (i * TB) < estat.tamany; i++) {
-                if (mi_read(argv[2], buff, (i * TB), TB) == -1) {
-                    printf("[mi_cat.c] ERROR: No s'ha pogut llegir!\n");
-                    return -1;
+            int i = 0;
+            int bf = 0;
+            while (lectures < estat.blocs_assignats_dades) {
+                bf = traduirBlocInode(p_inode, i, '0');
+                if (bf > 0) {
+                    if (mi_read(argv[2], buff, (i * TB), TB) == -1) {
+                        printf("[mi_cat.c] ERROR: No s'ha pogut llegir!\n");
+                        return -1;
+                    }
+                    lectures++; // quantitat de blocs llegits
+                    //file = fopen("/dev/stdout", "w");
+                    //fwrite(buff, TB, 1, file);
+                    write(1, buff, estat.tamany);
+                    i++;
                 }
-                //file = fopen("/dev/stdout", "w");
-                //fwrite(buff, TB, 1, file);
-                write(1, buff, TB);
             }
 
             printf("\n\n");

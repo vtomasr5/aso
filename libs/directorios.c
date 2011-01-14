@@ -275,7 +275,7 @@ int mi_link(const char *cami1, const char *cami2)
     *p_inode = 0;
     *p_entrada = 0;
 
-    if (cercarEntrada(cami2, p_inode_dir, p_inode, p_entrada, '1') == -1) {
+    if (cercarEntrada(cami2, p_inode_dir, p_inode, p_entrada, '0') == -1) {
         printf("[directorios.c] ERROR: No s'ha trobat l'entrada, el link no s'ha pogut realitzar!!\n");
         alliberar(p_inode_dir, p_inode, p_entrada);
         return -1;
