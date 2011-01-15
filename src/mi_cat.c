@@ -42,18 +42,23 @@ int main(int argc, char *argv[])
         exit(-1);
     }
 
+    sem_init();
+
     // montam es FS
     if (bmount(argv[1]) == -1) {
+        sem_del();
         return -1;
     }
 
     if (cercarEntrada(argv[2], &p_inode_dir, &p_inode, &p_entrada, '0') == -1) {
         printf("[mi_cat.c] ERROR: No s'ha trobat l'entrada!\n");
+        sem_del();
         return -1;
     }
 
     // codi
     if (mi_stat(argv[2], &estat) == -1) {
+        sem_del();
         return -1;
     }
 
@@ -68,6 +73,7 @@ int main(int argc, char *argv[])
                 if (bf > 0) {
                     if (mi_read(argv[2], buff, (i * TB), TB) == -1) {
                         printf("[mi_cat.c] ERROR: No s'ha pogut llegir!\n");
+                        sem_del();
                         return -1;
                     }
                     lectures++; // quantitat de blocs llegits
@@ -88,8 +94,11 @@ int main(int argc, char *argv[])
 
     // desmontam es FS
     if (bumount() == -1) {
+        sem_del();
         return -1;
     }
+
+    sem_del();
 
     return 0;
 }

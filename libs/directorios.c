@@ -33,8 +33,8 @@
 // per saber el nombre d'elements que té un array
 #define length(x) (sizeof(x) / sizeof(x[0]))
 
-// semàfor (mutex) encarregat d'assegurar exlusió mutua al SB, MB i AI.
-int mutex = 0;
+// semafor mutex per controlar l'acces concurrent
+int mutex;
 
 /**
  *  Funció que estreu el camí de la ruta que se li passa com a paràmetre i que
@@ -121,7 +121,7 @@ int cercarEntrada(const char *cami_parcial, unsigned int *p_inode_dir, unsigned 
 
     int k;
     for (k = 0; k < length(ent); k++) { // mostram les entrades per pantalla
-        printf("[directorios.c]  DEBUG: ----> Entrada directori: nom = %s || inode = %d\n", ent[k].nom, ent[k].inode);
+        printf("[directorios.c] DEBUG: ----> Entrada directori: nom = %s || inode = %d\n", ent[k].nom, ent[k].inode);
     }
 
     while ((trobat == 0) && (i < num_ent)) { // se busca la entrada
@@ -137,10 +137,8 @@ int cercarEntrada(const char *cami_parcial, unsigned int *p_inode_dir, unsigned 
 
     if (trobat) {
         if ((strlen(cami_final) == 0) || (strcmp(cami_final, "/") == 0)) { // si solo queda una entrada en el camino (fichero o directorio)
-            printf("[directorios.c] DEBUG: TROBAT - p_inode: %d , p_entrada: %d \n", *p_inode, *p_entrada);
             inode inod = llegirInode(*p_inode);
             if (((inod.tipus == 1) && (strcmp(cami_final, "/") == 0)) || ((inod.tipus == 2) && (strlen(cami_final) == 0))) {//es un fichero o directorio
-                printf("i = %d\n", i);
                 *p_inode = ent[i-1].inode;
                 *p_entrada = i-1;
             }
@@ -149,9 +147,7 @@ int cercarEntrada(const char *cami_parcial, unsigned int *p_inode_dir, unsigned 
             return cercarEntrada(cami_final, p_inode_dir, p_inode, p_entrada, reservar);
         }
     } else { // no encontrado luego lo creamos ahora
-       printf("[directorios.c] DEBUG: NO TROBAT entrada: %s\n", cami_inicial);
        if (reservar == '1') {
-            printf("[directorios.c] DEBUG: reservar = %c\n", reservar);
             entrada entra;
             STAT estat2;
             uint tipus_inode;
@@ -181,7 +177,7 @@ int cercarEntrada(const char *cami_parcial, unsigned int *p_inode_dir, unsigned 
 
             *p_inode = r; // l'inode reservar es el seu inode (p_inode)
             *p_entrada = estat2.tamany / sizeof(entrada);
-            printf("[directorios.c] DEBUG: inode reservat = %d, cami = %s, p_entrada = %u \n", r, cami_inicial, *p_entrada);
+            printf("[directorios.c] DEBUG: p_inode(r) = %d, cami = %s, p_entrada = %u \n", *p_inode, cami_inicial, *p_entrada);
 
             if ((strlen(cami_final) == 0) || (strcmp(cami_final, "/") == 0)) {  // si hemos acabado o lo ultimo es una "/"
                 return 0;
@@ -225,7 +221,7 @@ int mi_creat(const char *cami, unsigned int mode)
     *p_inode = 0;
     *p_entrada = 0;
 
-    //esperarSemafor(mutex, 0, 0);
+    sem_wait();
 
     // realment com que no troba l'entrada de directori, la crea
     if (cercarEntrada(cami, p_inode_dir, p_inode, p_entrada, '1') != -1) {
@@ -236,16 +232,19 @@ int mi_creat(const char *cami, unsigned int mode)
         in.permisos = mode;
 
         if (escriureInode(num_inode, in) == -1) {
+            sem_signal();
             return -1;
         }
-        printf("[directorios.c] DEBUG: mi_creat - Cami %s creat\n", cami);
+        printf("[directorios.c] INFO: mi_creat - Cami %s creat\n", cami);
     } else {
         printf("[directorios.c] DEBUG: No s'ha trobat l'entrada!\n");
         alliberar(p_inode_dir, p_inode, p_entrada);
+        sem_signal();
         return -1;
     }
 
     alliberar(p_inode_dir, p_inode, p_entrada);
+    sem_signal();
     return 0;
 }
 
@@ -272,14 +271,17 @@ int mi_link(const char *cami1, const char *cami2)
     *p_inode = 0;
     *p_entrada = 0;
 
+    sem_wait();
+
     if (cercarEntrada(cami2, p_inode_dir, p_inode, p_entrada, '0') == -1) { // entrada que ha d'existir
         printf("[directorios.c] ERROR: No s'ha trobat l'entrada, el link no s'ha pogut realitzar!!\n");
         alliberar(p_inode_dir, p_inode, p_entrada);
+        sem_signal();
         return -1;
     }
     num_inode = *p_inode; // num_inode conté l'inode que apunta al directori desitjat
 
-    printf("[directorios.c] mi_link DEBUG: *p_inode_dir = %d, *p_inode = %d, *p_entrada = %d\n", *p_inode_dir, *p_inode, *p_entrada);
+    printf("[directorios.c] mi_link DEBUG: (cami2) *p_inode_dir = %d, *p_inode = %d, *p_entrada = %d\n", *p_inode_dir, *p_inode, *p_entrada);
 
     *p_inode_dir = 0;
     *p_inode = 0;
@@ -288,23 +290,25 @@ int mi_link(const char *cami1, const char *cami2)
     if (cercarEntrada(cami1, p_inode_dir, p_inode, p_entrada, '1') == -1) { // entrada que se crea i enllaça
         printf("[directorios.c] ERROR: No s'ha trobat l'entrada, el link no s'ha pogut realitzar!!\n");
         alliberar(p_inode_dir, p_inode, p_entrada);
+        sem_signal();
         return -1;
     }
     aux = *p_inode; // inode creat que s'ha d'eliminar després d'haver fet el link a s'altra inode (cami2)
 
-    printf("[directorios.c] mi_link DEBUG: *p_inode_dir = %d, *p_inode = %d, *p_entrada = %d, num_inode = %d\n", *p_inode_dir, *p_inode, *p_entrada, num_inode);
+    printf("[directorios.c] mi_link DEBUG: (cami1) *p_inode_dir = %d, *p_inode = %d, *p_entrada = %d\n", *p_inode_dir, *p_inode, *p_entrada);
 
     // llegim el contingut del directori que conté el nou inode i les entrades de directori.
     mi_stat_f(*p_inode_dir, &estat);
 
-    printf("[directorios.c] mi_link DEBUG Estat.tamany = %d\n", estat.tamany);
-    printf("[directorios.c] mi_link DEBUG antes de leer: ent.inode = %d\n", ent.inode);
+    //~ printf("[directorios.c] mi_link DEBUG Estat.tamany = %d\n", estat.tamany);
+    //~ printf("[directorios.c] mi_link DEBUG antes de leer: ent.inode = %d\n", ent.inode);
 
     // llegim l'entrada de directori del directori que conté el direcori que s'ha d'enllaçar per poder canviar el seu inode cap al que es enllaçat
     int bllegits = mi_read_f(*p_inode_dir, &ent, (*p_entrada) * sizeof(entrada), sizeof(entrada));
     if (bllegits == -1) {
         printf("[directorios.c] ERROR: Error de lectura a mi_read_f()\n");
         alliberar(p_inode_dir, p_inode, p_entrada); // alliberam memoria
+        sem_signal();
         return -1;
     }
     ent.inode = num_inode; // cambiamos su numero de inodo por la entrada del cami2
@@ -319,23 +323,25 @@ int mi_link(const char *cami1, const char *cami2)
     if  (bescrits == -1) {
         printf("[directorios.c] ERROR: Error d'escriptura a mi_write_f()\n");
         alliberar(p_inode_dir, p_inode, p_entrada); // alliberam memoria
+        sem_signal();
         return -1;
     }
+    printf("[directorios.c] DEBUG: bytes escrits = %d\n", bescrits);
+    printf("[directorios.c] mi_link DEBUG despues de escribir: ent.nom = %s, ent.inode = %d\n", ent.nom, ent.inode);
 
     // incremental els enllaços a directoris
     inode inod = llegirInode(num_inode);
     inod.links_directoris++;
     if (escriureInode(num_inode, inod) == -1) {
         alliberar(p_inode_dir, p_inode, p_entrada); // alliberam memoria
+        sem_signal();
         return -1;
     }
 
     alliberarInode(aux, 1); // alliberam l'inode ja que ara apunta a un altra inode
 
-    printf("[directorios.c] DEBUG: bytes escrits = %d\n", bescrits);
-    printf("[directorios.c] mi_link DEBUG despues de escribir: ent.nom = %s, ent.inode = %d\n", ent.nom, ent.inode);
     alliberar(p_inode_dir, p_inode, p_entrada); // alliberam memoria
-
+    sem_signal();
     printf("[directorios.c] DEBUG: mi_link realitzat correctament.\n");
     return 0;
 }
@@ -352,7 +358,6 @@ int mi_unlink(const char *cami)
     int res = 0;
     inode in;
     STAT estat;
-
     p_inode_dir = malloc(sizeof(uint));
     p_inode = malloc(sizeof(uint));
     p_entrada = malloc(sizeof(uint));
@@ -360,6 +365,8 @@ int mi_unlink(const char *cami)
     *p_inode_dir = 0;
     *p_inode = 0;
     *p_entrada = 0;
+
+    sem_wait();
 
     if (strcmp(cami, "/") == 0) { // caso de eliminar "/"
         printf("[directorios.c] ERROR: No pots borrar l'arrel '/'\n");
@@ -371,63 +378,71 @@ int mi_unlink(const char *cami)
     if (res == -1) {
         printf("[directorios.c] ERROR: No s'ha pogut trobar l'entrada!\n");
         alliberar(p_inode_dir, p_inode, p_entrada);
+        sem_signal();
         return -1;
     }
 
-    // leemos el directorio
-    in = llegirInode(*p_inode_dir);
+    // leemos el inodo del directorio
+    in = llegirInode(*p_inode);
 
     // si no tiene enlaces, o bien es un fichero o bien es un directorio sin links
     if (in.links_directoris == 1) {
+        printf("[directorios.c] DEBUG: 1 enlace\n");
         alliberarInode(*p_inode, 1); // lo eliminamos completamente
-
-        printf("[directorios.c] INFO: El cami '%s' s'ha borrat correctament.\n", cami);
-        alliberar(p_inode_dir, p_inode, p_entrada);
-        return 0;
     } else if (in.links_directoris > 1) { // si tiene mas de 1 enlace de directorio (es un directorio)
-        inode in2;
+        printf("[directorios.c] DEBUG: +1 enlace\n");
         char inicial[60];
         memset(inicial, '\0', 60);
 
         // llegim l'inode
-        in2 = llegirInode(*p_inode);
+//        in2 = llegirInode(*p_inode);
 
-        in2.links_directoris--;
-        if (escriureInode(*p_inode, in2) == -1) {
+        in.links_directoris--;
+        if (escriureInode(*p_inode, in) == -1) {
             alliberar(p_inode_dir, p_inode, p_entrada);
+            sem_signal();
             return -1;
         }
-        printf("[directorios.c] DEBUG: in2.tamany = %d\n", in2.tamany);
+        printf("[directorios.c] DEBUG: in.tamany = %d\n", in.tamany);
     }
 
     mi_stat_f(*p_inode_dir, &estat);
+    printf("[directorios.c] DEBUG: *p_inode_dir = %d | *pentrada = %d | *pentrada * sizeof(entrada) = %d | estat.tamany = %d\n",*p_inode_dir, *p_entrada, (*p_entrada) * sizeof(entrada), estat.tamany);
 
-    if ((*p_entrada + 1) * sizeof(entrada) == estat.tamany) {
+    // eliminam l'entrada de directori del directori que el conté
+    if ((*p_entrada) * sizeof(entrada) == estat.tamany) {
+        printf("[directorios.c] DEBUG: dentro1\n");
         if (mi_truncar_f(*p_inode_dir, in.tamany - sizeof(entrada)) == -1) {
             printf("[directorios.c] ERROR: mi_trucar_f(2)\n");
             alliberar(p_inode_dir, p_inode, p_entrada);
+            sem_signal();
             return -1;
         }
     } else {
+        printf("[directorios.c] DEBUG: dentro2\n");
         if (mi_read_f(*p_inode_dir, &ent, in.tamany - sizeof(entrada), sizeof(entrada)) == -1) { // in.tam - sizeof(struct entrada) = numero de bytes de offset
             printf("[directorios.c] ERROR: mi_read_f(2)\n");
             alliberar(p_inode_dir, p_inode, p_entrada);
+            sem_signal();
             return -1;
         }
         if (mi_truncar_f(*p_inode_dir, in.tamany - sizeof(entrada)) == -1) {
             printf("[directorios.c] ERROR: mi_trucar_f(2.2)\n");
             alliberar(p_inode_dir, p_inode, p_entrada);
+            sem_signal();
             return -1;
         }
         if (mi_write_f(*p_inode_dir, &ent, *p_entrada * sizeof(entrada), sizeof(entrada)) == -1) {
             printf("[directorios.c] ERROR: mi_write_f(2)\n");
             alliberar(p_inode_dir, p_inode, p_entrada);
+            sem_signal();
             return -1;
         }
     }
 
     printf("[directorios.c] INFO: El cami '%s' s'ha borrat correctament.\n", cami);
     alliberar(p_inode_dir, p_inode, p_entrada);
+    sem_signal();
     return 0;
 }
 
@@ -450,8 +465,11 @@ int mi_dir(const char *cami, char *buff)
     memset(buff, '\0', BUFFER_DIR); // resetejam
     p_inode_dir = p_inode = p_entrada = 0;
 
+    sem_wait();
+
     if (cercarEntrada(cami, &p_inode_dir, &p_inode, &p_entrada, '0') == -1) {
         printf("[directorios.c] ERROR: Entrada no trobada!!\n");
+        sem_signal();
         return -1;
     }
 
@@ -464,6 +482,7 @@ int mi_dir(const char *cami, char *buff)
             int res = mi_read_f(p_inode, &ent, bytes_llegits, sizeof(entrada));
             if (res == -1) {
                 printf("[directorios.c] ERROR: Error de lectura a mi_read_f()\n");
+                sem_signal();
                 return -1;
             }
 
@@ -487,13 +506,17 @@ int mi_dir(const char *cami, char *buff)
                 }
                 bytes_llegits += sizeof(entrada);
             } else {
+                sem_signal();
                 return 0;
             }
         }
     } else {
         printf("[directorios.c] ERROR: Això no es un directori!\n");
+        sem_signal();
         return -1;
     }
+
+    sem_signal();
     // retornam el numero d'entrades que conté el directori
     return bytes_llegits / sizeof(entrada);
 }
@@ -505,17 +528,21 @@ int mi_dir(const char *cami, char *buff)
  */
 int mi_chmod(const char *cami, unsigned char mode)
 {
+    sem_wait();
     uint p_inode, p_entrada, p_inode_dir = 0;
 
     if (cercarEntrada(cami, &p_inode_dir, &p_inode, &p_entrada, '0') == -1) { // busca el inodo de la ultima entrada de la ruta y la deposita en p_inode
         printf("[directorios.c] ERROR: No s'ha trobat el cami!!\n");
+        sem_signal();
         return -1;
     }
 
     if (mi_chmod_f(p_inode, mode) == -1) { // camviam els permisos a l'inode
+        sem_signal();
         return -1;
     }
 
+    sem_signal();
     return 0;
 }
 
@@ -526,15 +553,19 @@ int mi_chmod(const char *cami, unsigned char mode)
  */
 int mi_stat(const char *cami, STAT *p_stat)
 {
+    sem_wait();
+
     uint p_inode, p_entrada, p_inode_dir = 0;
 
     if (cercarEntrada(cami, &p_inode_dir, &p_inode, &p_entrada, '0') == -1) {
         printf("[directorios.c] ERROR: No s'ha trobat el cami!!\n");
+        sem_signal();
         return -1;
     }
 
     mi_stat_f(p_inode, p_stat);
 
+    sem_signal();
     return 0;
 }
 
@@ -548,18 +579,23 @@ int mi_stat(const char *cami, STAT *p_stat)
  */
 int mi_read(const char *cami, void *buff, unsigned int offset, unsigned int nbytes)
 {
+    sem_wait();
+
     uint p_inode, p_entrada, p_inode_dir = 0;
 
     if (cercarEntrada(cami, &p_inode_dir, &p_inode, &p_entrada, '0') == -1) {
         printf("[directorios.c] ERROR: No s'ha trobat el cami!!\n");
+        sem_signal();
         return -1;
     }
 
     int llegits = mi_read_f(p_inode, buff, offset, nbytes);
     if (llegits == -1) {
+        sem_signal();
         return -1;
     }
 
+    sem_signal();
     return llegits;
 }
 
@@ -574,18 +610,24 @@ int mi_read(const char *cami, void *buff, unsigned int offset, unsigned int nbyt
  */
 int mi_write(const char *cami, const void *buff, unsigned int offset, unsigned int nbytes)
 {
+
+    sem_wait();
+
     uint p_inode, p_entrada, p_inode_dir = 0;
 
     if (cercarEntrada(cami, &p_inode_dir, &p_inode, &p_entrada, '0') == -1) {
         printf("[directorios.c] ERROR: No s'ha trobat el cami!!\n");
+        sem_signal();
         return -1;
     }
 
     int escrits = mi_write_f(p_inode, buff, offset, nbytes);
     if (escrits == -1) {
+        sem_signal();
         return -1;
     }
 
+    sem_signal();
     return escrits;
 }
 
@@ -596,6 +638,8 @@ int mi_write(const char *cami, const void *buff, unsigned int offset, unsigned i
  */
 int mi_lsdir(const char *cami, char *buff)
 {
+    sem_wait();
+
     int cont = 0;
 
     for(cont = 0; cont < 2; cont++) {
@@ -617,5 +661,39 @@ int mi_lsdir(const char *cami, char *buff)
         printf("\n");
     }
 
+    sem_signal();
     return 0;
+}
+
+/**
+ *  Wait del mutex
+ */
+void sem_wait()
+{
+    esperarSemafor(mutex, 0, 0);
+}
+
+/**
+ *  Signal del mutex
+ */
+void sem_signal()
+{
+    senyalitzarSemafor(mutex, 0);
+}
+
+/**
+ *  Inicialitzam el semàfor mutex
+ */
+void sem_init()
+{
+    mutex = nouSemafor(50, 1);
+    inicialitzarSemafor(mutex, 1);
+}
+
+/**
+ *  Elimina el semafor mutex
+ */
+void sem_del()
+{
+    eliminarSemafor(mutex);
 }

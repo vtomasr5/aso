@@ -705,13 +705,14 @@ int alliberarInode(int inod, int eliminar)
     int blocs_ocupats = 0;
     int i = 0;
     int tam = 0;
+    //inode AI[(TB / sizeof(inode))];
 
     if (bread(POSICIO_SB, (char *)&sb) == -1) { // llegim el superbloc
         return -1;
     }
 
     in = llegirInode(inod); // llegim l'inode a alliberar
-
+    printf("[ficheros_basico.c] DEBUG: Inod = %d\n", inod);
     if (inod == 0) { // comprovam que l'inode no sigui l'arrel
         printf("[ficheros_basico.c] ERROR: No se pot eliminar l'inode arrel!!\n");
     } else if (in.tipus == 0) { // comprovam que l'inode no sigui lliure

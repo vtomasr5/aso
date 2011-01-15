@@ -35,6 +35,7 @@
 #include <sys/wait.h>
 
 #include "../libs/directorios.h"
+#include "../libs/semaforos.h"
 
 #define PROCESOS 100
 #define N_VEGADES 50
@@ -228,6 +229,8 @@ int main(int argc, char **argv)
         return -1;
     }
 
+    sem_init();
+
     sprintf(nom_carpeta, "/simul_%d%d%d%d%d%d/", t->tm_year+1900, t->tm_mon+1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
     // cream sa carpeta inicial /simul...
     if (mi_creat(nom_carpeta, 7) != -1) {
@@ -250,8 +253,11 @@ int main(int argc, char **argv)
 
     verificar(); // verificam les escriptures
 
+    sem_del();
+
     if (bumount() == -1) {
         return -1;
     }
+
     return 0;
 }

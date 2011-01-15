@@ -12,9 +12,6 @@ EXEC = src/mi_mkfs src/mi_chmod src/mi_ls src/mi_stat src/mi_cat src/mi_ln src/m
 all: mi_mkfs mi_chmod mi_ls mi_stat mi_cat mi_ln mi_rm mi_creat mi_write simulacion
 
 # biblioteques
-semaforos.o: libs/semaforos.c libs/semaforos.h
-	$(CC) $(CFLAGS) -c libs/semaforos.c
-
 directorios.o: libs/directorios.c libs/directorios.h
 	$(CC) $(CFLAGS) -c libs/directorios.c
 
@@ -26,6 +23,9 @@ ficheros_basico.o: libs/ficheros_basico.c libs/ficheros_basico.h
 
 bloques.o: libs/bloques.c libs/bloques.h
 	$(CC) $(CFLAGS) -c libs/bloques.c
+
+semaforos.o: libs/semaforos.c libs/semaforos.h
+	$(CC) $(CFLAGS) -c libs/semaforos.c
 
 # executables
 mi_mkfs: src/mi_mkfs.c $(OBJ_LIB)

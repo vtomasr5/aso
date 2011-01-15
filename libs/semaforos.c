@@ -27,9 +27,15 @@
 
 #include "semaforos.h"
 
+/**
+ *  Funció que crea un nou semàfor mutex
+ *  @param clau
+ *  @param num
+ *  @return El descriptor del nou semàfor.
+ */
 int nouSemafor(int clau, int num)
 {
-    int s = semget(clau, num, IPC_CREAT | 0600);
+    int s = semget(clau, num, IPC_CREAT | 0600); // cream el semafor
 
     if (s < 0) {
         printf("[semaforos.c] ERROR: Error creant el semafor!\n");
@@ -39,6 +45,12 @@ int nouSemafor(int clau, int num)
     return s;
 }
 
+/**
+ *  Funció que decrementa el valor del semàfor mutex
+ *  @param s descriptor del semafor a esperar (wait)
+ *  @param pos
+ *  @param flag
+ */
 void esperarSemafor(int s, int pos, int flag)
 {
     struct sembuf sbuf;
@@ -50,6 +62,11 @@ void esperarSemafor(int s, int pos, int flag)
     semop(s, &sbuf, 1);
 }
 
+/**
+ *  Funció que incrementa el valor del semàfor mutex
+ *  @param s descriptor del semafor a senyalitzar (signal)
+ *  @param pos
+ */
 void senyalitzarSemafor(int s, int pos)
 {
     struct sembuf sbuf;
@@ -61,11 +78,20 @@ void senyalitzarSemafor(int s, int pos)
     semop(s, &sbuf, 1);
 }
 
+/**
+ *
+ *  @param s descriptor del semafor a inicialitzar
+ *  @param valor
+ */
 void inicialitzarSemafor(int s, int valor)
 {
     semctl(s, 0, SETVAL, valor);
 }
 
+/**
+ *
+ *  @param s descriptor del semafor a eliminar
+ */
 void eliminarSemafor(int s)
 {
     int rem = semctl(s, 0, IPC_RMID, 0);
@@ -75,6 +101,5 @@ void eliminarSemafor(int s)
         exit(-1);
     }
 
-    printf("[semaforos.c] DEBUG: Semafor %d eliminat correctament.", s);
+    printf("[semaforos.c] DEBUG: Semafor %d eliminat correctament.\n", s);
 }
-

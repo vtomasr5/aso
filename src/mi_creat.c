@@ -36,14 +36,18 @@ int main(int argc, char *argv[])
         exit(-1);
     }
 
+    sem_init();
+
     mode = atoi(argv[3]);
     if (mode < 0 || mode > 7) {
         printf("[mi_creat.c] ERROR: Permissos incorrectes!\n");
+        sem_del();
         return -1;
     }
 
     // montam es FS
     if (bmount(argv[1]) == -1) {
+        sem_del();
         return -1;
     }
 
@@ -51,6 +55,7 @@ int main(int argc, char *argv[])
     mode = atoi(argv[3]);
 
     if (mi_creat(argv[2], mode) == -1) {
+        sem_del();
         return -1;
     } else {
         printf("[mi_creat.c] INFO: El fitxer/s o directori/s s'ha/n creat correctament.\n");
@@ -58,8 +63,11 @@ int main(int argc, char *argv[])
 
     // desmontam es FS
     if (bumount() == -1) {
+        sem_del();
         return -1;
     }
+
+    sem_del();
 
     return 0;
 }

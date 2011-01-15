@@ -36,8 +36,11 @@ int main(int argc, char *argv[])
         exit(-1);
     }
 
+    sem_init();
+
     // montam es FS
     if (bmount(argv[1]) == -1) {
+        sem_del();
         return -1;
     }
 
@@ -45,6 +48,7 @@ int main(int argc, char *argv[])
     mode = atoi(argv[3]);
 
     if (mi_chmod(argv[2], mode) == -1) {
+        sem_del();
         return -1;
     } else {
         printf("\n[mi_chmod.c] INFO: Permisos canviats correctament\n\n");
@@ -52,8 +56,11 @@ int main(int argc, char *argv[])
 
     // desmontam es FS
     if (bumount() == -1) {
+        sem_del();
         return -1;
     }
+
+    sem_del();
 
     return 0;
 }

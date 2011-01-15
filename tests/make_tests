@@ -1,6 +1,6 @@
 #!/bin/sh
 
-OBJ="../libs/ficheros_basico.o ../libs/bloques.o ../libs/ficheros.o ../libs/directorios.o"
+OBJ="../libs/ficheros_basico.o ../libs/bloques.o ../libs/ficheros.o ../libs/directorios.o ../libs/semaforos.o"
 
 rm -f infosb
 rm -f infomb

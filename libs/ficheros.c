@@ -43,10 +43,10 @@ int mi_write_f (unsigned int inod, const void *buff_original, unsigned int offse
     int bytes_escrits = 0;
     int blocLogic = offset / TB; // primer bloc (logic) on escriurem
     int blocFisic;
-    int darrer_bloc_logic = ((offset + nbytes) - 1) / TB; //ultim bloc on escriuremdesplacament_primer_bloc
-    int desplacament_primer_bloc = offset % TB; // Offset del primer bloc. Punt d'inici del primer bloc
-    int bytes_lliures_primer_bloc = TB - desplacament_primer_bloc; // Numero de bytes a escriure en el primer bloc
-    int bytes_per_escriure = nbytes; //Bytes que faltan per escriure
+    int darrer_bloc_logic = ((offset + nbytes) - 1) / TB; // ultim bloc on escriurem desplacament_primer_bloc
+    int desplacament_primer_bloc = offset % TB; // offset del primer bloc. Punt d'inici del primer bloc
+    int bytes_lliures_primer_bloc = TB - desplacament_primer_bloc; // numero de bytes a escriure en el primer bloc
+    int bytes_per_escriure = nbytes; // bytes que faltan per escriure
     memset(buff_bloc, '\0', TB);
 
     in = llegirInode(inod);
@@ -57,8 +57,6 @@ int mi_write_f (unsigned int inod, const void *buff_original, unsigned int offse
     }
 
     blocFisic = traduirBlocInode(inod, blocLogic, '1'); // bloc físic on escriurem
-
-    printf("[ficheros.c] mi_write_f DEBUG: blocFisic: %d offset %d\n", blocFisic, offset);
     if (blocFisic <= 0) {
         printf("[ficheros.c] ERROR: Bloc físic incorrecte\n");
         return -1;
@@ -132,7 +130,6 @@ int mi_write_f (unsigned int inod, const void *buff_original, unsigned int offse
             }
 
             memcpy(&buff_bloc, buff_original + bytes_escrits, bytes_per_escriure);
-            //memcpy(buff_bloc, &buff_original[(TB - desplacament_primer_bloc) + (darrer_bloc_logic - primer_bloc - 1) * TB], bytes_per_escriure);
 
             if (bwrite(blocFisic, buff_bloc) == -1) {
                 return -1;
@@ -145,7 +142,7 @@ int mi_write_f (unsigned int inod, const void *buff_original, unsigned int offse
     }
 
     //in = llegirInode(inod);
-    in.tamany += bytes_escrits;
+    in.tamany = offset + bytes_escrits; // el tamany de l'inode es el darrer bytes logic escrit més alt. NO els bytes escrits!
     in.data_acces = time(NULL);
     in.data_modificacio = time(NULL);
     if (escriureInode(inod, in) == -1) {
@@ -171,7 +168,7 @@ int mi_read_f (unsigned int inod, void *buff_original, unsigned int offset, unsi
     int bytes_llegits = 0;
     int blocLogic = offset / TB; // primer bloc logic
     int blocFisic;
-    int darrer_bloc_logic = ((offset + nbytes) - 1 )/ TB; // darrer bloc logic
+    int darrer_bloc_logic = ((offset + nbytes) - 1) / TB; // darrer bloc logic
     int desplacament_primer_bloc = offset % TB; // desplaçament del primer bloc. On es comença a llegir
     int bytes_lliures_primer_bloc = TB - desplacament_primer_bloc; // nombre de bytes a escriure al primer bloc
     int bytes_per_llegir = nbytes; // bytes que falten per llegir
@@ -185,9 +182,6 @@ int mi_read_f (unsigned int inod, void *buff_original, unsigned int offset, unsi
     }
 
     blocFisic = traduirBlocInode(inod, blocLogic, '0');
-
-    printf("[ficheros.c] DEBUG: blocFisic: %d\n",blocFisic);
-
     if (blocFisic <= 0) {
         printf("[ficheros.c] ERROR: Bloc físic incorrecte\n");
         return -1;
@@ -225,7 +219,6 @@ int mi_read_f (unsigned int inod, void *buff_original, unsigned int offset, unsi
                 return -1;
             }
 
-            //memcpy(buff_original + (TB - darrer_byte) + (i - primer_bloc - 1) * TB, buff_bloc, TB);
             memcpy(buff_original + bytes_llegits, &buff_bloc, TB); // + bytes_per_llegir
 
             bytes_llegits += TB;
@@ -249,7 +242,6 @@ int mi_read_f (unsigned int inod, void *buff_original, unsigned int offset, unsi
                 return -1;
             }
 
-            //memcpy(buff_original + desplacament_primer_bloc + (blocLogic - primer_bloc - 1) * TB, buff_bloc, bytes_darrer_bloc);
             memcpy(buff_original + bytes_llegits, &buff_bloc, bytes_per_llegir); // + bytes_per_llegir
 
             bytes_llegits += bytes_per_llegir;

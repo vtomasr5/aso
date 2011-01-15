@@ -38,13 +38,17 @@ int main(int argc, char *argv[])
         exit(-1);
     }
 
+    sem_init();
+
     // montam es FS
     if (bmount(argv[1]) == -1) {
+        sem_del();
         return -1;
     }
 
     // codi
     if (mi_dir(argv[2], buffer) == -1) { // escriu al buffer
+        sem_del();
         return -1;
     } else {
         mi_lsdir(argv[2], buffer); // mostra el contingut del buffer
@@ -52,8 +56,11 @@ int main(int argc, char *argv[])
 
     // desmontam es FS
     if (bumount() == -1) {
+        sem_del();
         return -1;
     }
+
+    sem_del();
 
     return 0;
 }

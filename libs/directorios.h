@@ -48,3 +48,7 @@ int mi_stat(const char *cami, STAT *p_stat);
 int mi_read(const char *cami, void *buff, unsigned int offset, unsigned int nbytes);
 int mi_write(const char *cami, const void *buff, unsigned int offset, unsigned int nbytes);
 int mi_lsdir(const char *cami, char *buff);
+void sem_wait();
+void sem_signal();
+void sem_init();
+void sem_del();
