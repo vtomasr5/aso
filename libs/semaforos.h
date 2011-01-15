@@ -25,6 +25,9 @@
  *  @date 11/01/2011
  */
 
+#if !defined(_SEMAFOROS_H)
+#define _SEMAFOROS_H
+
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/sem.h>
@@ -35,3 +38,5 @@ void esperarSemafor(int s, int pos, int flag);
 void senyalitzarSemafor(int s, int pos);
 void inicialitzarSemafor(int s, int valor);
 void eliminarSemafor(int s);
+
+#endif // _SEMAFOROS_H

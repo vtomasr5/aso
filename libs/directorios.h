@@ -26,6 +26,9 @@
  *  @date 10/12/2010
  */
 
+#if !defined(_DIRECTORIOS_H)
+#define _DIRECTORIOS_H
+
 #include "ficheros.h"
 
 /**
@@ -52,3 +55,5 @@ void sem_wait();
 void sem_signal();
 void sem_init();
 void sem_del();
+
+#endif // _DIRECTORIOS_H
