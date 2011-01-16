@@ -3,13 +3,13 @@
 
 # variables
 OBJ_LIB = libs/bloques.o libs/ficheros_basico.o libs/ficheros.o libs/directorios.o libs/semaforos.o
-OBJ_EXE = src/mi_mkfs.o src/mi_chmod.o src/mi_ls.o src/mi_stat.o src/mi_cat.o src/mi_ln.o src/mi_rm.o src/mi_creat.o src/mi_write.o src/simulacion.o
+OBJ_EXE = src/mi_mkfs.o src/mi_chmod.o src/mi_ls.o src/mi_stat.o src/mi_cat.o src/mi_ln.o src/mi_rm.o src/mi_creat.o src/mi_write.o src/simulacion.o src/mi_truncar.o
 OBJ = $(OBJ_EXE) $(OBJ_LIB)
 CC = gcc
 CFLAGS = -Wall -O1 -ggdb
-EXEC = src/mi_mkfs src/mi_chmod src/mi_ls src/mi_stat src/mi_cat src/mi_ln src/mi_rm src/mi_creat src/mi_write src/simulacion
+EXEC = src/mi_mkfs src/mi_chmod src/mi_ls src/mi_stat src/mi_cat src/mi_ln src/mi_rm src/mi_creat src/mi_write src/simulacion src/mi_truncar
 
-all: mi_mkfs mi_chmod mi_ls mi_stat mi_cat mi_ln mi_rm mi_creat mi_write simulacion
+all: mi_mkfs mi_chmod mi_ls mi_stat mi_cat mi_ln mi_rm mi_creat mi_write simulacion mi_truncar
 
 # biblioteques
 directorios.o: libs/directorios.c libs/directorios.h
@@ -54,6 +54,9 @@ mi_creat: src/mi_creat.c $(OBJ_LIB)
 
 mi_write: src/mi_write.c $(OBJ_LIB)
 	$(CC) -o src/mi_write src/mi_write.c $(OBJ_LIB)
+
+mi_truncar: src/mi_truncar.c $(OBJ_LIB)
+	$(CC) -o src/mi_truncar src/mi_truncar.c $(OBJ_LIB)
 
 simulacion: src/simulacion.c $(OBJ_LIB)
 	$(CC) -o src/simulacion src/simulacion.c $(OBJ_LIB)
