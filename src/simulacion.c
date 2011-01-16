@@ -39,7 +39,7 @@
 
 #define PROCESOS 100
 #define N_VEGADES 50
-#define TAM 200 // llargaria nom cami
+#define TAM 100 // llargaria nom cami
 
 typedef struct {
     int data;
@@ -70,6 +70,7 @@ void enterrador(int s)
 int proces(int num_proces, char *fitxer)
 {
     char nom_carpeta[TAM];
+    //memcpy(nom_carpeta, '\0', TAM);
     int i = 0;
     registre reg;
     int rand; // numero del random
@@ -78,12 +79,12 @@ int proces(int num_proces, char *fitxer)
     sprintf(nom_carpeta, "%sproceso_%d/", nom_carpeta, getpid());
 
     srandom(getpid());
-    printf("[simulacion.c] DEBUG: Carpeta: %s\n", &nom_carpeta[0]);
+    //printf("[simulacion.c] DEBUG: Carpeta: %s\n", &nom_carpeta[0]);
 
-    if (mi_creat(nom_carpeta, 7) != -1) {
+    if (mi_creat(nom_carpeta, 7) != -1) { // cream els directori 'proceso_n'
         sprintf(nom_carpeta, "%sprueba.dat", nom_carpeta); // afegim a la ruta el nom del fitxer
 
-        if (mi_creat(nom_carpeta, 7) != -1) { // cream les carpetes dels processos
+        if (mi_creat(nom_carpeta, 7) != -1) { // cream els fitxers 'prueba.dat'
             for (i = 0; i < N_VEGADES; i++) {
                 rand = (random() % sizeof(registre)) * sizeof(registre);
                 reg.data = time(NULL);
@@ -92,7 +93,7 @@ int proces(int num_proces, char *fitxer)
                 reg.pos_registre = rand;
 
                 if (mi_write(nom_carpeta, &reg, rand, sizeof(registre)) == -1) {
-                    printf("[simulacion.c] ERROR: Hi ha hagut un error d'escriptura\n");
+                    printf("[simulacion.c] ERROR: Hi ha hagut un error d'escriptura a '%s'\n", nom_carpeta);
                     return -1;
                 }
 
@@ -100,10 +101,14 @@ int proces(int num_proces, char *fitxer)
                 usleep(50000); // 0.05s
             }
         } else {
-            printf("[simulacion.c] ERROR: No s'ha pogut crear el cami2 '%s'\n", nom_carpeta);
+            printf("[simulacion.c] ERROR: No s'ha pogut crear el fitxer '%s'\n", nom_carpeta);
             return -1;
         }
+    } else {
+        printf("[simulacion.c] ERROR: No s'ha pogut crear el directori '%s'\n", nom_carpeta);
+        return -1;
     }
+
     return 0;
 }
 
@@ -232,8 +237,8 @@ int main(int argc, char **argv)
     sem_init();
 
     sprintf(nom_carpeta, "/simul_%d%d%d%d%d%d/", t->tm_year+1900, t->tm_mon+1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
-    // cream sa carpeta inicial /simul...
-    if (mi_creat(nom_carpeta, 7) != -1) {
+
+    if (mi_creat(nom_carpeta, 7) != -1) { // cream sa carpeta inicial /simul...
         for (i = 0; i < PROCESOS; i++) {
             printf("[simulacion.c] ############################# Proces: %d #############################\n", i);
             if (fork() == 0) { // es creen els 100 processos fills
@@ -247,11 +252,11 @@ int main(int argc, char **argv)
             pause();
         }
     } else {
-        printf("[simulacion.c] ERROR: No s'ha pogut crear el cami1 '%s'\n", nom_carpeta);
+        printf("[simulacion.c] ERROR: No s'ha pogut crear el directori '%s'\n", nom_carpeta);
         return -1;
     }
 
-    verificar(); // verificam les escriptures
+    //verificar(); // verificam les escriptures
 
     sem_del();
 

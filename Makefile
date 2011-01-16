@@ -59,7 +59,7 @@ mi_truncar: src/mi_truncar.c $(OBJ_LIB)
 	$(CC) -o src/mi_truncar src/mi_truncar.c $(OBJ_LIB)
 
 simulacion: src/simulacion.c $(OBJ_LIB)
-	$(CC) -o src/simulacion src/simulacion.c $(OBJ_LIB)
+	$(CC) $(CFLAGS) -o src/simulacion src/simulacion.c $(OBJ_LIB)
 
 clean:
 	rm -f $(OBJ)

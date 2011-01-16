@@ -9,6 +9,7 @@ mi_cat
 mi_write
 mi_chmod
 mi_creat
+mi_truncar
 simulacion
 disco.imagen
 infosb

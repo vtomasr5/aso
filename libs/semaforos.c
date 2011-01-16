@@ -101,5 +101,5 @@ void eliminarSemafor(int s)
         exit(-1);
     }
 
-    printf("[semaforos.c] DEBUG: Semafor %d eliminat correctament.\n", s);
+    //printf("[semaforos.c] DEBUG: Semafor %d eliminat correctament.\n", s);
 }
