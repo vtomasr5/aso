@@ -42,12 +42,20 @@ int main(int argc, char *argv[])
     }
 
     // codi
+    if (infoSB() == -1) { // mostram el contingut del superbloc
+        return -1;
+    }
+
     mode = atoi(argv[3]);
 
     if (mi_creat(argv[2], mode) == -1) {
         return -1;
     } else {
         printf("[mi_creat.c] INFO: El fitxer/s o directori/s s'ha/n creat correctament.\n");
+    }
+
+    if (infoSB() == -1) { // mostram el contingut del superbloc
+        return -1;
     }
 
     // desmontam es FS

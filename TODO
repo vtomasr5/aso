@@ -4,8 +4,13 @@
 - setmana 3 Completada
 - setmana 4 Completada
 - setmana 5 Completada
-- setmana 6 Quasi completada
+- setmana 6 completada
+- setmana 7 completada
+- setmana 8 completada
+- setmana 9 completada
+- setmana 10 completada
+- afegir concurrencia (semafors)
 
-- provar setmana 6 a fons
-- corregir bugs
-- aprendre a manejar es git i bzr!!!
+- corregir bug que escriu basura a s'entrada de s'inode
+- corregir bug que en borrar varis entrades no incrementa correctament la quantita d'inodes lliures (mi_rm -> mi_unlink)
+

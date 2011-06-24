@@ -45,6 +45,10 @@ int main(int argc, char *argv[])
     }
 
     // codi
+    if (infoSB() == -1) { // mostram el contingut del superbloc
+        return -1;
+    }
+
     if (mi_stat(argv[2], &estat) == -1) {
         return -1;
     }
@@ -69,6 +73,10 @@ int main(int argc, char *argv[])
         }
     } else {
         printf("[mi_cat.c] ERROR: No se pot fet un 'mi_cat' sobre un directori!\n");
+    }
+
+    if (infoSB() == -1) { // mostram el contingut del superbloc
+        return -1;
     }
 
     // desmontam es FS

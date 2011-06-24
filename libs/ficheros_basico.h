@@ -51,7 +51,7 @@ typedef struct {
     unsigned int inodes_lliures;   // Nombre de inodes lliures
     unsigned int total_blocs;      // Nombre de blocs totals
     unsigned int total_inodes;     // Nombre de inodes totals
-    char resta_superbloc[976];     // Resta del superbloc per a que ocupi 1024 bytes (padding)
+    char resta_superbloc[TB-(4*12)];     // Resta del superbloc per a que ocupi 1024 bytes (padding)
 } superbloc;
 
 /**
@@ -69,7 +69,7 @@ typedef struct {
     unsigned int links_directoris;
     unsigned int pdirectes[MAX_PUNTERS_DIRECTES];       // punters a blocs directes
     unsigned int pindirectes[MAX_PUNTERS_INDIRECTES];   // punters a blocs indirectes
-    //char resta_inode[24];
+    char resta_inode[24];
 } inode;
 
 int tamMB(unsigned int);   // tamany del mapa de bits

@@ -40,10 +40,18 @@ int main(int argc, char *argv[])
     }
 
     // codi
+    if (infoSB() == -1) { // mostram el contingut del superbloc
+        return -1;
+    }
+
     if (mi_unlink(argv[2]) == -1) {
         return -1;
     } else {
         printf("[mi_rm.c] INFO: S'ha eliminat correctament\n");
+    }
+
+    if (infoSB() == -1) { // mostram el contingut del superbloc
+        return -1;
     }
 
     // desmontam es FS

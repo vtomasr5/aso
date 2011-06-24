@@ -1,7 +1,7 @@
-Pràctica d'Ampliació de sistemes operatius
--------------------------------------------
+Pràctica d'Ampliació de sistemes operatius (AFS)
+------------------------------------------------
 
-Sistema de fitxers amb els següents requeriments (en espanyol):
+Sistema de fitxers AFS (ASO File System) amb els següents requeriments (en espanyol):
 
 - El sistema de ficheros deberá ser jerárquico con estructura de árbol; es decir, deben poder crearse subdirectorios.
 
