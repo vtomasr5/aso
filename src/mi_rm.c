@@ -22,6 +22,7 @@
 /**
  *  @file mi_rm.c
  *  @brief Elimina un enllaç entre dos directoris o elimina el directori completament.
+ *  També elimina els fitxers.
  *  @date 07/01/2011
  */
 
@@ -29,13 +30,17 @@
 
 int main(int argc, char *argv[])
 {
+
     if (argc != 3) {
         printf("[mi_rm.c] ERROR: Arguments incorrectes. Ex: mi_rm <nomFS> <cami>\n");
         exit(-1);
     }
 
+    sem_init();
+
     // montam es FS
     if (bmount(argv[1]) == -1) {
+        sem_del();
         return -1;
     }
 
@@ -45,7 +50,7 @@ int main(int argc, char *argv[])
     }
 
     if (mi_unlink(argv[2]) == -1) {
-        return -1;
+        printf("[mi_rm.c] ERROR: No s'ha pogut eliminar!\n");
     } else {
         printf("[mi_rm.c] INFO: S'ha eliminat correctament\n");
     }
@@ -56,8 +61,11 @@ int main(int argc, char *argv[])
 
     // desmontam es FS
     if (bumount() == -1) {
+        sem_del();
         return -1;
     }
+
+    sem_del();
 
     return 0;
 }

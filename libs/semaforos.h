@@ -1,4 +1,4 @@
-//      mi_ln.c
+//      semaforos.h
 //
 //      Copyright 2010 Vicenç Juan Tomàs Montserrat <vtomasr5@gmail.com>
 //      Copyright 2010 Toni Mulet Escobar <t.mulet@gmail.com>
@@ -20,51 +20,23 @@
 //      MA 02110-1301, USA.
 
 /**
- *  @file mi_ln.c
- *  @brief Crea un enllaç entre dos directoris.
- *  @date 07/01/2011
+ *  @file semaforos.h
+ *  @brief Conté les capçaleres de les funcions que implementen la funcionalitat d'un semàfor mutex.
+ *  @date 11/01/2011
  */
 
-#include "../libs/directorios.h"
+#if !defined(_SEMAFOROS_H)
+#define _SEMAFOROS_H
 
-int main(int argc, char *argv[])
-{
-    if (argc != 4) {
-        printf("[mi_ln.c] ERROR: Arguments incorrectes. Ex: mi_ln <nomFS> <cami_nou> <cami_existent>\n");
-        exit(-1);
-    }
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/sem.h>
+#include <stdlib.h>
 
-    sem_init();
+int nouSemafor(int clau, int num);
+void esperarSemafor(int s, int pos, int flag);
+void senyalitzarSemafor(int s, int pos);
+void inicialitzarSemafor(int s, int valor);
+void eliminarSemafor(int s);
 
-    // montam es FS
-    if (bmount(argv[1]) == -1) {
-        sem_del();
-        return -1;
-    }
-
-    // codi
-    if (infoSB() == -1) { // mostram el contingut del superbloc
-        return -1;
-    }
-
-    if (mi_link(argv[2], argv[3]) == -1) {
-        sem_del();
-        return -1;
-    } else {
-        printf("[mi_ln.c] INFO: Enllaç realitzat correctament.\n");
-    }
-
-    if (infoSB() == -1) { // mostram el contingut del superbloc
-        return -1;
-    }
-
-    // desmontam es FS
-    if (bumount() == -1) {
-        sem_del();
-        return -1;
-    }
-
-    sem_del();
-
-    return 0;
-}
+#endif // _SEMAFOROS_H

@@ -33,41 +33,58 @@ int main(int argc, char *argv[])
     unsigned char buff[TB];
     memset(buff, '\0', TB);
     FILE *file;
+    int lectures = 0;
+    uint p_inode_dir, p_inode, p_entrada;
+    p_inode_dir = p_inode = p_entrada = 0;
 
     if (argc != 3) {
         printf("[mi_cat.c] ERROR: Arguments incorrectes. Ex: mi_cat <nomFS> <cami>\n");
         exit(-1);
     }
 
+    sem_init();
+
     // montam es FS
     if (bmount(argv[1]) == -1) {
+        sem_del();
         return -1;
     }
 
     // codi
-    if (infoSB() == -1) { // mostram el contingut del superbloc
+    if (cercarEntrada(argv[2], &p_inode_dir, &p_inode, &p_entrada, '0') == -1) {
+        printf("[mi_cat.c] ERROR: No s'ha trobat l'entrada!\n");
+        sem_del();
         return -1;
     }
 
     if (mi_stat(argv[2], &estat) == -1) {
+        sem_del();
         return -1;
     }
 
-    if (estat.tipus != 1) {
-        if (estat.tamany > 0) {
+    if (estat.tipus != 1) { // si no es un directori
+        if (estat.tamany > 0) { // si no esta buit
             printf("\n");
 
-            int i;
-            for (i = 0; (i * TB) < estat.tamany; i++) {
-                if (mi_read(argv[2], buff, (i * TB), TB) != -1) {
-                    file = fopen("/dev/stdout", "w");
-                    fwrite (buff, 1, TB, file);
-                    fclose (file);
+            int i = 0;
+            int bf = 0;
+            while (lectures < estat.blocs_assignats_dades) {
+                bf = traduirBlocInode(p_inode, i, '0');
+                if (bf > 0) {
+                    if (mi_read(argv[2], buff, (i * TB), TB) == -1) {
+                        printf("[mi_cat.c] ERROR: No s'ha pogut llegir!\n");
+                        sem_del();
+                        return -1;
+                    }
+                    lectures++; // quantitat de blocs llegits
+                    //file = fopen("/dev/stdout", "w");
+                    //fwrite(buff, TB, 1, file);
+                    write(1, buff, estat.tamany);
+                    i++;
                 }
-                memset(buff,'\0', TB);
             }
 
-            printf("\n");
+            printf("\n\n");
         } else {
             printf("[mi_cat.c] INFO: Aquest fitxer esta buit.\n");
         }
@@ -81,8 +98,11 @@ int main(int argc, char *argv[])
 
     // desmontam es FS
     if (bumount() == -1) {
+        sem_del();
         return -1;
     }
+
+    sem_del();
 
     return 0;
 }

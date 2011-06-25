@@ -1,3 +1,6 @@
+#ifndef _DEFINICIONS_H
+#define _DEFINICIONS_H
+
 // tamany de bloc
 #define TB 1024
 
@@ -18,3 +21,5 @@
 
 // tamany del buffer del directori
 #define BUFFER_DIR (TB * 4)
+
+#endif // _DEFINICIONS_H

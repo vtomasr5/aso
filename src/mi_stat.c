@@ -36,8 +36,11 @@ int main(int argc, char *argv[])
         exit(-1);
     }
 
+    sem_init();
+
     // montam es FS
     if (bmount(argv[1]) == -1) {
+        sem_del();
         return -1;
     }
 
@@ -47,6 +50,7 @@ int main(int argc, char *argv[])
     }
 
     if (mi_stat(argv[2], &estat) == -1) {
+        sem_del();
         return -1;
     } else {
         printf("\nEstat del camí '%s':\n", argv[2]);
@@ -61,8 +65,11 @@ int main(int argc, char *argv[])
 
     // desmontam es FS
     if (bumount() == -1) {
+        sem_del();
         return -1;
     }
+
+    sem_del();
 
     return 0;
 }

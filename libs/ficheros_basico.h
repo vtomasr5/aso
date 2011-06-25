@@ -26,6 +26,9 @@
  *  @date 11/10/2010
  */
 
+#if !defined(_FICHEROS_BASICO_H)
+#define _FICHEROS_BASICO_H
+
 #include <time.h>
 #include <stdio.h>
 #include <string.h>
@@ -89,3 +92,5 @@ int alliberarBlocInode(inode);
 int alliberarInode(int, int);
 int traduirBlocInode(unsigned int inod, unsigned int blocLogic, char reservar);
 int contingutInode(int inod);
+
+#endif // _FICHEROS_BASICO_H

@@ -3,6 +3,7 @@
 PATH=$PATH:"src/"
 
 rm -f disco.imagen
+echo "FS BORRAT"
 make clean
 make
 ./src/mi_mkfs disco.imagen 500000

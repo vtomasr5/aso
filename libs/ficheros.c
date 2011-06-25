@@ -21,7 +21,7 @@
 
 /**
  *  @file ficheros.c
- *  @brief Conté els funcions de més alt nivell que interactuen amb el sistema de fitxers.
+ *  @brief Conté les funcions de més alt nivell que interactuen amb el sistema de fitxers.
  *  S'implementen les funcions necessàries per a llegir i escriure en el sistema de fitxers.
  *  @date 15/11/2010
  */
@@ -43,13 +43,10 @@ int mi_write_f (unsigned int inod, const void *buff_original, unsigned int offse
     int bytes_escrits = 0;
     int blocLogic = offset / TB; // primer bloc (logic) on escriurem
     int blocFisic;
-    int darrer_bloc_logic = ((offset + nbytes) - 1) / TB; //ultim bloc on escriuremdesplacament_primer_bloc
-    //int darrer_byte = (offset + nbytes - 1); // darrer byte on escriurem
-    int desplacament_primer_bloc = offset % TB; // Offset del primer bloc. Punt d'inici del primer bloc
-    int bytes_lliures_primer_bloc = TB - desplacament_primer_bloc; // Numero de bytes a escriure en el primer bloc
-    //int primer_bloc = blocLogic;
-    //int bytes_darrer_bloc = (nbytes - bytes_lliures_primer_bloc) % TB; // Numero de bytes a escriure en el darrer bloc
-    int bytes_per_escriure = nbytes; //Bytes que faltan per escriure
+    int darrer_bloc_logic = ((offset + nbytes) - 1) / TB; // ultim bloc on escriurem desplacament_primer_bloc
+    int desplacament_primer_bloc = offset % TB; // offset del primer bloc. Punt d'inici del primer bloc
+    int bytes_lliures_primer_bloc = TB - desplacament_primer_bloc; // numero de bytes a escriure en el primer bloc
+    int bytes_per_escriure = nbytes; // bytes que faltan per escriure
     memset(buff_bloc, '\0', TB);
 
     in = llegirInode(inod);
@@ -60,8 +57,6 @@ int mi_write_f (unsigned int inod, const void *buff_original, unsigned int offse
     }
 
     blocFisic = traduirBlocInode(inod, blocLogic, '1'); // bloc físic on escriurem
-
-    printf("[ficheros.c] mi_write_f DEBUG: blocFisic: %d offset %d\n", blocFisic, offset);
     if (blocFisic <= 0) {
         printf("[ficheros.c] ERROR: Bloc físic incorrecte\n");
         return -1;
@@ -69,12 +64,11 @@ int mi_write_f (unsigned int inod, const void *buff_original, unsigned int offse
 
     in = llegirInode(inod);
 
-    if (bread(blocFisic, buff_bloc) == -1) {
-        return -1;
-    }
-
     // únicament tenim que escriure en un bloc
     if (nbytes <= bytes_lliures_primer_bloc) {
+        if (bread(blocFisic, buff_bloc) == -1) {
+            return -1;
+        }
         memcpy(&buff_bloc[desplacament_primer_bloc], buff_original, nbytes);
 
         if (bwrite(blocFisic, buff_bloc) == -1) {
@@ -84,6 +78,9 @@ int mi_write_f (unsigned int inod, const void *buff_original, unsigned int offse
         bytes_escrits = nbytes;
 
     } else { // cas en que escrivim en més d'un bloc
+        if (bread(blocFisic, buff_bloc) == -1) {
+            return -1;
+        }
         memcpy(&buff_bloc[desplacament_primer_bloc], buff_original, TB - desplacament_primer_bloc);
 
         if (bwrite(blocFisic, buff_bloc) == -1) {
@@ -133,7 +130,6 @@ int mi_write_f (unsigned int inod, const void *buff_original, unsigned int offse
             }
 
             memcpy(&buff_bloc, buff_original + bytes_escrits, bytes_per_escriure);
-            //memcpy(buff_bloc, &buff_original[(TB - desplacament_primer_bloc) + (darrer_bloc_logic - primer_bloc - 1) * TB], bytes_per_escriure);
 
             if (bwrite(blocFisic, buff_bloc) == -1) {
                 return -1;
@@ -142,15 +138,16 @@ int mi_write_f (unsigned int inod, const void *buff_original, unsigned int offse
             bytes_escrits += bytes_per_escriure; //sumamos los bytes que faltaban por escribir al total hasta ahora.
 
             printf ("\n[ficheros.c] DARRER CAS - DEBUG: ESCRIBIM bytes_escritos: %d en el blogLogic %d \n", bytes_per_escriure, blocLogic);
-
         }
     }
 
-    in = llegirInode(inod);
-    in.tamany = in.tamany + bytes_escrits;
+    //in = llegirInode(inod);
+    in.tamany = offset + bytes_escrits; // el tamany de l'inode es el darrer bytes logic escrit més alt. NO els bytes escrits!
     in.data_acces = time(NULL);
     in.data_modificacio = time(NULL);
-    escriureInode(inod, in);
+    if (escriureInode(inod, in) == -1) {
+        return -1;
+    }
 
     // retornam els bytes escrits al bloc
     return bytes_escrits;
@@ -171,13 +168,9 @@ int mi_read_f (unsigned int inod, void *buff_original, unsigned int offset, unsi
     int bytes_llegits = 0;
     int blocLogic = offset / TB; // primer bloc logic
     int blocFisic;
-    int darrer_bloc_logic = ((offset + nbytes) - 1 )/ TB; // darrer bloc logic
-   // int darrer_byte = (offset + nbytes) - 1;
+    int darrer_bloc_logic = ((offset + nbytes) - 1) / TB; // darrer bloc logic
     int desplacament_primer_bloc = offset % TB; // desplaçament del primer bloc. On es comença a llegir
     int bytes_lliures_primer_bloc = TB - desplacament_primer_bloc; // nombre de bytes a escriure al primer bloc
-    //int blocs_intermitjos = (nbytes - bytes_lliures_primer_bloc) / TB;
-    //int primer_bloc = blocLogic;
-    //int bytes_darrer_bloc = (nbytes - bytes_lliures_primer_bloc) % TB;
     int bytes_per_llegir = nbytes; // bytes que falten per llegir
     memset(buff_bloc, '\0', TB);
 
@@ -189,26 +182,23 @@ int mi_read_f (unsigned int inod, void *buff_original, unsigned int offset, unsi
     }
 
     blocFisic = traduirBlocInode(inod, blocLogic, '0');
-
-    printf("[ficheros.c] DEBUG: blocFisic: %d\n",blocFisic);
-
     if (blocFisic <= 0) {
         printf("[ficheros.c] ERROR: Bloc físic incorrecte\n");
         return -1;
     }
 
-    if (bread(blocFisic, buff_bloc) == -1) {
-        return -1;
-    }
-
-    printf("desplacament_primer_bloc = %d\n", desplacament_primer_bloc);
-    printf("bytes_lliures_primer_bloc = %d\n", bytes_lliures_primer_bloc);
-
     if (nbytes <= bytes_lliures_primer_bloc) { // només llegim un bloc
+        if (bread(blocFisic, buff_bloc) == -1) {
+            return -1;
+        }
         memcpy(buff_original, &buff_bloc[desplacament_primer_bloc], nbytes);
 
         bytes_llegits = nbytes;
     } else { // tenim més d'un bloc a llegir
+        if (bread(blocFisic, buff_bloc) == -1) {
+            return -1;
+        }
+
         memcpy(buff_original, &buff_bloc[desplacament_primer_bloc], bytes_lliures_primer_bloc);
 
         bytes_llegits = bytes_lliures_primer_bloc;
@@ -229,7 +219,6 @@ int mi_read_f (unsigned int inod, void *buff_original, unsigned int offset, unsi
                 return -1;
             }
 
-            //memcpy(buff_original + (TB - darrer_byte) + (i - primer_bloc - 1) * TB, buff_bloc, TB);
             memcpy(buff_original + bytes_llegits, &buff_bloc, TB); // + bytes_per_llegir
 
             bytes_llegits += TB;
@@ -253,7 +242,6 @@ int mi_read_f (unsigned int inod, void *buff_original, unsigned int offset, unsi
                 return -1;
             }
 
-            //memcpy(buff_original + desplacament_primer_bloc + (blocLogic - primer_bloc - 1) * TB, buff_bloc, bytes_darrer_bloc);
             memcpy(buff_original + bytes_llegits, &buff_bloc, bytes_per_llegir); // + bytes_per_llegir
 
             bytes_llegits += bytes_per_llegir;
@@ -261,9 +249,11 @@ int mi_read_f (unsigned int inod, void *buff_original, unsigned int offset, unsi
     }
 
     // actualitzam la metainformació de l'inode
-    in = llegirInode(inod);
+    //in = llegirInode(inod);
     in.data_acces = time(NULL);
-    escriureInode(inod, in);
+    if (escriureInode(inod, in) == -1) {
+        return -1;
+    }
 
     return bytes_llegits;
 }
@@ -300,51 +290,62 @@ int mi_truncar_f(unsigned int inod, unsigned int nbytes)
 {
     inode in = llegirInode(inod);
 
-    int darrer_bloc = in.tamany / TB; // ultimo bloque a truncar
-    if ((in.tamany % TB) == 0) {
-        darrer_bloc -= 1;
+    if (nbytes > in.tamany) {
+        printf("[ficheros.c] ERROR: No se pot truncar un fitxer més gran que el seu tamany!\n");
+        return -1;
     }
 
-    printf("[ficheros.c - mi_truncar_f] DEBUG: Darrer bloc = %d\n", darrer_bloc);
+    if (nbytes == 0) { // "vaciar" el fichero a 0 bytes
+        alliberarInode(inod, 0);
 
-    int bloc_conservar = nbytes / TB; // ultimo bloque a conservar
-    if (nbytes % TB == 0) {
-        bloc_conservar -= 1; // si es exacto
-    }
+        // in = llegirInode(inod);
+        in.tamany = nbytes;
 
-    printf("[ficheros.c - mi_truncar_f] DEBUG: Blocs conservar = %d\n", bloc_conservar);
+        if (escriureInode(inod, in) == -1) {
+            return -1;
+        }
+    } else if (nbytes > 0) { // eliminar los bloques correspondientes
+        int darrer_bloc = in.tamany / TB; // ultimo bloque a truncar
+        if ((in.tamany % TB) == 0) {
+            darrer_bloc -= 1;
+        }
 
-    int i;
-    for (i = bloc_conservar + 1; i <= darrer_bloc; i++) {
-        int bfisic = traduirBlocInode(inod, i, '0');
-        printf("[ficheros.c - mi_truncar_f] DEBUG: bfisic = %d\n", bfisic);
+        printf("[ficheros.c - mi_truncar_f] DEBUG: Darrer bloc = %d\n", darrer_bloc);
+        int bloc_conservar = nbytes / TB; // ultimo bloque a conservar
+        if (nbytes % TB == 0) {
+            bloc_conservar -= 1; // si es exacto
+        }
 
-        if (bfisic > 0) {
-            if (alliberarBloc(bfisic) == -1) { // alliberam el bloc
-                printf("[ficheros.c] ERROR: No s'ha pogut alliberar el bloc!\n");
-                return -1;
+        printf("[ficheros.c - mi_truncar_f] DEBUG: Blocs conservar = %d\n", bloc_conservar);
+        int i;
+        for (i = bloc_conservar + 1; i <= darrer_bloc; i++) { // recorremos los bloques que queremos liberar
+            int bfisic = traduirBlocInode(inod, i, '0');
+
+            if (bfisic > 0) {
+                if (alliberarBloc(bfisic) == -1) { // alliberam el bloc
+                    printf("[ficheros.c] ERROR: No s'ha pogut alliberar el bloc!\n");
+                    return -1;
+                }
+
+                in.blocs_assignats_dades--;
+                //escriureInode(inod, in); // guardamos los cambios
             }
 
-            in = llegirInode(inod);
-            in.blocs_assignats_dades--;
-            escriureInode(inod, in);
+            if ((i == darrer_bloc) && (in.tamany % TB != 0)) { // si es la ultima vez se trunca un trozo de bloque
+                in.tamany -= in.tamany % TB;
+            } else {
+                in.tamany -= TB;
+            }
         }
 
-        if ((i == darrer_bloc) && (in.tamany % TB != 0)) { // si ultima vez se trunca un trozo de bloque
-            in.tamany -= in.tamany % TB;
-        } else {
-            in.tamany -= TB;
+        printf("[ficheros.c - mi_truncar_f] DEBUG: nbytes = %d\n", nbytes);
+        in.tamany = nbytes;
+        if (escriureInode(inod, in) == -1) {
+            return -1;
         }
     }
-
-    printf("[ficheros.c - mi_truncar_f] DEBUG: nbytes = %d\n", nbytes);
-    in = llegirInode(inod);
-    in.tamany = nbytes;
-    escriureInode(inod, in);
-
     return 0;
 }
-
 
 /**
  *  Retorna la metainformació d'un fitxer o directori. STAT es l'estructura que
@@ -376,7 +377,14 @@ int mi_stat_f (unsigned int inod, STAT *p_stat)
 */
 void veure_estat (STAT *p_stat)
 {
-    printf("Tipus: %d\n", p_stat->tipus);
+    char *tipus = NULL;
+
+    if (p_stat->tipus == 1) {
+        tipus = "(d)";
+    } else if (p_stat->tipus == 2) {
+        tipus = "(f)";
+    }
+    printf("Tipus: %d %s\n", p_stat->tipus, tipus);
     printf("Permisos: %d\n", p_stat->permisos);
     printf("Tamany: %d\n", p_stat->tamany);
 

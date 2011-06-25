@@ -26,6 +26,9 @@
  *  @date 11/10/2010
  */
 
+#if !defined(_FICHEROS_H)
+#define _FICHEROS_H
+
 #include "ficheros_basico.h"
 
 /**
@@ -48,3 +51,5 @@ int mi_chmod_f (unsigned int inod, unsigned int mode);
 int mi_truncar_f (unsigned int inod, unsigned int nbytes);
 int mi_stat_f (unsigned int inod, STAT *p_stat);
 void veure_estat (STAT *p_stat);
+
+#endif // _FICHEROS_H

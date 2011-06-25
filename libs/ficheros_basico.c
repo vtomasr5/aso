@@ -21,7 +21,7 @@
 
 /**
  *  @file ficheros_basico.c
- *  @brief Conté els funcions de baix nivell que tracten directament amb el sistema de fitxers.\n
+ *  @brief Conté les funcions de baix nivell que tracten directament amb el sistema de fitxers.\n
  *  En aquest nivell es poden realitzar operacions que permenten inicialitzar l'esctructura
  *  del sistema de fixers, tal com la creació i posterior inicialitzacio del superbloc utilitzant
  *  l'estructura amb la informació adequada, creació i inicialització del mapa de bits otorgant
@@ -522,7 +522,9 @@ int reservarInode(uint tipusInode, unsigned int permisosInode)
         }
 
         // guardam els canvis
-        escriureInode(inode_lliure, inod);
+        if (escriureInode(inode_lliure, inod) == -1) {
+            return -1;
+        }
 
         // actualitzam els camps corresponents en el superbloc
         sb.inode_lliure = seg_inode_lliure;
@@ -703,13 +705,14 @@ int alliberarInode(int inod, int eliminar)
     int blocs_ocupats = 0;
     int i = 0;
     int tam = 0;
+    //inode AI[(TB / sizeof(inode))];
 
     if (bread(POSICIO_SB, (char *)&sb) == -1) { // llegim el superbloc
         return -1;
     }
 
     in = llegirInode(inod); // llegim l'inode a alliberar
-
+    printf("[ficheros_basico.c] DEBUG: Inod = %d\n", inod);
     if (inod == 0) { // comprovam que l'inode no sigui l'arrel
         printf("[ficheros_basico.c] ERROR: No se pot eliminar l'inode arrel!!\n");
     } else if (in.tipus == 0) { // comprovam que l'inode no sigui lliure
@@ -877,7 +880,9 @@ int traduirBlocInode(unsigned int inod, unsigned int blocLogic, char reservar)
                     in.blocs_assignats_dades++; // modificam els blocs assignats de l'inode
                     in.data_modificacio = time(NULL);
 
-                    escriureInode(inod, in); // escrivim els canvis de l'inode
+                    if (escriureInode(inod, in) == -1) {
+                        return -1;
+                    }
 
                     bfisic = in.pdirectes[blocLogic]; // retornam directament la posició del bloc físic
                     printf("--->[traduirBlocInode] DEBUG: PUNTEROS DIRECTOS blocLogic: %d\n",blocLogic);
@@ -913,7 +918,9 @@ int traduirBlocInode(unsigned int inod, unsigned int blocLogic, char reservar)
                     in.blocs_assignats_dades++;
                     in.data_modificacio = time(NULL);
 
-                    escriureInode(inod, in); // escrivim els canvis a l'inode
+                    if (escriureInode(inod, in) == -1) {
+                        return -1;
+                    }
                     printf("[traduirBlocInode] DEBUG: PUNTERS INDIRECTOS bfisic: %d\n",buff[bfisic]);
                     return buff[bfisic]; // retornam el "punter" del bloc físic que es troba al buff (dins memòria) i que apunta la zona de dades (el bloc de dades)
                 }
@@ -961,7 +968,9 @@ int traduirBlocInode(unsigned int inod, unsigned int blocLogic, char reservar)
 
                     in.blocs_assignats_dades++;
                     in.data_modificacio = time(NULL);
-                    escriureInode(inod, in);
+                    if (escriureInode(inod, in) == -1) {
+                        return -1;
+                    }
 
                     return buff2[bfisic % N_PUNTERS_BLOC];
                 }
@@ -1030,7 +1039,9 @@ int traduirBlocInode(unsigned int inod, unsigned int blocLogic, char reservar)
 
                     in.blocs_assignats_dades++;
                     in.data_modificacio = time(NULL);
-                    escriureInode(inod, in);
+                    if (escriureInode(inod, in) == -1) {
+                        return -1;
+                    }
 
                     return (buff3[b2 % N_PUNTERS_BLOC]); // devolvemos el bloque fisico
                 }

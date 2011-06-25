@@ -38,8 +38,11 @@ int main(int argc, char *argv[])
         exit(-1);
     }
 
+    sem_init();
+
     // montam es FS
     if (bmount(argv[1]) == -1) {
+        sem_del();
         return -1;
     }
 
@@ -53,6 +56,8 @@ int main(int argc, char *argv[])
     }
 
     if (mi_write(argv[2], buff, offset, nbytes) == -1) {
+        printf("[mi_write.c] ERROR: No s'ha pogut escriure!\n");
+        sem_del();
         return -1;
     } else {
         printf("[mi_write.c] INFO: S'ha escrit correctament.\n");
@@ -64,8 +69,11 @@ int main(int argc, char *argv[])
 
     // desmontam es FS
     if (bumount() == -1) {
+        sem_del();
         return -1;
     }
+
+    sem_del();
 
     return 0;
 }
