@@ -6,7 +6,8 @@ rm -f disco.imagen
 echo "FS BORRAT"
 make clean
 make
-./src/mi_mkfs disco.imagen 500000
+./src/mi_mkfs disco.imagen 100000
 cd tests
 ./make_tests
+cd ..
 echo "OK GENERAL"

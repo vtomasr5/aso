@@ -78,19 +78,18 @@ int bread(uint bloc, void *buff)
 {
     int res = lseek(descriptor, bloc * TB, SEEK_SET);
     // printf ("[bloques.c] DEBUG: Bloque recibido: %d\n", bloc);
-    if (res < 0) {
+    if (res == -1) {
         printf("[bloques.c] ERROR: No s'ha pogut posicionar (bread)\n");
         return -1;
-    } else {
-        // llegeix el bloc de descriptor i l'inserta al buffer
-        res = read(descriptor, buff, TB);
-        if (res < 0) {
-            printf("[bloques.c] ERROR: No s'ha pogut llegir el bloc %d \n", bloc);
-            return -1;
-        } else {
-            return 0;
-        }
     }
+
+    // llegeix el bloc de descriptor i l'inserta al buffer
+    res = read(descriptor, buff, TB);
+    if (res == -1) {
+        printf("[bloques.c] ERROR: No s'ha pogut llegir el bloc %d \n", bloc);
+        return -1;
+    }
+    return 0;
 }
 
 /**
@@ -101,17 +100,16 @@ int bread(uint bloc, void *buff)
 int bwrite(uint bloc, const void *buff)
 {
     int res = lseek(descriptor, bloc * TB, SEEK_SET);
-    if (res < 0) {
+    if (res == -1) {
         printf("[bloques.c] ERROR: No s'ha pogut posicionar (bwrite)\n");
         return -1;
-    } else {
-        // escriu en el bloc el contingut de buff
-        res = write(descriptor, buff, TB);
-        if (res < 0) {
-            printf("[bloques.c] ERROR: No s'ha pogut escriure el bloc %d \n", bloc);
-            return -1;
-        } else {
-            return 0;
-        }
     }
+
+    // escriu en el bloc el contingut de buff
+    res = write(descriptor, buff, TB);
+    if (res == -1) {
+        printf("[bloques.c] ERROR: No s'ha pogut escriure el bloc %d \n", bloc);
+        return -1;
+    }
+    return 0;
 }
