@@ -25,7 +25,7 @@
  *  @date 07/01/2011
  */
 
-#include "../libs/directorios.h"
+#include "../include/directorios.h"
 
 int main(int argc, char *argv[])
 {

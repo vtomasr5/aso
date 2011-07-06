@@ -27,8 +27,8 @@
  *  @date 10/12/2010
  */
 
-#include "directorios.h"
-#include "semaforos.h"
+#include "../include/directorios.h"
+#include "../include/semaforos.h"
 
 // per saber el nombre d'elements que té un array
 #define length(x) (sizeof(x) / sizeof(x[0]))

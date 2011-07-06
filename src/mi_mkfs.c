@@ -30,10 +30,10 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "../libs/bloques.h"
-#include "../libs/definicions.h"
-#include "../libs/ficheros_basico.h"
-#include "../libs/semaforos.h"
+#include "../include/bloques.h"
+#include "../include/definicions.h"
+#include "../include/ficheros_basico.h"
+#include "../include/semaforos.h"
 
 /**
  *  Punt d'inici del programa mi_mkfs. Es comproven els paràmetres, es monta l'arxiu virtual,

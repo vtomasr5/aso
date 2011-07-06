@@ -25,7 +25,7 @@
  *  @date 24/06/2011
  */
 
-#include "../libs/directorios.h"
+#include "../include/directorios.h"
 
 int main(int argc, char *argv[])
 {
@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
     }
 
     // codi
-	// tree
+    // tree
 
     // desmontam es FS
     if (bumount() == -1) {

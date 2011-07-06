@@ -26,7 +26,7 @@
  *  @date 15/11/2010
  */
 
-#include "ficheros.h"
+#include "../include/ficheros.h"
 
 /**
  *  Funció que s'encarrega d'escriure x bytes en els blocs corresponents en el sistema de fitxers.

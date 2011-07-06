@@ -34,8 +34,8 @@
 #include <sys/resource.h>
 #include <sys/wait.h>
 
-#include "../libs/directorios.h"
-#include "../libs/semaforos.h"
+#include "../include/directorios.h"
+#include "../include/semaforos.h"
 
 #define PROCESOS 100
 #define N_VEGADES 50

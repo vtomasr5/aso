@@ -1,4 +1,4 @@
-//      mi_ls.c
+//      semaforos.h
 //
 //      Copyright 2010 Vicenç Juan Tomàs Montserrat <vtomasr5@gmail.com>
 //      Copyright 2010 Toni Mulet Escobar <t.mulet@gmail.com>
@@ -20,55 +20,23 @@
 //      MA 02110-1301, USA.
 
 /**
- *  @file mi_ls.c
- *  @brief Mostra el contingut del directori.
- *  @date 07/01/2011
+ *  @file semaforos.h
+ *  @brief Conté les capçaleres de les funcions que implementen la funcionalitat d'un semàfor mutex.
+ *  @date 11/01/2011
  */
 
-#include "../include/directorios.h"
+#if !defined(_SEMAFOROS_H)
+#define _SEMAFOROS_H
 
-int main(int argc, char *argv[])
-{
-    char buffer[BUFFER_DIR];
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/sem.h>
+#include <stdlib.h>
 
-    memset(buffer, '\0', BUFFER_DIR);
+int nouSemafor(int clau, int num);
+void esperarSemafor(int s, int pos, int flag);
+void senyalitzarSemafor(int s, int pos);
+void inicialitzarSemafor(int s, int valor);
+void eliminarSemafor(int s);
 
-    if (argc != 3) {
-        printf("[mi_ls.c] ERROR: Arguments incorrectes. Ex: mi_ls <nomFS> <cami>\n");
-        exit(-1);
-    }
-
-    sem_init();
-
-    // montam es FS
-    if (bmount(argv[1]) == -1) {
-        sem_del();
-        return -1;
-    }
-
-    // codi
-    if (infoSB() == -1) { // mostram el contingut del superbloc
-        return -1;
-    }
-
-    if (mi_dir(argv[2], buffer) == -1) { // escriu al buffer
-        sem_del();
-        return -1;
-    } else {
-        mi_lsdir(argv[2], buffer); // mostra el contingut del buffer
-    }
-
-    if (infoSB() == -1) { // mostram el contingut del superbloc
-        return -1;
-    }
-
-    // desmontam es FS
-    if (bumount() == -1) {
-        sem_del();
-        return -1;
-    }
-
-    sem_del();
-
-    return 0;
-}
+#endif // _SEMAFOROS_H

@@ -25,7 +25,7 @@
  *  @date 11/01/2011
  */
 
-#include "semaforos.h"
+#include "../include/semaforos.h"
 
 /**
  *  Funció que crea un nou semàfor mutex

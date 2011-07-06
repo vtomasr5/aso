@@ -35,7 +35,7 @@
  *  @date 11/10/2010
  */
 
-#include "ficheros_basico.h"
+#include "../include/ficheros_basico.h"
 
 /**
  *  Funció encarregada de calcular en blocs el tamany de la zona de mapa de bits.

@@ -29,8 +29,8 @@
  *  @date 04/10/2010
  */
 
-#include "bloques.h"
-#include "definicions.h"
+#include "../include/bloques.h"
+#include "../include/definicions.h"
 
 static int descriptor;
 
