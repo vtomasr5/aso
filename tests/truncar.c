@@ -7,7 +7,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "../libs/directorios.h"
+#include "../include/directorios.h"
 
 int main(int argc, char *argv[])
 {

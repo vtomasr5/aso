@@ -7,13 +7,13 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "../libs/bloques.h"
-#include "../libs/definicions.h"
-#include "../libs/ficheros.h"
+#include "../include/bloques.h"
+#include "../include/definicions.h"
+#include "../include/ficheros.h"
 
 int main(int argc, char *argv[])
 {
-	int tam = 4000;
+    int tam = 4000;
     unsigned char buff[tam];
 
     if (argc != 2) {

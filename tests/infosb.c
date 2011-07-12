@@ -1,6 +1,6 @@
-#include "../libs/bloques.h"
-#include "../libs/ficheros_basico.h"
-#include "../libs/definicions.h"
+#include "../include/bloques.h"
+#include "../include/ficheros_basico.h"
+#include "../include/definicions.h"
 
 /**
  * @file infosb.c

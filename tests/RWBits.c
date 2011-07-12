@@ -8,9 +8,9 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "../libs/bloques.h"
-#include "../libs/definicions.h"
-#include "../libs/ficheros_basico.h"
+#include "../include/bloques.h"
+#include "../include/definicions.h"
+#include "../include/ficheros_basico.h"
 
 int main(int argc, char *argv[])
 {
