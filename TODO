@@ -13,4 +13,4 @@
 
 - corregir bug que escriu basura a s'entrada de s'inode
 - corregir bug que en borrar varis entrades no incrementa correctament la quantita d'inodes lliures (mi_rm -> mi_unlink)
-
+- acabar sa simulacio

@@ -1,12 +1,12 @@
 #!/bin/sh
 
-PATH=$PATH:"src/"
+PATH=$PATH:"bin/"
 
 rm -f disco.imagen
 echo "FS BORRAT"
 make clean
 make
-./src/mi_mkfs disco.imagen 100000
+./src/mi_mkfs disco.imagen 200000
 cd tests
 ./make_tests
 cd ..
