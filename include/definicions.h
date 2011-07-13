@@ -4,9 +4,6 @@
 // tamany de bloc
 #define TB 1024
 
-// tamany de l'inode (borrar!)
-#define TI 128
-
 // nombre de inodes que s'usaran a l'array de inodes
 #define N_INODES 4
 

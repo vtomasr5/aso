@@ -39,7 +39,7 @@
 /**
  * Estructura que contempla tots els camps necessaris per a la contrucció d'un superbloc
  * en el sistema de fitxers.
- * Ocupa 48 bytes
+ * Ocupa 1024 bytes
  */
 typedef struct {
     unsigned int primerbloc_mb;    // Nombre del primer bloc del mapa de bits
@@ -72,7 +72,7 @@ typedef struct {
     unsigned int links_directoris;
     unsigned int pdirectes[MAX_PUNTERS_DIRECTES];       // punters a blocs directes
     unsigned int pindirectes[MAX_PUNTERS_INDIRECTES];   // punters a blocs indirectes
-    char resta_inode[32]; // padding
+    char resta_inode[16]; // padding
 } inode;
 
 int tamMB(unsigned int);   // tamany del mapa de bits

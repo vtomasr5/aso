@@ -51,13 +51,13 @@ int nouSemafor(int clau, int num)
  *  @param pos
  *  @param flag
  */
-void esperarSemafor(int s, int pos, int flag)
+void esperarSemafor(int s)
 {
     struct sembuf sbuf;
 
-    sbuf.sem_num = pos;
+    sbuf.sem_num = 0;
     sbuf.sem_op = -1;
-    sbuf.sem_flg = flag;
+    sbuf.sem_flg = 0;
 
     semop(s, &sbuf, 1);
 }
@@ -67,11 +67,11 @@ void esperarSemafor(int s, int pos, int flag)
  *  @param s descriptor del semafor a senyalitzar (signal)
  *  @param pos
  */
-void senyalitzarSemafor(int s, int pos)
+void senyalitzarSemafor(int s)
 {
     struct sembuf sbuf;
 
-    sbuf.sem_num = pos;
+    sbuf.sem_num = 0;
     sbuf.sem_op = 1;
     sbuf.sem_flg = 0;
 
@@ -79,7 +79,7 @@ void senyalitzarSemafor(int s, int pos)
 }
 
 /**
- *
+ *  Inicialitza el semàfor amb el valor del paràmetre
  *  @param s descriptor del semafor a inicialitzar
  *  @param valor
  */
@@ -89,17 +89,15 @@ void inicialitzarSemafor(int s, int valor)
 }
 
 /**
- *
+ *  Elimina el semàfor
  *  @param s descriptor del semafor a eliminar
  */
 void eliminarSemafor(int s)
 {
     int rem = semctl(s, 0, IPC_RMID, 0);
 
-    if (rem < 0) {
+    if (rem == -1) {
         printf("[semaforos.c] ERROR: Error eliminant el semafor!\n");
         exit(-1);
     }
-
-    //printf("[semaforos.c] DEBUG: Semafor %d eliminat correctament.\n", s);
 }

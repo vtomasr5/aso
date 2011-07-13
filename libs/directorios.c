@@ -670,7 +670,7 @@ int mi_lsdir(const char *cami, char *buff)
  */
 void sem_wait()
 {
-    esperarSemafor(mutex, 0, 0);
+    esperarSemafor(mutex);
 }
 
 /**
@@ -678,7 +678,7 @@ void sem_wait()
  */
 void sem_signal()
 {
-    senyalitzarSemafor(mutex, 0);
+    senyalitzarSemafor(mutex);
 }
 
 /**
@@ -686,7 +686,14 @@ void sem_signal()
  */
 void sem_init()
 {
-    mutex = nouSemafor(50, 1);
+    key_t key;
+    key = ftok("/bin/ls",'a');
+    if (key == -1) {
+        printf("[directorios.c] ERROR: Error al crear la clau del semafor]");
+        exit(-1);
+    }
+
+    mutex = nouSemafor(key, 1);
     inicialitzarSemafor(mutex, 1);
 }
 
