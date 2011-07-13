@@ -163,7 +163,10 @@ int initAI()
     inode inod;
     int i, j;
     unsigned char ArrayInodes[TB];
-    int inodesbloc = TB / sizeof(inode); // inodes per bloc
+    //~ int inodesbloc = TB / sizeof(inode); // inodes per bloc
+    int inodesbloc = TB / TI; // inodes per bloc
+    //~ printf("\n\nTamany Inode : %d\n\n", sizeof(inode));
+    printf("\n\nTamany Inode : %d\n\n", TI);
     int inode_actual = 0; // variable que fa referència a l'inode que s'està tractant actualment
 
     // no hi ha inodes directes emprats
@@ -200,7 +203,8 @@ int initAI()
             } else if (inode_actual == sb.total_inodes - 1) {
                 inod.pdirectes[0] = -1; // cas del darrer inode
             }
-            memcpy(&ArrayInodes[j * sizeof(inode)], &inod, sizeof(inode)); // guardam els canvis
+            //~ memcpy(&ArrayInodes[j * sizeof(inode)], &inod, sizeof(inode)); // guardam els canvis
+            memcpy(&ArrayInodes[j * TI], &inod, TI); // guardam els canvis
             inode_actual++; // passam al següent inode
         }
 

@@ -59,7 +59,7 @@ typedef struct {
 
 /**
  * Estructura que conté els camps necessaris per a contruir un inode del sistema de fitxers.
- * Ocupa 88 bytes
+ * Ocupa 128 bytes
  */
 typedef struct {
     unsigned int tipus;            // tipus inode (0 = Lliure, 1 = Directori, 2 = Fitxer)
@@ -72,7 +72,7 @@ typedef struct {
     unsigned int links_directoris;
     unsigned int pdirectes[MAX_PUNTERS_DIRECTES];       // punters a blocs directes
     unsigned int pindirectes[MAX_PUNTERS_INDIRECTES];   // punters a blocs indirectes
-    char resta_inode[24];
+    char resta_inode[32]; // padding
 } inode;
 
 int tamMB(unsigned int);   // tamany del mapa de bits

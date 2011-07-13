@@ -1,6 +1,6 @@
 #!/bin/sh
 
-OBJ="../libs/ficheros_basico.o ../libs/bloques.o ../libs/ficheros.o ../libs/directorios.o"
+OBJ="../libs/ficheros_basico.o ../libs/bloques.o ../libs/ficheros.o ../libs/directorios.o ../libs/semaforos.o"
 CC=gcc
 
 rm -f infosb
@@ -10,13 +10,13 @@ rm -f RWBlocs
 rm -f RWInodes
 rm -f traduir
 rm -f cercar
-rm -f truncar
+#rm -f truncar
 
-$CC -Wall -O1 -ggdb infosb.c ${OBJ} -o infosb
-$CC -Wall -O1 -ggdb infomb.c ${OBJ} -o infomb
-$CC -Wall -O1 -ggdb RWBits.c ${OBJ} -o RWBits
-$CC -Wall -O1 -ggdb RWBlocs.c ${OBJ} -o RWBlocs
-$CC -Wall -O1 -ggdb RWInodes.c ${OBJ} -o RWInodes
-$CC -Wall -O1 -ggdb traduir.c ${OBJ} -o traduir
-$CC -Wall -O1 -ggdb cercar.c ${OBJ} -o cercar
+$CC -Wall -O2 -ggdb infosb.c ${OBJ} -o infosb
+$CC -Wall -O2 -ggdb infomb.c ${OBJ} -o infomb
+$CC -Wall -O2 -ggdb RWBits.c ${OBJ} -o RWBits
+$CC -Wall -O2 -ggdb RWBlocs.c ${OBJ} -o RWBlocs
+$CC -Wall -O2 -ggdb RWInodes.c ${OBJ} -o RWInodes
+$CC -Wall -O2 -ggdb traduir.c ${OBJ} -o traduir
+$CC -Wall -O2 -ggdb cercar.c ${OBJ} -o cercar
 echo "OK TEST"
