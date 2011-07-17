@@ -1,8 +1,8 @@
 /**
- *  @file RWInodes.c
+ *  @file RAInodes.c
  *  @brief Realitza les proves necessaries per a verificar el correcte funcionament
  *  de les funcions reservarInode() i alliberarInode()
- *  @date 28/10/2010
+ *  @date 17/07/2011
  */
 
 #include <string.h>
@@ -15,7 +15,7 @@
 int main(int argc, char *argv[])
 {
     if (argc != 2) {
-        printf("[RWInodes.c] ERROR: Arguments incorrectes. Ex: RWInodes disco.imagen\n");
+        printf("[RAInodes.c] ERROR: Arguments incorrectes. Ex: RAInodes disco.imagen\n");
         exit(-1);
     }
 
@@ -31,32 +31,23 @@ int main(int argc, char *argv[])
 
     // proves
     int b;
-    if ((b = reservarBloc()) == -1) {
+    if ((b = reservarInode(2, 7)) == -1) { // tipus = fitxer (2), permisos = 7
         return -1;
     }
-    printf("Bloc reservat: %d\n", b);
-
-    // canviam el contingut de l'inode
-    inode inod;
-    inod.permisos = 3;
-    inod.tamany = 48;
-
-    int i;
-    if ((i = escriureInode(b, inod)) == -1) {
-        return -1;
-    }
-    printf("Inode escrit al bloc %d\n", b);
+    printf("Inode reservat: %d\n", b);
 
     inode d;
     d = llegirInode(b);
     printf("Contingut inode (permisos): %d\n", d.permisos);
     printf("Contingut inode (tamany): %d\n", d.tamany);
+    printf("Contingut inode (tipus): %d\n", d.tipus);
 
     int e;
-    if ((e = alliberarBloc(b)) == -1) {
+    if ((e = alliberarInode(b, 1)) == -1) {
+        printf("ERROR en alliberarInode()\n");
         return -1;
     }
-    printf("Bloc alliberat: %d\n", e);
+    printf("Inode alliberat: %d\n", e);
 
     // desmontam es FS
     if (bumount() == -1) {

@@ -94,6 +94,7 @@ int main(int argc, char *argv[])
         printf("[mi_mkfs.c] ERROR: Error cridant a reservarInode");
         return -1;
     }
+    //~ printf("[mi_mkfs.c] INFO: Inode revervat: %d\n", r);
 
     if (infoSB() == -1) { // mostram el contingut del superbloc
         printf("[mi_mkfs.c] ERROR: Error cridant a infoSB");

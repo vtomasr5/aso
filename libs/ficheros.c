@@ -399,6 +399,6 @@ void veure_estat (STAT *p_stat)
     printf("Data creació: %s", c);
     printf("Data modificació: %s", m);
     printf("Data accés: %s", a);
-    printf("Blocks assignats dades: %d\n", p_stat->blocs_assignats_dades);
-    printf("Enllacos directoris: %d\n", p_stat->links_directoris);
+    printf("Blocs assignats a dades: %d\n", p_stat->blocs_assignats_dades);
+    printf("Enllaços a directoris: %d\n", p_stat->links_directoris);
 }

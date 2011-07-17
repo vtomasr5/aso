@@ -15,7 +15,7 @@
 int main(int argc, char *argv[])
 {
     if (argc != 2) {
-        printf("[mi_mkfs.c] ERROR: Arguments incorrectes. Ex: mi_mkfs disco.imagen\n");
+        printf("[RWBits.c] ERROR: Arguments incorrectes. Ex: RWBits disco.imagen\n");
         exit(-1);
     }
 

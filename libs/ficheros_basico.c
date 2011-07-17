@@ -54,8 +54,7 @@ int tamMB(unsigned int nblocs)
     if (modul == 0) {
         tam_mb = nblocs / (TB * 8);
     } else {
-        tam_mb = nblocs / (TB * 8);
-        tam_mb = tam_mb + 1; // completam afegint un més, encara que malgastem espai
+        tam_mb = (nblocs / (TB * 8)) + 1;
     }
     return tam_mb;
 }
@@ -72,7 +71,7 @@ int tamMB(unsigned int nblocs)
 int tamAI(unsigned int nblocs)
 {
     // calculam el nombre de inodes que tindrà cada bloc com a màxim. (TB/tamany_inode)
-    int inodesbloc = TB / sizeof(inode); // tamany de l'inode
+    int inodesbloc = TB / sizeof(inode);
 
     // calculam la quantitat màxima de inodes que s'emprarà en el FS
     int tam_ai = nblocs / N_INODES;
@@ -124,7 +123,7 @@ int initMB()
 {
     superbloc sb;
     unsigned char mapaBits[TB];
-    int i;
+    int i = 0;
 
     if (bread(POSICIO_SB, (char *)&sb) == -1) { // llegim el superbloc
         return -1;
@@ -162,7 +161,7 @@ int initAI()
     superbloc sb;
     inode inod;
     int i, j;
-    unsigned char ArrayInodes[TB];
+    unsigned char buff[TB];
     int inodesbloc = TB / sizeof(inode); // inodes per bloc
     int inode_actual = 0; // variable que fa referència a l'inode que s'està tractant actualment
 
@@ -182,7 +181,7 @@ int initAI()
 
     // Per a cada bloc de l'AI, anam inicialitzant la informació corresponent
     for (i = sb.primerbloc_ai; i <= sb.darrerbloc_ai; i++) {
-        memset(ArrayInodes, 0, TB); // inicialitzam a zero tots els blocs de l'array de inodes
+        memset(buff, 0, TB); // inicialitzam a zero tots els blocs de l'array de inodes
 
         // per a cada inode inicialitzam els camps corresponents
         for (j = 0; j < inodesbloc; j++) {
@@ -200,11 +199,11 @@ int initAI()
             } else if (inode_actual == sb.total_inodes - 1) {
                 inod.pdirectes[0] = -1; // cas del darrer inode
             }
-            memcpy(&ArrayInodes[j * sizeof(inode)], &inod, sizeof(inode)); // guardam els canvis
+            memcpy(&buff[j * sizeof(inode)], &inod, sizeof(inode)); // guardam els canvis
             inode_actual++; // passam al següent inode
         }
 
-        if (bwrite(i, ArrayInodes) == -1) { // guardam els canvis realitzats en el superbloc
+        if (bwrite(i, buff) == -1) { // guardam els canvis realitzats en el superbloc
             return -1;
         }
     }
@@ -246,7 +245,7 @@ int infoSB()
 int escriureBit(int bloc, int bit)
 {
     superbloc sb;
-    unsigned char mapaBits[TB];
+    unsigned char buff[TB];
     unsigned char valor = 128; // mascara 10000000
     int pos_byte = bloc / 8;
     int pos_bit = bloc % 8;
@@ -257,7 +256,7 @@ int escriureBit(int bloc, int bit)
 
     int bloc_mb = sb.primerbloc_mb + (bloc / (TB*8)); // calculam el bloc on es realitzaran les operacions
 
-    if (bread(bloc_mb, mapaBits) == -1) { // llegim el bloc calculat
+    if (bread(bloc_mb, buff) == -1) { // llegim el bloc calculat
         return -1;
     }
 
@@ -266,14 +265,14 @@ int escriureBit(int bloc, int bit)
     }
 
     if (bit == 0) {
-        mapaBits[pos_byte] &= ~valor; // AND (&) i NOT (~) en bits
+        buff[pos_byte] &= ~valor; // AND (&) i NOT (~) en bits
         //sb.blocs_lliures++; // augmentam el contador de blocs lliures del SB
     } else if (bit == 1) {
-        mapaBits[pos_byte] |= valor; // OR (|) en bits
+        buff[pos_byte] |= valor; // OR (|) en bits
         //sb.blocs_lliures--; // disminuim el contador de blocs lliures del SB
     }
 
-    if (bwrite(bloc_mb, mapaBits) == -1) { // escrivim els canvis
+    if (bwrite(bloc_mb, buff) == -1) { // escrivim els canvis
         return -1;
     }
 
@@ -292,7 +291,7 @@ int llegirBit(int bloc)
 {
     superbloc sb;
     int bloc_mb; // calculam el bloc on es realitzaran les operacions
-    unsigned char mapaBits[TB];
+    unsigned char buff[TB];
     unsigned char valor = 128; // mascara 10000000
     int pos_byte = bloc / 8;
     int pos_bit = bloc % 8;
@@ -301,11 +300,11 @@ int llegirBit(int bloc)
         return -1;
     }
 
-    memset(mapaBits, 0, TB); // netejam el buffer
+    memset(buff, 0, TB); // netejam el buffer
 
     bloc_mb = sb.primerbloc_mb + (bloc / (TB*8));
 
-    if (bread(bloc_mb, mapaBits) == -1) { // llegim el bloc calculat
+    if (bread(bloc_mb, buff) == -1) { // llegim el bloc calculat
         return -1;
     }
 
@@ -313,7 +312,7 @@ int llegirBit(int bloc)
         valor >>= pos_bit; // desplaçam cap a la dreta "pos_bit posicions"
     }
 
-    valor &= mapaBits[pos_byte]; // operador AND para bits
+    valor &= buff[pos_byte]; // operador AND para bits
     valor >>= (7-pos_bit); // desplazamiento de bits a la derecha
     //printf("valor = %d\n",valor);
 

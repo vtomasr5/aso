@@ -3,9 +3,11 @@
 PATH=$PATH:"bin/"
 
 rm -f disco.imagen
-echo "FS BORRAT"
+echo "FS BORRAT\n"
 make clean
+echo
 make
+echo
 ./bin/mi_mkfs disco.imagen 100000
 cd tests
 ./make_tests

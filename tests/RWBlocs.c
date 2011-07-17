@@ -15,7 +15,7 @@
 int main(int argc, char *argv[])
 {
     if (argc != 2) {
-        printf("[mi_mkfs.c] ERROR: Arguments incorrectes. Ex: mi_mkfs disco.imagen\n");
+        printf("[RWBlocs.c] ERROR: Arguments incorrectes. Ex: RWBlocs disco.imagen\n");
         exit(-1);
     }
 
@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
     }
 
     // proves
-    int b;
+    int b = -1;
     if ((b = reservarBloc()) == -1) {
         return -1;
     }
@@ -37,10 +37,11 @@ int main(int argc, char *argv[])
     }
     printf("Bit llegit: %d\n", bit);
 
-    if (alliberarBloc(b) == -1) {
+    int d = -1;
+    if ((d = alliberarBloc(b)) == -1) {
         return -1;
     }
-    printf("Bloc alliberat\n");
+    printf("Bloc alliberat: %d\n", d);
 
     bit = -1;
     if ((bit = llegirBit(b)) == -1) {

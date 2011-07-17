@@ -34,7 +34,7 @@
 #define length(x) (sizeof(x) / sizeof(x[0]))
 
 // semafor mutex per controlar l'acces concurrent
-int mutex;
+static int mutex;
 
 /**
  *  Funció que estreu el camí de la ruta que se li passa com a paràmetre i que
@@ -285,7 +285,7 @@ int mi_link(const char *cami1, const char *cami2)
 
     char c1 = cami1[strlen(cami1) - 1];
     char c2 = cami2[strlen(cami2) - 1];
-    if ((c1 == '/' && c2 != '/') || (c1 != '/') && (c2 == '/')) {
+    if (((c1 == '/') && (c2 != '/')) || ((c1 != '/') && (c2 == '/'))) {
         printf("[directorios.c] ERROR: No es pot linkar. Camins de tipus diferents\n");
         return -1;
     }
@@ -424,7 +424,7 @@ int mi_unlink(const char *cami)
     }
 
     mi_stat_f(*p_inode_dir, &estat);
-    printf("[directorios.c] DEBUG: *p_inode_dir = %d | *pentrada = %d | *pentrada * sizeof(entrada) = %d | estat.tamany = %d\n",*p_inode_dir, *p_entrada, (*p_entrada) * sizeof(entrada), estat.tamany);
+    printf("[directorios.c] DEBUG: *p_inode_dir = %d | *pentrada = %d | *pentrada * sizeof(entrada) = %lu | estat.tamany = %d\n",*p_inode_dir, *p_entrada, (*p_entrada) * sizeof(entrada), estat.tamany);
 
     // eliminam l'entrada de directori del directori que el conté
     if ((*p_entrada) * sizeof(entrada) == estat.tamany) {
