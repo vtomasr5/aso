@@ -3,8 +3,6 @@
 
 # variables
 OBJ_LIB = libs/bloques.o libs/ficheros_basico.o libs/ficheros.o libs/directorios.o libs/semaforos.o
-OBJ_EXE = src/mi_mkfs.o src/mi_chmod.o src/mi_ls.o src/mi_stat.o src/mi_cat.o src/mi_ln.o src/mi_rm.o src/mi_creat.o src/mi_write.o src/simulacion.o src/mi_truncar.o mi_pwd.o mi_tree.o
-OBJ = $(OBJ_EXE) $(OBJ_LIB)
 CC = gcc
 CFLAGS = -Wall -O2 -ggdb
 EXEC = bin/mi_mkfs bin/mi_chmod bin/mi_ls bin/mi_stat bin/mi_cat bin/mi_ln bin/mi_rm bin/mi_creat bin/mi_write bin/simulacion bin/mi_truncar bin/mi_pwd bin/mi_tree
@@ -68,7 +66,7 @@ simulacion: src/simulacion.c $(OBJ_LIB)
 	$(CC) $(CFLAGS) -o bin/simulacion src/simulacion.c $(OBJ_LIB)
 
 clean:
-	rm -f $(OBJ)
+	rm -f $(OBJ_LIB)
 	rm -f $(EXEC)
 
 .PHONY : clean
