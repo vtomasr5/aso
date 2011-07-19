@@ -232,8 +232,8 @@ int infoSB()
     printf("[ficheros_basico.c] INFO: primer inode lliure = %d\n", sb.inode_lliure);
     printf("[ficheros_basico.c] INFO: quantitat de inodes lliures = %d\n", sb.inodes_lliures);
     printf("[ficheros_basico.c] INFO: quantitat de blocs lliures = %d\n", sb.blocs_lliures);
-    printf("[ficheros_basico.c] INFO: total de blocs =  %d\n", sb.total_blocs);
-    printf("[ficheros_basico.c] INFO: total de inodes =  %d\n\n", sb.total_inodes);
+    printf("[ficheros_basico.c] INFO: total de inodes =  %d\n", sb.total_inodes);
+    printf("[ficheros_basico.c] INFO: total de blocs =  %d\n\n", sb.total_blocs);
     return 0;
 }
 

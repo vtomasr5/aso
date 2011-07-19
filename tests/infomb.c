@@ -18,7 +18,8 @@ int main (int argc, char *argv[])
     int j = 0;
 
     if (argc != 3) {
-        printf("[ERROR] Paràmtres incorrectes! Prova: ./infomb disco.imagen numBloc \n");
+        printf("[infomb.c] ERROR: Paràmtres incorrectes! Prova: ./infomb disco.imagen numBloc \n");
+		exit(-1);
     }
 
     bmount(argv[1]);

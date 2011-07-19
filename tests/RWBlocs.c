@@ -27,6 +27,9 @@ int main(int argc, char *argv[])
     // proves
     int b = -1;
     if ((b = reservarBloc()) == -1) {
+        if (bumount() == -1) {
+            return -1;
+        }
         return -1;
     }
     printf("Bloc reservat: %d\n", b);
