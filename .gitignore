@@ -10,8 +10,6 @@ mi_write
 mi_chmod
 mi_creat
 mi_truncar
-mi_tree
-mi_pwd
 simulacion
 disco.imagen
 infosb
@@ -19,9 +17,10 @@ infomb
 RWBits
 RWBlocs
 RWInodes
+RAInodes
+RInode
 traduir
 cercar
 truncar
 docs
 documentacio.html
-sim
