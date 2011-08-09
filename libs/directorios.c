@@ -296,14 +296,13 @@ int mi_link(const char *cami1, const char *cami2)
         return -1;
     }
 
-    if (cercarEntrada(cami1, p_inode_dir, p_inode, p_entrada, 0, 7) == -1) { // entrada que se crea i enllaça
-        sem_signal();
+    if (cercarEntrada(cami1, p_inode_dir, p_inode, p_entrada, 0, 7) == -1) { // entrada que se crea i enllaça. Comprova que no existeixi.
+        //~ sem_signal();
+        *p_inode_dir = 0;
+        *p_inode = 0;
+        *p_entrada = 0;
 
-        p_inode_dir = 0;
-        p_inode = 0;
-        p_entrada = 0;
-
-        cercarEntrada(cami1, p_inode_dir, p_inode, p_entrada, 1, 7); // cream
+        cercarEntrada(cami1, p_inode_dir, p_inode, p_entrada, 1, 7); // la cream
 
         // llegim el contingut del directori que conté el nou inode i les entrades de directori.
         mi_stat_f(*p_inode_dir, &estat);
