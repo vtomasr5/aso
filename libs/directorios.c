@@ -289,7 +289,7 @@ int mi_link(const char *cami1, const char *cami2)
     sem_wait();
 
     if (cercarEntrada(cami2, p_inode_dir_enllac, p_inode_enllac, p_entrada_enllac, 0, 7) == -1) { // entrada que ha d'existir
-        printf("[directorios.c] ERROR: No s'ha trobat l'entrada, el link no s'ha pogut realitzar!!\n");
+        printf("[directorios.c] ERROR: No s'ha trobat el cami: '%s', el link no s'ha pogut realitzar!!\n", cami2);
         alliberar(p_inode_dir_enllac, p_inode_enllac, p_entrada_enllac);
         alliberar(p_inode_dir, p_inode, p_entrada);
         sem_signal();
@@ -297,7 +297,6 @@ int mi_link(const char *cami1, const char *cami2)
     }
 
     if (cercarEntrada(cami1, p_inode_dir, p_inode, p_entrada, 0, 7) == -1) { // entrada que se crea i enllaça. Comprova que no existeixi.
-        //~ sem_signal();
         *p_inode_dir = 0;
         *p_inode = 0;
         *p_entrada = 0;
@@ -322,7 +321,7 @@ int mi_link(const char *cami1, const char *cami2)
         }
 
         memset(ent.nom, '\0', 60);
-        memcpy(ent.nom, cami1 + d + 1, darrer - d);  // guardam el nom
+        memcpy(ent.nom, cami1 + d + 1, darrer - d);  // escrivim el nom
         ent.inode = *p_inode_enllac;
         mi_write_f(*p_inode_dir, &ent, estat.tamany - sizeof(entrada), sizeof(entrada));
 
@@ -331,7 +330,7 @@ int mi_link(const char *cami1, const char *cami2)
         escriureInode(*p_inode_enllac, in);
         printf("[directorios.c] INFO: Enllaç realitzat correctament.\n");
     } else {
-        printf("[directorios.c] INFO: El camí %s ja existeix!\n", cami1);
+        printf("[directorios.c] INFO: El cami '%s' ja existeix!\n", cami1);
     }
 
     alliberar(p_inode_dir_enllac, p_inode_enllac, p_entrada_enllac);
