@@ -4,7 +4,7 @@
 # variables
 OBJ_LIB = libs/bloques.o libs/ficheros_basico.o libs/ficheros.o libs/directorios.o libs/semaforos.o
 CC = gcc
-CFLAGS = -Wall -O2 -ggdb
+CFLAGS = -Wall -g -ggdb
 EXEC = bin/mi_mkfs bin/mi_chmod bin/mi_ls bin/mi_stat bin/mi_cat bin/mi_ln bin/mi_rm bin/mi_creat bin/mi_write bin/simulacion bin/mi_truncar
 
 all: mi_mkfs mi_chmod mi_ls mi_stat mi_cat mi_ln mi_rm mi_creat mi_write simulacion mi_truncar

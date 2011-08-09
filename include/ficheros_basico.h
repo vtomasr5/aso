@@ -90,7 +90,7 @@ inode llegirInode(int);
 int reservarInode(unsigned int, unsigned int);
 int alliberarBlocInode(unsigned int, unsigned int);
 int alliberarInode(unsigned int);
-int traduirBlocInode(unsigned int inod, unsigned int blocLogic, unsigned int *bfisic, char reservar);
+int traduirBlocInode(unsigned int inod, unsigned int blocLogic, unsigned int *bfisic, unsigned int reservar);
 int contingutInode(int inod);
 
 #endif // _FICHEROS_BASICO_H

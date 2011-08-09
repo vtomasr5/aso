@@ -100,29 +100,25 @@ int cercarEntrada(const char *cami_parcial, unsigned int *p_inode_dir, unsigned 
     }
 
     if (extreureCami(cami_parcial, cami_inicial, cami_final) == -1) {
-        printf("[directorios.c] ERROR: Cami incorrecte\n");
+        printf("[directorios.c] ERROR: Cami incorrecte!\n");
         return -1;
     }
 
-    //~ printf("[directorios.c] DEBUG: cercarEntrada - camino inicial: '%s', cami final: '%s'\n", cami_inicial, cami_final);
     STAT estat;
     mi_stat_f(*p_inode_dir, &estat); // llegim la informació de l'inode i la guardam en sa varible estat
-    //~ printf("[directorios.c] DEBUG: p_inode_dir = %d\n", *p_inode_dir);
-    //~ printf("[directorios.c] DEBUG: estat.tamany = %d\n", estat.tamany);
 
     int num_ent = estat.tamany / sizeof(entrada); // leemos todas las entradas del directorio
-    //~ printf("\n[directorios.c] DEBUG: cercarEntrada - numero d'entrades: %d\n", num_ent);
+
     entrada ent[num_ent]; // definimos un array de entradas de directorio que contiene el numero de entradas del inodo leido
     if (estat.tamany != 0) { // si hi ha entrades
         mi_read_f(*p_inode_dir, &ent, 0, estat.tamany); // leemos las entradas del directorio y las guardamos en el "buffer" ent
-        //~ printf("[directorios.c] DEBUG: bytes llegits de entrada (ent) = %d\n", llegits);
 
-        // inici debug
-        int k;
-        for (k = 0; k < length(ent); k++) { // mostram les entrades per pantalla
-            printf("[directorios.c] DEBUG: ----> Entrada directori: nom = %s || inode = %d\n", ent[k].nom, ent[k].inode);
-        }
-        // fi debug
+        //~ // inici debug
+        //~ int k;
+        //~ for (k = 0; k < length(ent); k++) { // mostram les entrades per pantalla
+            //~ printf("[directorios.c] DEBUG: ----> Entrada directori: nom = '%s' || inode = '%d'\n", ent[k].nom, ent[k].inode);
+        //~ }
+        //~ // fi debug
 
         while ((strcmp(ent[i].nom, cami_inicial) != 0) && (i < num_ent)) { // anam comparant les entrades del directori amb el cami inicial per veure si existeix
             i++;
@@ -170,7 +166,6 @@ int cercarEntrada(const char *cami_parcial, unsigned int *p_inode_dir, unsigned 
 
             *p_inode = r; // l'inode reservar es el seu inode (p_inode)
             *p_entrada = (estat.tamany / sizeof(entrada));
-            //~ printf("[directorios.c] DEBUG: p_inode(r) = %d, cami = %s, p_entrada = %u \n", *p_inode, cami_inicial, *p_entrada);
 
             if ((strlen(cami_final) == 0) || (strcmp(cami_final, "/") == 0)) {  // si hemos acabado o lo ultimo es una "/"
                 return 0;
@@ -222,12 +217,11 @@ int mi_creat(const char *cami, unsigned int mode)
     }
 
     sem_wait();
-    printf("aaaaaaa1\n");
+
     if (cercarEntrada(cami, p_inode_dir, p_inode, p_entrada, 0, mode) == -1) { // si no hi es...
-        p_inode_dir = 0;
-        p_inode = 0;
-        p_entrada = 0;
-        printf("aaaaaaa2\n");
+        *p_inode_dir = 0;
+        *p_inode = 0;
+        *p_entrada = 0;
         if (cercarEntrada(cami, p_inode_dir, p_inode, p_entrada, 1, mode) == -1) { // ...la crea
             printf("[directorios.c] ERROR: mi_creat - No s'ha pogut crear l'entrada.\n");
             alliberar(p_inode_dir, p_inode, p_entrada);
@@ -301,7 +295,6 @@ int mi_link(const char *cami1, const char *cami2)
         sem_signal();
         return -1;
     }
-    printf("[directorios.c] mi_link DEBUG: (cami2) *p_inode_dir = %d, *p_inode = %d, *p_entrada = %d\n", *p_inode_dir, *p_inode, *p_entrada);
 
     if (cercarEntrada(cami1, p_inode_dir, p_inode, p_entrada, 0, 7) == -1) { // entrada que se crea i enllaça
         sem_signal();
@@ -311,7 +304,6 @@ int mi_link(const char *cami1, const char *cami2)
         p_entrada = 0;
 
         cercarEntrada(cami1, p_inode_dir, p_inode, p_entrada, 1, 7); // cream
-        printf("[directorios.c] mi_link DEBUG: (cami1) *p_inode_dir = %d, *p_inode = %d, *p_entrada = %d\n", *p_inode_dir, *p_inode, *p_entrada);
 
         // llegim el contingut del directori que conté el nou inode i les entrades de directori.
         mi_stat_f(*p_inode_dir, &estat);
@@ -470,8 +462,6 @@ int mi_dir(const char *cami, char *buff)
 
     if (cami[longitut-1] == '/') { // si es un directori
         in = llegirInode(p_inode);
-
-        printf("[directorios.c] DEBUG: in.tamany = %d \n", in.tamany);
 
         while (bytes_llegits < in.tamany) {
             int res = mi_read_f(p_inode, &ent, bytes_llegits, sizeof(entrada));

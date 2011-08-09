@@ -56,8 +56,7 @@ int mi_write_f (unsigned int inod, const void *buff_original, unsigned int offse
         return -1;
     }
 
-    ret = traduirBlocInode(inod, blocLogic, &bfisic, '1'); // bloc físic
-    printf("[ficheros.c] DEBUG: bfisic = %d, inod = %d, blocLogic = %d\n", bfisic, inod, blocLogic);
+    ret = traduirBlocInode(inod, blocLogic, &bfisic, 1); // bloc físic
     if (ret == -1) {
         printf("[ficheros.c] ERROR: traduirBlocInode()1\n");
         return -1;
@@ -90,7 +89,7 @@ int mi_write_f (unsigned int inod, const void *buff_original, unsigned int offse
     if ((darrer_bloc_logic - blocLogic) > 1) {
         int i;
         for (i = blocLogic+1; i < darrer_bloc_logic; i++) { //el problema era <= , debia ser <, sino escribia un bloque intermedio mas
-            ret = traduirBlocInode(inod, i, &bfisic, '1'); // bloc físic
+            ret = traduirBlocInode(inod, i, &bfisic, 1); // bloc físic
             if (ret == -1) {
                 printf("[ficheros.c] ERROR: traduirBlocInode()2\n");
                 return -1;
@@ -112,7 +111,7 @@ int mi_write_f (unsigned int inod, const void *buff_original, unsigned int offse
     }
 
     if ((darrer_bloc_logic - blocLogic) >= 1) {
-        ret = traduirBlocInode(inod, blocLogic, &bfisic, '1'); // bloc físic
+        ret = traduirBlocInode(inod, blocLogic, &bfisic, 1); // bloc físic
         if (ret == -1) {
             printf("[ficheros.c] ERROR: traduirBlocInode()3\n");
             return -1;
@@ -174,7 +173,7 @@ int mi_read_f (unsigned int inod, void *buff_original, unsigned int offset, unsi
         return -1;
     }
 
-    ret = traduirBlocInode(inod, blocLogic, &bfisic, '0'); // bloc físic
+    ret = traduirBlocInode(inod, blocLogic, &bfisic, 0); // bloc físic
     if (ret == -1) {
         printf("[ficheros.c] ERROR: traduirBlocInode()4\n");
         return -1;
@@ -195,7 +194,7 @@ int mi_read_f (unsigned int inod, void *buff_original, unsigned int offset, unsi
     if ((darrer_bloc_logic - blocLogic) > 1) {
         int i;
         for (i = blocLogic+1; i < darrer_bloc_logic; i++) {
-            ret = traduirBlocInode(inod, i, &bfisic, '0'); // bloc físic
+            ret = traduirBlocInode(inod, i, &bfisic, 0); // bloc físic
             if (ret == -1) {
                 printf("[ficheros.c] ERROR: traduirBlocInode()5\n");
                 return -1;
@@ -212,7 +211,7 @@ int mi_read_f (unsigned int inod, void *buff_original, unsigned int offset, unsi
 
     // el darrer bloc
     if ((darrer_bloc_logic - blocLogic) >= 1) {
-        ret = traduirBlocInode(inod, blocLogic, &bfisic, '0'); // bloc físic
+        ret = traduirBlocInode(inod, blocLogic, &bfisic, 0); // bloc físic
         if (ret == -1) {
             printf("[ficheros.c] ERROR: traduirBlocInode()6\n");
             return -1;
@@ -291,16 +290,14 @@ int mi_truncar_f(unsigned int inod, unsigned int nbytes)
             darrer_bloc -= 1;
         }
 
-        printf("[ficheros.c - mi_truncar_f] DEBUG: Darrer bloc = %d\n", darrer_bloc);
         int bloc_conservar = nbytes / TB; // ultimo bloque a conservar
         if (nbytes % TB == 0) {
             bloc_conservar -= 1; // si es exacto
         }
 
-        printf("[ficheros.c - mi_truncar_f] DEBUG: Blocs conservar = %d\n", bloc_conservar);
         int i;
         for (i = bloc_conservar + 1; i <= darrer_bloc; i++) { // recorremos los bloques que queremos liberar
-            ret = traduirBlocInode(inod, i, &bfisic, '0'); // bloc físic
+            ret = traduirBlocInode(inod, i, &bfisic, 0); // bloc físic
             if (ret == -1) {
                 printf("[ficheros.c] ERROR: traduirBlocInode()7\n");
                 return -1;
@@ -322,7 +319,6 @@ int mi_truncar_f(unsigned int inod, unsigned int nbytes)
             }
         }
 
-        printf("[ficheros.c - mi_truncar_f] DEBUG: nbytes = %d\n", nbytes);
         in.tamany = nbytes;
         if (escriureInode(inod, in) == -1) {
             return -1;

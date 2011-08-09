@@ -53,8 +53,6 @@ int main(int argc, char *argv[])
     }
 
     if (mi_dir(argv[2], buffer) == -1) { // escriu al buffer
-        sem_del();
-        return -1;
     } else {
         mi_lsdir(argv[2], buffer); // mostra el contingut del buffer
     }

@@ -1,6 +1,6 @@
 #!/bin/sh
 
-PATH=$PATH:"bin/"
+export PATH=$PATH:"bin/"
 
 rm -f disco.imagen
 echo "FS BORRAT\n"
@@ -8,7 +8,7 @@ make clean
 echo
 make
 echo
-./bin/mi_mkfs disco.imagen 200000
+./bin/mi_mkfs disco.imagen 200000 # 200 MB
 cd tests
 ./make_tests
 cd ..

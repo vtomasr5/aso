@@ -779,7 +779,6 @@ int alliberarInode(unsigned int inod)
     }
 
     in = llegirInode(inod); // llegim l'inode a alliberar
-    printf("[ficheros_basico.c] DEBUG: Inod = %d\n", inod);
     if (inod == 0) { // comprovam que l'inode no sigui l'arrel
         printf("[ficheros_basico.c] ERROR: No se pot eliminar l'inode arrel!!\n");
     } else if (in.tipus == 0) { // comprovam que l'inode no sigui lliure
@@ -788,7 +787,6 @@ int alliberarInode(unsigned int inod)
 
         // calculam els blocs que ocupa i alliberam els punters directes i indirectes de l'inode
         blocs_ocupats = alliberarBlocInode(inod, 0);
-        printf("[ficheros_basico.c] DEBUG: blocs ocupats per l'inode = %d\n", blocs_ocupats);
 
         in.pdirectes[0] = sb.inode_lliure;
         in.tipus = 0;
@@ -818,7 +816,7 @@ int alliberarInode(unsigned int inod)
  *  @param blocFisic bloc físic
  *  @param reservar si val 0 llavors només consulta. Si val 1, llavors consunta, i si, no existeix cap bloc físic, també reserva.
  */
-int traduirBlocInode(unsigned int inod, unsigned int blocLogic, unsigned int *bfisic, char reservar)
+int traduirBlocInode(unsigned int inod, unsigned int blocLogic, unsigned int *bfisic, unsigned int reservar)
 {
     inode in;
     unsigned char buff[N_PUNTERS_BLOC];
@@ -828,24 +826,23 @@ int traduirBlocInode(unsigned int inod, unsigned int blocLogic, unsigned int *bf
     memset(buff2, 0, N_PUNTERS_BLOC);
     memset(buff3, 0, N_PUNTERS_BLOC);
     int btemp = 0;
-    int pd = MAX_PUNTERS_DIRECTES; // pd = punters directes
-    int pin0 = MAX_PUNTERS_DIRECTES + N_PUNTERS_BLOC; // 268
-    int pin1 = MAX_PUNTERS_DIRECTES + N_PUNTERS_BLOC + (N_PUNTERS_BLOC * N_PUNTERS_BLOC); // 65.804
-    int pin2 = MAX_PUNTERS_DIRECTES + N_PUNTERS_BLOC +
+    uint pd = MAX_PUNTERS_DIRECTES; // pd = punters directes
+    uint pin0 = MAX_PUNTERS_DIRECTES + N_PUNTERS_BLOC; // 268
+    uint pin1 = MAX_PUNTERS_DIRECTES + N_PUNTERS_BLOC + (N_PUNTERS_BLOC * N_PUNTERS_BLOC); // 65.804
+    uint pin2 = MAX_PUNTERS_DIRECTES + N_PUNTERS_BLOC +
                 (N_PUNTERS_BLOC * N_PUNTERS_BLOC) +
                 (N_PUNTERS_BLOC * N_PUNTERS_BLOC * N_PUNTERS_BLOC); // 16.843.020
     int temp = 0;
     int bloc = 0;
+    int b2 = 0;
 
     in = llegirInode(inod); // llegim l'inode
 
     if (blocLogic < pin2) { // Comprovam que no sobrepassi el maxim
-        if (reservar == '0') { // Consulta
+        if (reservar == 0) { // Consulta
             if (blocLogic >= 0 && blocLogic <= pd - 1) { // punters directes de 0 - 11
                 if (in.pdirectes[blocLogic] != 0) {
                     *bfisic =  in.pdirectes[blocLogic]; // retornam directament la posició del bloc físic
-                    //printf("----->[ficheros_basico.c - traduirBlocInode (consulta)] DEBUG: blocLogic: %d | bfisic:%d\n", blocLogic, bfisic);
-                    //~ printf("[ficheros_basico.c] DEBUG: pdirectes bfisic: %d\n", bfisic);
                     in.data_acces = time(NULL);
                     if (escriureInode(inod, in) == -1) {
                         return -1;
@@ -861,7 +858,6 @@ int traduirBlocInode(unsigned int inod, unsigned int blocLogic, unsigned int *bf
                     }
 
                     *bfisic = buff[blocLogic - pd]; // calculam la localització del bloc físic
-                    //~ printf("[ficheros_basico.c] DEBUG: buff[bsific] = %d\n", buff[bfisic]);
                     in.data_acces = time(NULL);
                     if (escriureInode(inod, in) == -1) {
                         return -1;
@@ -936,12 +932,10 @@ int traduirBlocInode(unsigned int inod, unsigned int blocLogic, unsigned int *bf
                     return -1;
                 }
             }
-        } else if (reservar == '1') { // Escriptura
+        } else if (reservar == 1) { // Escriptura
             if (blocLogic >= 0 && blocLogic <= pd - 1) { // punters directes de 0 - 11
-                printf("[ficheros_basico.c] DEBUG: in.pdirectes[blocLogic] = %d\n", in.pdirectes[blocLogic]);
                 if (in.pdirectes[blocLogic] == 0) { // comprovam que existeix el bloc físic
                     in.pdirectes[blocLogic] = reservarBloc(); // reservam el primer bloc lliure que trobam
-                    printf("[ficheros_basico.c] DEBUG: reserva in.pdirectes[blocLogic] = %d\n", in.pdirectes[blocLogic]);
                     if (in.pdirectes[blocLogic] == -1) {
                         return -1;
                     }
@@ -953,16 +947,11 @@ int traduirBlocInode(unsigned int inod, unsigned int blocLogic, unsigned int *bf
                     if (escriureInode(inod, in) == -1) {
                         return -1;
                     }
-
-                    *bfisic = in.pdirectes[blocLogic]; // retornam directament la posició del bloc físic
-                } else {
-                    return -1;
                 }
+                *bfisic = in.pdirectes[blocLogic]; // retornam directament la posició del bloc físic
             } else if (blocLogic >= pd &&  blocLogic <= pin0 - 1) {  // punters indirectes de nivell0 // 12 - 267
-                printf("[ficheros_basico.c] DEBUG: in.pindirectes[0] = %d\n", in.pindirectes[0]);
                 if (in.pindirectes[0] == 0) { // comprovam que hi hagui direccions
                     in.pindirectes[0] = reservarBloc(); // reservam un bloc
-                    printf("[ficheros_basico.c] DEBUG: in.pindirectes[0]res = %d\n", in.pindirectes[0]);
                     if (in.pindirectes[0] == -1) {
                         return -1;
                     }
@@ -999,16 +988,11 @@ int traduirBlocInode(unsigned int inod, unsigned int blocLogic, unsigned int *bf
                     if (bwrite(in.pindirectes[0], buff) == -1) {
                         return -1;
                     }
-
-                    *bfisic = buff[bloc]; // return
-                } else {
-                    return -1;
                 }
+                *bfisic = buff[bloc]; // return
             } else if (blocLogic >= pin0 && blocLogic <= pin1 - 1) { // punters indirectes nivell 1 //268 - 65.803
-                printf("[ficheros_basico.c] DEBUG: in.pindirectes[1] = %d\n", in.pindirectes[1]);
                 if (in.pindirectes[1] == 0) { // comprovam que hi hagui direccions
                     in.pindirectes[1] = reservarBloc();
-                    printf("[ficheros_basico.c] DEBUG: in.pindirectes[1] res = %d\n", in.pindirectes[1]);
                     if (in.pindirectes[1] == -1) {
                         return -1;
                     }
@@ -1070,16 +1054,11 @@ int traduirBlocInode(unsigned int inod, unsigned int blocLogic, unsigned int *bf
                             return -1;
                         }
                     }
-
-                    *bfisic = buff2[bloc % N_PUNTERS_BLOC]; // return
-                } else {
-                    return -1;
                 }
+                *bfisic = buff2[bloc % N_PUNTERS_BLOC]; // return
             } else if (blocLogic >= pin1 && blocLogic <= pin2 - 1) { // punters indirectes de nivell 2 // 65.804 - 16.843.019
-                printf("[ficheros_basico.c] DEBUG: in.pindirectes[2] = %d\n", in.pindirectes[2]);
                 if (in.pindirectes[2] == 0) { // comprovam que hi hagui direccions
                     in.pindirectes[2] = reservarBloc(); // nivell 0
-                    printf("[ficheros_basico.c] DEBUG: in.pindirectes[2] res = %d\n", in.pindirectes[2]);
                     if (in.pindirectes[2] == -1) {
                         return -1;
                     }
@@ -1122,7 +1101,7 @@ int traduirBlocInode(unsigned int inod, unsigned int blocLogic, unsigned int *bf
                         return -1;
                     }
 
-                    int b2 = bloc % (N_PUNTERS_BLOC * N_PUNTERS_BLOC);
+                    b2 = bloc % (N_PUNTERS_BLOC * N_PUNTERS_BLOC);
 
                     if (buff2[b2 / N_PUNTERS_BLOC] == 0) {
                         buff2[b2 / N_PUNTERS_BLOC] = reservarBloc(); // nivell 1
@@ -1169,11 +1148,8 @@ int traduirBlocInode(unsigned int inod, unsigned int blocLogic, unsigned int *bf
                             return -1;
                         }
                     }
-
-                    *bfisic = buff3[b2 % N_PUNTERS_BLOC]; // return
-                } else {
-                    return -1;
                 }
+                *bfisic = buff3[b2 % N_PUNTERS_BLOC]; // return
             } else {
                 printf("[ficheros_basico.c] ERROR: bloc logic incorrecte!\n");
                 return -1;

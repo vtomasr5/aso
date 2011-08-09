@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
 
     //~ memset(buff, '\0', tam);
 
-    traduirBlocInode(r, 0, &bfisic, '1');
+    traduirBlocInode(r, 0, &bfisic, 1);
     printf("[traduir.c] INFO: bfisic = %d\n", bfisic);
 
     /*
