@@ -1,5 +1,6 @@
 *.o
 *~
+*.dSYM
 mi_mkfs
 mi_ls
 mi_ln
