@@ -729,7 +729,7 @@ int alliberarBlocInode(unsigned int inod, unsigned int blocLogic)
                         }
                     }
 
-                    if (bwrite(buff[j], buff1) == -1) {
+                    if (bwrite(buff[i], buff1) == -1) {
                         return -1;
                     }
 
@@ -855,96 +855,84 @@ int traduirBlocInode(unsigned int inod, unsigned int blocLogic, unsigned int *bf
                     return -1;
                 }
             } else if (blocLogic >= pd &&  blocLogic <= pin0 - 1) {  // punters indirectes de nivell0 // 12 - 267
-                if (in.pindirectes[blocLogic] != 0) {
-                    if (in.pindirectes[0] != 0) { // comprovam que hi hagui direccions
-                        if (bread(in.pindirectes[0], buff) == -1) { // carregam a memoria (a buff) els punters indirectes de nivell 0
-                            return -1;
-                        }
+                if (in.pindirectes[0] != 0) { // comprovam que hi hagui direccions
+                    if (bread(in.pindirectes[0], buff) == -1) { // carregam a memoria (a buff) els punters indirectes de nivell 0
+                        return -1;
+                    }
 
-                        *bfisic = buff[blocLogic - pd]; // calculam la localització del bloc físic
-                        //~ printf("[ficheros_basico.c] DEBUG: buff[bsific] = %d\n", buff[bfisic]);
+                    *bfisic = buff[blocLogic - pd]; // calculam la localització del bloc físic
+                    //~ printf("[ficheros_basico.c] DEBUG: buff[bsific] = %d\n", buff[bfisic]);
+                    in.data_acces = time(NULL);
+                    if (escriureInode(inod, in) == -1) {
+                        return -1;
+                    }
+                    return 0;
+                } else {
+                    printf("[ficheros_basico.c] ERROR: No hi ha direccions disponibles a pin0!\n");
+                    return -1;
+                }
+            } else if (blocLogic >= pin0 && blocLogic <= pin1 - 1) { // punters indirectes nivell 1 //268 - 65.803
+                if (in.pindirectes[1] != 0) { // comprovam que hi hagui direccions
+                    if (bread(in.pindirectes[1], buff) == -1) { // carregam a memoria (a buff) els punters indirectes de nivell 1
+                        return -1;
+                    }
+
+                    btemp = blocLogic - pin0; // calculam la posició del bloc
+                    temp = btemp / N_PUNTERS_BLOC;
+
+                    if (bread(buff[temp], buff2) == -1) { // copiam el resultat de la divisió dins un altra buffer
+                        return -1;
+                    }
+
+                    if (buff2[btemp % N_PUNTERS_BLOC] != 0) {
+                        *bfisic = buff2[btemp % N_PUNTERS_BLOC];
                         in.data_acces = time(NULL);
                         if (escriureInode(inod, in) == -1) {
                             return -1;
                         }
-                        return 0;
-                    } else {
-                        printf("[ficheros_basico.c] ERROR: No hi ha direccions disponibles a pin0!\n");
-                        return -1;
                     }
+                    return 0;
                 } else {
+                    printf("[ficheros_basico.c] ERROR: No hi ha direccions disponibles a pin1!\n");
                     return -1;
                 }
-            } else if (blocLogic >= pin0 && blocLogic <= pin1 - 1) { // punters indirectes nivell 1 //268 - 65.803
-                if (in.pindirectes[blocLogic] != 0) {
-                    if (in.pindirectes[1] != 0) { // comprovam que hi hagui direccions
-                        if (bread(in.pindirectes[1], buff) == -1) { // carregam a memoria (a buff) els punters indirectes de nivell 1
+            } else if (blocLogic >= pin1 && blocLogic <= pin2 - 1) { // punters indirectes de nivell 2 // 65.804 - 16.843.019
+                if (in.pindirectes[2] != 0) { // comprovam que hi hagui direccions
+                    if (bread(in.pindirectes[2], buff) == -1) { // carregam a memoria (a buff) els punters indirectes de nivell 2
+                        return -1;
+                    }
+
+                    btemp = blocLogic - pin1; // calculam la posició del bloc físic
+                    int b1 = N_PUNTERS_BLOC * N_PUNTERS_BLOC; // 256*256 = 65536
+                    temp = btemp / b1;
+
+                    if (buff[temp] != 0) {
+                        if (bread(buff[temp], buff2) == -1) { // copiam el resultat de la divisió
                             return -1;
                         }
 
-                        btemp = blocLogic - pin0; // calculam la posició del bloc
+                        btemp = btemp % b1; // avançam un nivell
                         temp = btemp / N_PUNTERS_BLOC;
 
-                        if (bread(buff[temp], buff2) == -1) { // copiam el resultat de la divisió dins un altra buffer
-                            return -1;
-                        }
+                        if (buff2[temp] != 0) {
+                            if (bread(buff2[temp], buff3) == -1) { // copiam el resultat de la divisió
+                                return -1;
+                            }
 
-                        if (buff2[btemp % N_PUNTERS_BLOC] != 0) {
-                            *bfisic = buff2[btemp % N_PUNTERS_BLOC];
+                            *bfisic = buff3[btemp % N_PUNTERS_BLOC]; // retornam el "punter" del bloc físic que es troba al buff (dins memòria) i que apunta la zona de dades (el bloc de dades)
                             in.data_acces = time(NULL);
                             if (escriureInode(inod, in) == -1) {
                                 return -1;
                             }
-                        }
-                        return 0;
-                    } else {
-                        printf("[ficheros_basico.c] ERROR: No hi ha direccions disponibles a pin1!\n");
-                        return -1;
-                    }
-                } else {
-                    return -1;
-                }
-            } else if (blocLogic >= pin1 && blocLogic <= pin2 - 1) { // punters indirectes de nivell 2 // 65.804 - 16.843.019
-                if (in.pindirectes[blocLogic] != 0) {
-                    if (in.pindirectes[2] != 0) { // comprovam que hi hagui direccions
-                        if (bread(in.pindirectes[2], buff) == -1) { // carregam a memoria (a buff) els punters indirectes de nivell 2
-                            return -1;
-                        }
-
-                        btemp = blocLogic - pin1; // calculam la posició del bloc físic
-                        int b1 = N_PUNTERS_BLOC * N_PUNTERS_BLOC; // 256*256 = 65536
-                        temp = btemp / b1;
-
-                        if (buff[temp] != 0) {
-                            if (bread(buff[temp], buff2) == -1) { // copiam el resultat de la divisió
-                                return -1;
-                            }
-
-                            btemp = btemp % b1; // avançam un nivell
-                            temp = btemp / N_PUNTERS_BLOC;
-
-                            if (buff2[temp] != 0) {
-                                if (bread(buff2[temp], buff3) == -1) { // copiam el resultat de la divisió
-                                    return -1;
-                                }
-
-                                *bfisic = buff3[btemp % N_PUNTERS_BLOC]; // retornam el "punter" del bloc físic que es troba al buff (dins memòria) i que apunta la zona de dades (el bloc de dades)
-                                in.data_acces = time(NULL);
-                                if (escriureInode(inod, in) == -1) {
-                                    return -1;
-                                }
-                                return 0;
-                            } else {
-                                return -1;
-                            }
+                            return 0;
                         } else {
                             return -1;
                         }
                     } else {
-                        printf("[ficheros_basico.c] ERROR: No hi ha direccions disponibles a pin2!\n");
                         return -1;
                     }
                 } else {
+                    printf("[ficheros_basico.c] ERROR: No hi ha direccions disponibles a pin2!\n");
                     return -1;
                 }
             }

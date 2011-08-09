@@ -40,7 +40,7 @@ typedef struct {
 } entrada; // sizeof entrada = 64
 
 int extreureCami(const char *cami, char *inicial, char *final);
-int cercarEntrada(const char *cami_parcial, unsigned int *p_inode_dir, unsigned int *p_inode, unsigned int *p_entrada, char reservar, int mode);
+int cercarEntrada(const char *cami_parcial, unsigned int *p_inode_dir, unsigned int *p_inode, unsigned int *p_entrada, unsigned int reservar, int mode);
 int mi_creat(const char *cami, unsigned int mode);
 int mi_link(const char *cami1, const char *cami2);
 int mi_unlink(const char *cami);

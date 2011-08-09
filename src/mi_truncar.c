@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
     }
 
     // codi
-    if (cercarEntrada(argv[2], &p_inode_dir, &p_inode, &p_entrada, '0', 7) == -1) {
+    if (cercarEntrada(argv[2], &p_inode_dir, &p_inode, &p_entrada, 0, 7) == -1) {
         printf("[mi_truncar.c] ERROR: No s'ha trobat el cami!!\n");
         sem_del();
         return -1;

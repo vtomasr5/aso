@@ -13,8 +13,8 @@
 
 int main(int argc, char *argv[])
 {
-    int tam = 4000;
-    unsigned char buff[tam];
+    //~ int tam = 4000;
+    //~ unsigned char buff[tam];
     uint bfisic = 0;
 
     if (argc != 2) {
@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
 
     //~ memset(buff, '\0', tam);
 
-    int t = traduirBlocInode(r, 0, &bfisic, '1');
+    traduirBlocInode(r, 0, &bfisic, '1');
     printf("[traduir.c] INFO: bfisic = %d\n", bfisic);
 
     /*

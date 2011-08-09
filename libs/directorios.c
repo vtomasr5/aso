@@ -85,14 +85,13 @@ int extreureCami(const char *cami, char *inicial, char *final)
  *  @param reservar Si val '1' se crea una nova entrada i, si val '0' només consulta
  *  @param mode Permisos per crear una nova entrada de directori
  */
-int cercarEntrada(const char *cami_parcial, unsigned int *p_inode_dir, unsigned int *p_inode, unsigned int *p_entrada, char reservar, int mode)
+int cercarEntrada(const char *cami_parcial, unsigned int *p_inode_dir, unsigned int *p_inode, unsigned int *p_entrada, unsigned int reservar, int mode)
 {
     char cami_inicial[200]; // guardamos la primera cadena de la ruta sin '/'
     char cami_final[200]; // el resto de la ruta hasta el final
     memset(cami_inicial, '\0', 200);
     memset(cami_final, '\0', 200);
     int i = 0;
-    STAT estat;
 
     if (strcmp(cami_parcial, "/") == 0) { // si buscamos el directorio raiz
         *p_inode_dir = 0;
@@ -105,19 +104,18 @@ int cercarEntrada(const char *cami_parcial, unsigned int *p_inode_dir, unsigned 
         return -1;
     }
 
-    printf("[directorios.c] DEBUG: cercarEntrada - camino inicial: %s, cami final: %s\n", cami_inicial, cami_final);
-
+    //~ printf("[directorios.c] DEBUG: cercarEntrada - camino inicial: '%s', cami final: '%s'\n", cami_inicial, cami_final);
+    STAT estat;
     mi_stat_f(*p_inode_dir, &estat); // llegim la informació de l'inode i la guardam en sa varible estat
-    printf("[directorios.c] DEBUG: p_inode_dir = %d\n", *p_inode_dir);
-    printf("[directorios.c] DEBUG: estat.tamany = %d\n", estat.tamany);
+    //~ printf("[directorios.c] DEBUG: p_inode_dir = %d\n", *p_inode_dir);
+    //~ printf("[directorios.c] DEBUG: estat.tamany = %d\n", estat.tamany);
 
     int num_ent = estat.tamany / sizeof(entrada); // leemos todas las entradas del directorio
-    printf("\n[directorios.c] DEBUG: cercarEntrada - numero d'entrades: %d\n", num_ent);
-
+    //~ printf("\n[directorios.c] DEBUG: cercarEntrada - numero d'entrades: %d\n", num_ent);
     entrada ent[num_ent]; // definimos un array de entradas de directorio que contiene el numero de entradas del inodo leido
     if (estat.tamany != 0) { // si hi ha entrades
-        int llegits = mi_read_f(*p_inode_dir, &ent, 0, estat.tamany); // leemos las entradas del directorio y las guardamos en el "buffer" ent
-        printf("[directorios.c] DEBUG: bytes llegits de entrada (ent) = %d\n", llegits);
+        mi_read_f(*p_inode_dir, &ent, 0, estat.tamany); // leemos las entradas del directorio y las guardamos en el "buffer" ent
+        //~ printf("[directorios.c] DEBUG: bytes llegits de entrada (ent) = %d\n", llegits);
 
         // inici debug
         int k;
@@ -144,10 +142,9 @@ int cercarEntrada(const char *cami_parcial, unsigned int *p_inode_dir, unsigned 
             return cercarEntrada(cami_final, p_inode_dir, p_inode, p_entrada, reservar, mode);
         }
     } else { // no encontrado luego lo creamos ahora
-       if (reservar == '1') {
+       if (reservar) {
             entrada entra;
             memset(entra.nom, '\0', 60);
-            STAT estat2;
             uint tipus_inode;
 
             if (strlen(cami_final) == 0) {
@@ -159,23 +156,21 @@ int cercarEntrada(const char *cami_parcial, unsigned int *p_inode_dir, unsigned 
             // reservam els inodes de cada directori/fitxer del cami parcial
             int r = reservarInode(tipus_inode, 7);
             if (r == -1) {
+                printf("[directorios.c] ERROR: No s'ha pogut reservat l'inode\n");
                 return -1;
             }
 
             entra.inode = r; // entrada de directori de l'inode reservat
             strcpy(entra.nom, cami_inicial); // copiam el camí a l'entrada de directori
-            mi_stat_f(*p_inode_dir, &estat2); // obtenim la informació de l'inode
 
-            int n_ent = estat2.tamany / sizeof(entrada); // calculam el numero d'entrades
-
-            if (mi_write_f(*p_inode_dir, &entra, n_ent * sizeof(entrada), sizeof(entrada)) == -1) { // escrivim els canvis
+            if (mi_write_f(*p_inode_dir, &entra, num_ent * sizeof(entrada), sizeof(entrada)) == -1) { // escrivim els canvis
                 printf("[directorios.c] ERROR: No s'ha pogut escriure!\n");
                 return -1;
             }
 
             *p_inode = r; // l'inode reservar es el seu inode (p_inode)
-            *p_entrada = estat2.tamany / sizeof(entrada);
-            printf("[directorios.c] DEBUG: p_inode(r) = %d, cami = %s, p_entrada = %u \n", *p_inode, cami_inicial, *p_entrada);
+            *p_entrada = (estat.tamany / sizeof(entrada));
+            //~ printf("[directorios.c] DEBUG: p_inode(r) = %d, cami = %s, p_entrada = %u \n", *p_inode, cami_inicial, *p_entrada);
 
             if ((strlen(cami_final) == 0) || (strcmp(cami_final, "/") == 0)) {  // si hemos acabado o lo ultimo es una "/"
                 return 0;
@@ -185,8 +180,8 @@ int cercarEntrada(const char *cami_parcial, unsigned int *p_inode_dir, unsigned 
             }
         } else {
             printf("[directorios.c] ERROR: La ruta no existeix!\n");
-            *p_entrada = -1;
-            *p_inode = -1;
+            //~ *p_entrada = -1;
+            //~ *p_inode = -1;
             return -1; // entrada no trobada
         }
     }
@@ -227,15 +222,21 @@ int mi_creat(const char *cami, unsigned int mode)
     }
 
     sem_wait();
-
-    if (cercarEntrada(cami, p_inode_dir, p_inode, p_entrada, '0', mode) == -1) { // si no hi es...
+    printf("aaaaaaa1\n");
+    if (cercarEntrada(cami, p_inode_dir, p_inode, p_entrada, 0, mode) == -1) { // si no hi es...
         p_inode_dir = 0;
         p_inode = 0;
         p_entrada = 0;
-        cercarEntrada(cami, p_inode_dir, p_inode, p_entrada, '1', mode); // ...la crea
+        printf("aaaaaaa2\n");
+        if (cercarEntrada(cami, p_inode_dir, p_inode, p_entrada, 1, mode) == -1) { // ...la crea
+            printf("[directorios.c] ERROR: mi_creat - No s'ha pogut crear l'entrada.\n");
+            alliberar(p_inode_dir, p_inode, p_entrada);
+            sem_signal();
+            return 0;
+        }
         printf("[directorios.c] INFO: mi_creat - Cami %s creat\n", cami);
     } else {
-        printf("[directorios.c] - mi_creat - INFO: La ruta ja existeix!\n"); // ja existeix
+        printf("[directorios.c] INFO: mi_creat - La ruta ja existeix!\n"); // ja existeix
     }
 
     alliberar(p_inode_dir, p_inode, p_entrada);
@@ -293,7 +294,7 @@ int mi_link(const char *cami1, const char *cami2)
 
     sem_wait();
 
-    if (cercarEntrada(cami2, p_inode_dir_enllac, p_inode_enllac, p_entrada_enllac, '0', 7) == -1) { // entrada que ha d'existir
+    if (cercarEntrada(cami2, p_inode_dir_enllac, p_inode_enllac, p_entrada_enllac, 0, 7) == -1) { // entrada que ha d'existir
         printf("[directorios.c] ERROR: No s'ha trobat l'entrada, el link no s'ha pogut realitzar!!\n");
         alliberar(p_inode_dir_enllac, p_inode_enllac, p_entrada_enllac);
         alliberar(p_inode_dir, p_inode, p_entrada);
@@ -302,14 +303,14 @@ int mi_link(const char *cami1, const char *cami2)
     }
     printf("[directorios.c] mi_link DEBUG: (cami2) *p_inode_dir = %d, *p_inode = %d, *p_entrada = %d\n", *p_inode_dir, *p_inode, *p_entrada);
 
-    if (cercarEntrada(cami1, p_inode_dir, p_inode, p_entrada, '0', 7) == -1) { // entrada que se crea i enllaça
+    if (cercarEntrada(cami1, p_inode_dir, p_inode, p_entrada, 0, 7) == -1) { // entrada que se crea i enllaça
         sem_signal();
 
         p_inode_dir = 0;
         p_inode = 0;
         p_entrada = 0;
 
-        cercarEntrada(cami1, p_inode_dir, p_inode, p_entrada, '1', 7); // cream
+        cercarEntrada(cami1, p_inode_dir, p_inode, p_entrada, 1, 7); // cream
         printf("[directorios.c] mi_link DEBUG: (cami1) *p_inode_dir = %d, *p_inode = %d, *p_entrada = %d\n", *p_inode_dir, *p_inode, *p_entrada);
 
         // llegim el contingut del directori que conté el nou inode i les entrades de directori.
@@ -377,7 +378,7 @@ int mi_unlink(const char *cami)
 
     sem_wait();
 
-    res = cercarEntrada(cami, p_inode_dir, p_inode, p_entrada, '0', 7);
+    res = cercarEntrada(cami, p_inode_dir, p_inode, p_entrada, 0, 7); // cercam si hi es
     if (res == -1) { // no existeix
         printf("[directorios.c] ERROR: No s'ha pogut trobar l'entrada!\n");
         alliberar(p_inode_dir, p_inode, p_entrada);
@@ -461,7 +462,7 @@ int mi_dir(const char *cami, char *buff)
 
     sem_wait();
 
-    if (cercarEntrada(cami, &p_inode_dir, &p_inode, &p_entrada, '0', 7) == -1) {
+    if (cercarEntrada(cami, &p_inode_dir, &p_inode, &p_entrada, 0, 7) == -1) {
         printf("[directorios.c] ERROR: Entrada no trobada!!\n");
         sem_signal();
         return -1;
@@ -525,7 +526,7 @@ int mi_chmod(const char *cami, unsigned char mode)
     sem_wait();
     uint p_inode, p_entrada, p_inode_dir = 0;
 
-    if (cercarEntrada(cami, &p_inode_dir, &p_inode, &p_entrada, '0', mode) == -1) { // busca el inodo de la ultima entrada de la ruta y la deposita en p_inode
+    if (cercarEntrada(cami, &p_inode_dir, &p_inode, &p_entrada, 0, mode) == -1) { // busca el inodo de la ultima entrada de la ruta y la deposita en p_inode
         printf("[directorios.c] ERROR: No s'ha trobat el cami!!\n");
         sem_signal();
         return -1;
@@ -551,7 +552,7 @@ int mi_stat(const char *cami, STAT *p_stat)
 
     uint p_inode, p_entrada, p_inode_dir = 0;
 
-    if (cercarEntrada(cami, &p_inode_dir, &p_inode, &p_entrada, '0', 7) == -1) {
+    if (cercarEntrada(cami, &p_inode_dir, &p_inode, &p_entrada, 0, 7) == -1) {
         printf("[directorios.c] ERROR: No s'ha trobat el cami!!\n");
         sem_signal();
         return -1;
@@ -577,7 +578,7 @@ int mi_read(const char *cami, void *buff, unsigned int offset, unsigned int nbyt
 
     uint p_inode, p_entrada, p_inode_dir = 0;
 
-    if (cercarEntrada(cami, &p_inode_dir, &p_inode, &p_entrada, '0', 7) == -1) {
+    if (cercarEntrada(cami, &p_inode_dir, &p_inode, &p_entrada, 0, 7) == -1) {
         printf("[directorios.c] ERROR: No s'ha trobat el cami!!\n");
         sem_signal();
         return -1;
@@ -609,7 +610,7 @@ int mi_write(const char *cami, const void *buff, unsigned int offset, unsigned i
 
     uint p_inode, p_entrada, p_inode_dir = 0;
 
-    if (cercarEntrada(cami, &p_inode_dir, &p_inode, &p_entrada, '0', 7) == -1) {
+    if (cercarEntrada(cami, &p_inode_dir, &p_inode, &p_entrada, 0, 7) == -1) {
         printf("[directorios.c] ERROR: No s'ha trobat el cami!!\n");
         sem_signal();
         return -1;

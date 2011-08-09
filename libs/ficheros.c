@@ -57,7 +57,7 @@ int mi_write_f (unsigned int inod, const void *buff_original, unsigned int offse
     }
 
     ret = traduirBlocInode(inod, blocLogic, &bfisic, '1'); // bloc físic
-    printf("[ficheros.c] ERROR: bfisic = %d, inod = %d, blocLogic = %d\n", bfisic, inod, blocLogic);
+    printf("[ficheros.c] DEBUG: bfisic = %d, inod = %d, blocLogic = %d\n", bfisic, inod, blocLogic);
     if (ret == -1) {
         printf("[ficheros.c] ERROR: traduirBlocInode()1\n");
         return -1;
@@ -334,7 +334,7 @@ int mi_truncar_f(unsigned int inod, unsigned int nbytes)
 /**
  *  Retorna la metainformació d'un fitxer o directori. STAT es l'estructura que
  *  conté la informació de l'inode.
- *  @param inod posició del inode que s'ha de truncar
+ *  @param inod posició del inode
  *  @param p_stat punter a l'estructura STAT que conté informació sobre l'inode
  */
 int mi_stat_f (unsigned int inod, STAT *p_stat)
