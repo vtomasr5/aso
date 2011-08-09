@@ -1,16 +1,1 @@
-- setmana 1 Completada
-- setmana 2 Completada
-- afegits casos de prova
-- setmana 3 Completada
-- setmana 4 Completada
-- setmana 5 Completada
-- setmana 6 completada
-- setmana 7 completada
-- setmana 8 completada
-- setmana 9 completada
-- setmana 10 completada
-- afegir concurrencia (semafors)
-
-- corregir bug que escriu basura a s'entrada de s'inode
-- corregir bug que en borrar varis entrades no incrementa correctament la quantita d'inodes lliures (mi_rm -> mi_unlink)
-- acabar sa simulacio
+Aprovar ;)

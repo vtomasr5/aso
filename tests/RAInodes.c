@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
     printf("Contingut inode (tipus): %d\n", d.tipus);
 
     int e;
-    if ((e = alliberarInode(b, 1)) == -1) {
+    if ((e = alliberarInode(b)) == -1) {
         printf("ERROR en alliberarInode()\n");
         return -1;
     }

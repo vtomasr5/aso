@@ -167,12 +167,12 @@ int initAI()
 
     // no hi ha inodes directes emprats
     for (i = 0; i < MAX_PUNTERS_DIRECTES; i++) {
-        inod.pdirectes[i] = -1;
+        inod.pdirectes[i] = 0;
     }
 
     // no hi ha inodes indirectes emprats
     for (i = 0; i < MAX_PUNTERS_INDIRECTES; i++) {
-        inod.pindirectes[i] = -1;
+        inod.pindirectes[i] = 0;
     }
 
     if (bread(POSICIO_SB, (char *)&sb) == -1) { // llegim el superbloc
@@ -197,7 +197,7 @@ int initAI()
             if (inode_actual < sb.total_inodes - 1) {
                 inod.pdirectes[0] = inode_actual + 1; // apuntam al següent
             } else if (inode_actual == sb.total_inodes - 1) {
-                inod.pdirectes[0] = -1; // cas del darrer inode
+                inod.pdirectes[0] = 0; // cas del darrer inode
             }
             memcpy(&buff[j * sizeof(inode)], &inod, sizeof(inode)); // guardam els canvis
             inode_actual++; // passam al següent inode
@@ -513,11 +513,11 @@ int reservarInode(uint tipusInode, unsigned int permisosInode)
 
         int i;
         for (i = 0; i < MAX_PUNTERS_DIRECTES; i++) {
-            inod.pdirectes[i] = -1;
+            inod.pdirectes[i] = 0;
         }
 
         for (i = 0; i < MAX_PUNTERS_INDIRECTES; i++) {
-            inod.pindirectes[i] = -1;
+            inod.pindirectes[i] = 0;
         }
 
         // guardam els canvis
@@ -541,170 +541,238 @@ int reservarInode(uint tipusInode, unsigned int permisosInode)
 }
 
 /**
- *  Allibera els blocs que pertanyen a l'inode i que estaven ocupats per l'inode.
+ *  Allibera tots els blocs a partir del bloc lògic indicat pel segon paràmetre.
  *  Recórrer els punters directes i indirectes i localitza els blocs de l'inode en concret
  *  i allibera els blocs que els hi pertoca.
  *  @param inod inode en el qual volem alliberar els blocs
- *  @return nombre de blocs que pertanyen a l'inode i que estaven ocupats
+ *  @param blocLogic bloc lògic on es troba l'inode a alliberar
+ *  @return nombre de blocs que pertanyen a l'inode que estaven ocupats
  */
-int alliberarBlocInode(inode inod)
+int alliberarBlocInode(unsigned int inod, unsigned int blocLogic)
 {
     int buff[N_PUNTERS_BLOC];
     int buff1[N_PUNTERS_BLOC];
     int buff2[N_PUNTERS_BLOC];
+    int pd = MAX_PUNTERS_DIRECTES; // pd = punters directes
+    int pin0 = MAX_PUNTERS_DIRECTES + N_PUNTERS_BLOC; // 268
+    int pin1 = MAX_PUNTERS_DIRECTES + N_PUNTERS_BLOC + (N_PUNTERS_BLOC * N_PUNTERS_BLOC); // 65.804
+    int pin2 = MAX_PUNTERS_DIRECTES + N_PUNTERS_BLOC +
+                (N_PUNTERS_BLOC * N_PUNTERS_BLOC) +
+                (N_PUNTERS_BLOC * N_PUNTERS_BLOC * N_PUNTERS_BLOC); // 16.843.020
     int blocs = 0;
     int i = 0;
     int j = 0;
     int k = 0;
     int ret = 0;
-    int ino = 0;
+
+    if (blocLogic < 0) {
+        printf("[ficheros_basico.c] ERROR: El bloc lògic no pot tenir un valor negatiu.\n");
+        return -1;
+    }
+
+    inode in = llegirInode(inod);
 
     // punters directes
-    for (i = 0; i < MAX_PUNTERS_DIRECTES; i++) {
-        ino = inod.pdirectes[i];
+    if (blocLogic < pd) {
+        for (i = 0; i < pd; i++) {
+            if ((in.pdirectes[i] != 0) && (i >= blocLogic)) {
+                if (in.pdirectes[i] > 0) {
+                    // alliberam el bloc on esta el punter directe
+                    ret = alliberarBloc(in.pdirectes[i]);
+                    if (ret != -1) {
+                        blocs++; // aumentam el contador dels blocs ocupats.
+                    } else {
+                        printf("[ficheros_basico.c] ERROR: Error alliberant el bloc de l'inode\n");
+                        return -1;
+                    }
+                }
 
-        //printf("[ficheros_basico.c] DEBUG: bloc (inod.pdirectes[%d]) = %d\n", i, ino);
-
-        if (ino > 0) {
-            ret = alliberarBloc(ino);
-            // alliberam el bloc on esta el punter directe
-            if (ret != -1) {
-                blocs++;
+                in.pdirectes[i] = 0; // resetejam la posicio del inode i les dates
+                in.data_acces = time(NULL);
+                in.data_modificacio = time(NULL);
+                in.data_creacio = time(NULL);
+                escriureInode(inod, in); // guardam els canvis
             }
         }
-        inod.pdirectes[i] = -1; // resetejam la posicio del inode
     }
 
     // punters indirectes nivell 0
-    ino = inod.pindirectes[0];
-    //printf("[ficheros_basico.c] DEBUG: bloc (inod.pindirectes[0]) = %d\n", ino);
-    if (ino > 0) {
-        if (bread(ino, buff) == -1) {
-            return -1;
-        }
+    if (in.pindirectes[0] != 0) {
+        if (blocLogic < pin0) {
+            if (bread(in.pindirectes[0], buff) == -1) {
+                return -1;
+            }
 
-        for (i = 0; i < N_PUNTERS_BLOC; i++) {
-            if (buff[i] > 0) {
-                ret = alliberarBloc(buff[i]);
-                if (ret != -1) {
-                    blocs++;
-                    buff[i] = -1;
+            for (i = 0; i < N_PUNTERS_BLOC; i++) {
+                if ((buff[i] != 0) && ((i+pd) >= blocLogic)) {
+                    ret = alliberarBloc(buff[i]);
+                    if (ret != -1) {
+                        blocs++;
+                        buff[i] = 0;
+                    }
                 }
             }
-        }
 
-        if (bwrite(ino, buff) == -1) {
-            return -1;
+            if (bwrite(in.pindirectes[0], buff) == -1) {
+                return -1;
+            }
+
+            if (blocLogic == MAX_PUNTERS_DIRECTES) {
+                if (alliberarBloc(in.pindirectes[0]) == -1) {
+                    return -1;
+                }
+                in.pindirectes[0] = 0;
+            }
+
+            in.data_acces = time(NULL);
+            in.data_modificacio = time(NULL);
+            in.data_creacio = time(NULL);
+            escriureInode(inod, in); // guardam els canvis
         }
     }
 
     // punters indirectes nivell 1
-    ino = inod.pindirectes[1];
-    //printf("[ficheros_basico.c] DEBUG: bloc (inod.pindirectes[1]) = %d\n", ino);
-    if (ino > 0) {
-        if (bread(ino, buff) == -1) {
-            return -1;
-        }
+    if (in.pindirectes[1] > 0) {
+        if (blocLogic < pin1) {
+            if (bread(in.pindirectes[1], buff) == -1) {
+                return -1;
+            }
 
-        for (i = 0; i < N_PUNTERS_BLOC; i++) {
-            if (buff[i] > 0) {
-                if (bread(buff[i], buff1) == -1) {
-                    return -1;
-                }
+            int aux = ((blocLogic - MAX_PUNTERS_DIRECTES) / N_PUNTERS_BLOC ) - 1;
+            for (i = 0; i < N_PUNTERS_BLOC; i++) {
+                if (buff[i] != 0) {
+                    if (bread(buff[i], buff1) == -1) {
+                        return -1;
+                    }
 
-                for (j = 0; j < N_PUNTERS_BLOC; j++) {
-                    if (buff1[j] > 0) {
-                        ret = alliberarBloc(buff1[j]);
+                    for (j = 0; j < N_PUNTERS_BLOC; j++) {
+                        if ((buff1[j] != 0) && (pin0 + ((i * N_PUNTERS_BLOC) + j)) >= blocLogic) {
+                            ret = alliberarBloc(buff1[j]);
+                            if (ret != -1) {
+                                blocs++;
+                                buff1[j] = 0;
+                            }
+                        }
+                    }
+
+                    if (bwrite(buff[i], buff1) == -1) {
+                        return -1;
+                    }
+
+                    if ((i = aux && ((blocLogic - pd) % N_PUNTERS_BLOC) == 0) || (i > aux)) {
+                        ret = alliberarBloc(buff[i]);
                         if (ret != -1) {
                             blocs++;
-                            buff1[j] = -1;
+                            buff[i] = 0;
                         }
                     }
                 }
+            }
 
-                if (bwrite(buff[i], buff1) == -1) {
-                    return -1;
-                }
+            if (bwrite(in.pindirectes[1], buff) == -1) {
+                return -1;
+            }
 
-                ret = alliberarBloc(buff[i]);
+            if (blocLogic == pin0) {
+                ret = alliberarBloc(in.pindirectes[1]);
                 if (ret != -1) {
-                    blocs++;
-                    buff[i] = -1;
+                    in.pindirectes[1] = 0;
                 }
             }
-        }
 
-        if (bwrite(ino, buff) == -1) {
-            return -1;
+            in.data_acces = time(NULL);
+            in.data_modificacio = time(NULL);
+            in.data_creacio = time(NULL);
+            escriureInode(inod, in); // guardam els canvis
         }
     }
 
     // punters indirectes nivell 2
-    ino = inod.pindirectes[2];
-    //printf("[ficheros_basico.c] DEBUG: bloc (inod.pindirectes[2]) = %d\n", ino);
-    if (ino > 0) {
-        if (bread(ino, buff) == -1) {
-            return -1;
-        }
+    if (in.pindirectes[2] > 0) {
+        if (blocLogic < pin2) {
+            if (bread(in.pindirectes[2], buff) == -1) {
+                return -1;
+            }
 
-        for (i = 0; i < N_PUNTERS_BLOC; i++) {
-            if (buff[i] > 0) {
-                if (bread(buff[i], buff1) == -1) {
-                    return -1;
-                }
+            int aux = ((blocLogic - pin0) / (N_PUNTERS_BLOC * N_PUNTERS_BLOC)) - 1;
+            for (i = 0; i < N_PUNTERS_BLOC; i++) {
+                if (buff[i] != 0) {
+                    if (bread(buff[i], buff1) == -1) {
+                        return -1;
+                    }
+                    int aux2 = ((blocLogic - pd) / (N_PUNTERS_BLOC * N_PUNTERS_BLOC)) - 1;
+                    for (j = 0; j < N_PUNTERS_BLOC; j++) {
+                        if (buff1[j] != 0) {
+                            if (bread(buff1[j], buff2) == -1) {
+                                return -1;
+                            }
 
-                for (j = 0; j < N_PUNTERS_BLOC; j++) {
-                    if (buff1[j] > 0) {
-                        if (bread(buff1[j], buff2) == -1) {
-                            return -1;
-                        }
+                            for (k = 0; k < N_PUNTERS_BLOC; k++) {
+                                if ((buff2[k] != 0) && ((pin1 + (i + N_PUNTERS_BLOC * N_PUNTERS_BLOC) + (j * N_PUNTERS_BLOC) + k) >= blocLogic)) {
+                                    ret = alliberarBloc(buff2[k]);
+                                    if (ret != -1) {
+                                        blocs++;
+                                        buff2[k] = 0;
+                                    }
+                                }
+                            }
 
-                        for (k = 0; k < N_PUNTERS_BLOC; k++) {
-                            if (buff2[k] > 0) {
-                                ret = alliberarBloc(buff2[k]);
+                            if (bwrite(buff1[j], buff2) == -1) {
+                                return -1;
+                            }
+                            if (((j == aux2) && (blocLogic == pin1)) || (i > aux2)) {
+                                ret = alliberarBloc(buff1[i]);
                                 if (ret != -1) {
-                                    blocs++;
-                                    buff2[k] = -1;
+                                    buff1[i] = 0;
                                 }
                             }
                         }
+                    }
 
-                        ret = alliberarBloc(buff1[j]);
+                    if (bwrite(buff[j], buff1) == -1) {
+                        return -1;
+                    }
+
+                    if (((j == aux) && (blocLogic == pin1)) || (i > aux)) {
+                        ret = alliberarBloc(buff[i]);
                         if (ret != -1) {
-                            blocs++;
+                            buff[i] = 0;
                         }
                     }
                 }
+            }
 
-                ret = alliberarBloc(buff[i]);
+            if (bwrite(in.pindirectes[2], buff) == -1) {
+                return -1;
+            }
+
+            if (blocLogic == pin1) {
+                ret = alliberarBloc(in.pindirectes[2]);
                 if (ret != -1) {
-                    blocs++;
+                    in.pindirectes[2] = 0;
                 }
             }
-        }
 
-        if (bwrite(ino, buff) == -1) {
-            return -1;
+            in.data_acces = time(NULL);
+            in.data_modificacio = time(NULL);
+            in.data_creacio = time(NULL);
+            escriureInode(inod, in); // guardam els canvis
         }
     }
-
     // retornam els numero de blocs alliberats
     return blocs;
 }
 
 /**
- *  Funció encarregada d'alliberar tots els blocs que pertanyen a un inode concret
+ *  Funció encarregada d'alliberar tots els blocs que pertanyen a un inode concret.
+ *  Es recolça en la funció alliberarBlocInode().
  *  @param inod posició de l'inode a alliberar
- *  @param eliminar paràmetre que si esta a 1 s'ha de eliminar l'inode, i si, està a 0, no.
  */
-int alliberarInode(int inod, int eliminar)
+int alliberarInode(unsigned int inod)
 {
     superbloc sb;
     inode in;
     int blocs_ocupats = 0;
-    int i = 0;
-    int tam = 0;
-    //inode AI[(TB / sizeof(inode))];
 
     if (bread(POSICIO_SB, (char *)&sb) == -1) { // llegim el superbloc
         return -1;
@@ -716,47 +784,25 @@ int alliberarInode(int inod, int eliminar)
         printf("[ficheros_basico.c] ERROR: No se pot eliminar l'inode arrel!!\n");
     } else if (in.tipus == 0) { // comprovam que l'inode no sigui lliure
         printf("[ficheros_basico.c] ERROR: L'inode que vols alliberar ja és lliure (GPL xD)!\n");
-    } else if ((in.tipus == 1) || (in.tipus == 2)) {
+    } else if ((in.tipus == 1) || (in.tipus == 2)) { // 1: directori, 2: fitxer
 
-        // calculam els blocs que ocupa, mirant els punters directes i indirectes de l'inode
-        blocs_ocupats = alliberarBlocInode(in);
-
+        // calculam els blocs que ocupa i alliberam els punters directes i indirectes de l'inode
+        blocs_ocupats = alliberarBlocInode(inod, 0);
         printf("[ficheros_basico.c] DEBUG: blocs ocupats per l'inode = %d\n", blocs_ocupats);
 
-        if (eliminar == 0) { // només volem alliberar l'inode
-            tam = in.tamany - (blocs_ocupats * TB); // nou tamany en bytes
-            if (tam < 0) {
-                tam = 0;
-            }
-
-            in.tamany = tam;
-            in.blocs_assignats_dades -= blocs_ocupats;
-        } else if (eliminar == 1) { // definitivament volen eliminar l'inode, borram els blocs i resetejam els camps de l'inode
-            in.tipus = 0;
-            in.permisos = 0;
-            in.data_modificacio = 0;
-            in.data_acces = 0;
-            in.tamany = 0;
-            in.blocs_assignats_dades = 0;
-            in.pdirectes[0] = sb.inode_lliure;
-
-            for (i = 0; i < MAX_PUNTERS_DIRECTES; i++) {
-                in.pdirectes[i] = -1;
-            }
-
-            for (i = 0; i < MAX_PUNTERS_INDIRECTES; i++) {
-                in.pindirectes[i] = -1;
-            }
-
-            sb.inode_lliure = inod;
-            sb.inodes_lliures++;
-        }
+        in.pdirectes[0] = sb.inode_lliure;
+        in.tipus = 0;
+        in.permisos = 0;
+        in.data_modificacio = 0;
+        in.data_acces = 0;
 
         if (escriureInode(inod, in) == -1) {
             return -1;
         }
 
-        sb.blocs_lliures += blocs_ocupats;
+        sb.inode_lliure = inod;
+        sb.inodes_lliures++;
+        //~ sb.blocs_lliures += blocs_ocupats;
 
         if (bwrite(POSICIO_SB, (char *)&sb) == -1) { // guardam els canvis en el superbloc
             return -1;
@@ -769,10 +815,10 @@ int alliberarInode(int inod, int eliminar)
  *  Funció que s'encarrega de calcular el número de bloc físic el quan fa referència al número de bloc lògic d'un determinat inode.
  *  @param inod inode que volem traduir
  *  @param blocLogic bloc lògic
+ *  @param blocFisic bloc físic
  *  @param reservar si val 0 llavors només consulta. Si val 1, llavors consunta, i si, no existeix cap bloc físic, també reserva.
- *  @return El bloc físic al qual fa referència el bloc lògic
  */
-int traduirBlocInode(unsigned int inod, unsigned int blocLogic, char reservar)
+int traduirBlocInode(unsigned int inod, unsigned int blocLogic, unsigned int *bfisic, char reservar)
 {
     inode in;
     unsigned char buff[N_PUNTERS_BLOC];
@@ -781,269 +827,368 @@ int traduirBlocInode(unsigned int inod, unsigned int blocLogic, char reservar)
     memset(buff, 0, N_PUNTERS_BLOC);
     memset(buff2, 0, N_PUNTERS_BLOC);
     memset(buff3, 0, N_PUNTERS_BLOC);
-    int bfisic = 0;
+    int btemp = 0;
     int pd = MAX_PUNTERS_DIRECTES; // pd = punters directes
     int pin0 = MAX_PUNTERS_DIRECTES + N_PUNTERS_BLOC; // 268
     int pin1 = MAX_PUNTERS_DIRECTES + N_PUNTERS_BLOC + (N_PUNTERS_BLOC * N_PUNTERS_BLOC); // 65.804
     int pin2 = MAX_PUNTERS_DIRECTES + N_PUNTERS_BLOC +
                 (N_PUNTERS_BLOC * N_PUNTERS_BLOC) +
                 (N_PUNTERS_BLOC * N_PUNTERS_BLOC * N_PUNTERS_BLOC); // 16.843.020
-    int bloc_res = 0; // bloc reservat
     int temp = 0;
-    int temp2 = 0;
+    int bloc = 0;
 
     in = llegirInode(inod); // llegim l'inode
 
     if (blocLogic < pin2) { // Comprovam que no sobrepassi el maxim
         if (reservar == '0') { // Consulta
             if (blocLogic >= 0 && blocLogic <= pd - 1) { // punters directes de 0 - 11
-                bfisic  =  in.pdirectes[blocLogic]; // retornam directament la posició del bloc físic
-                //printf("----->[ficheros_basico.c - traduirBlocInode (consulta)] DEBUG: blocLogic: %d | bfisic:%d\n", blocLogic, bfisic);
-                printf("[ficheros_basico.c] DEBUG: pdirectes bfisic: %d\n", bfisic);
-                return bfisic;
-            } else if (blocLogic >= pd &&  blocLogic <= pin0 - 1) {  // punters indirectes de nivell0 // 12 - 267
-                temp2 = in.pindirectes[0];
-                printf("[ficheros_basico.c] DEBUG: pdinirectes0 (temp2): %d\n", temp2);
-                if (temp2 > 0) { // comprovam que hi hagui direccions
-                    if (bread(in.pindirectes[0], buff) == -1) { // carregam a memoria (a buff) els punters indirectes de nivell 0
+                if (in.pdirectes[blocLogic] != 0) {
+                    *bfisic =  in.pdirectes[blocLogic]; // retornam directament la posició del bloc físic
+                    //printf("----->[ficheros_basico.c - traduirBlocInode (consulta)] DEBUG: blocLogic: %d | bfisic:%d\n", blocLogic, bfisic);
+                    //~ printf("[ficheros_basico.c] DEBUG: pdirectes bfisic: %d\n", bfisic);
+                    in.data_acces = time(NULL);
+                    if (escriureInode(inod, in) == -1) {
                         return -1;
                     }
-
-                    bfisic = blocLogic - pd; // calculam la localització del bloc físic
-                    return buff[bfisic]; // retornam el "punter" del bloc físic que es troba al buff (dins memòria) i que apunta la zona de dades (el bloc de dades)
-                    printf("[ficheros_basico.c] DEBUG: buff[bsific] = %d\n", buff[bfisic]);
+                    return 0;
                 } else {
-                    printf("[ficheros_basico.c] ERROR: No hi ha direccions disponibles a pin0!\n");
+                    return -1;
+                }
+            } else if (blocLogic >= pd &&  blocLogic <= pin0 - 1) {  // punters indirectes de nivell0 // 12 - 267
+                if (in.pindirectes[blocLogic] != 0) {
+                    if (in.pindirectes[0] != 0) { // comprovam que hi hagui direccions
+                        if (bread(in.pindirectes[0], buff) == -1) { // carregam a memoria (a buff) els punters indirectes de nivell 0
+                            return -1;
+                        }
+
+                        *bfisic = buff[blocLogic - pd]; // calculam la localització del bloc físic
+                        //~ printf("[ficheros_basico.c] DEBUG: buff[bsific] = %d\n", buff[bfisic]);
+                        in.data_acces = time(NULL);
+                        if (escriureInode(inod, in) == -1) {
+                            return -1;
+                        }
+                        return 0;
+                    } else {
+                        printf("[ficheros_basico.c] ERROR: No hi ha direccions disponibles a pin0!\n");
+                        return -1;
+                    }
+                } else {
                     return -1;
                 }
             } else if (blocLogic >= pin0 && blocLogic <= pin1 - 1) { // punters indirectes nivell 1 //268 - 65.803
-                temp2 = in.pindirectes[1];
-                printf("[ficheros_basico.c] DEBUG: pdinirectes1 (temp2): %d\n", temp2);
-                if (temp2 > 0) { // comprovam que hi hagui direccions
-                    if (bread(in.pindirectes[1], buff) == -1) { // carregam a memoria (a buff) els punters indirectes de nivell 1
+                if (in.pindirectes[blocLogic] != 0) {
+                    if (in.pindirectes[1] != 0) { // comprovam que hi hagui direccions
+                        if (bread(in.pindirectes[1], buff) == -1) { // carregam a memoria (a buff) els punters indirectes de nivell 1
+                            return -1;
+                        }
+
+                        btemp = blocLogic - pin0; // calculam la posició del bloc
+                        temp = btemp / N_PUNTERS_BLOC;
+
+                        if (bread(buff[temp], buff2) == -1) { // copiam el resultat de la divisió dins un altra buffer
+                            return -1;
+                        }
+
+                        if (buff2[btemp % N_PUNTERS_BLOC] != 0) {
+                            *bfisic = buff2[btemp % N_PUNTERS_BLOC];
+                            in.data_acces = time(NULL);
+                            if (escriureInode(inod, in) == -1) {
+                                return -1;
+                            }
+                        }
+                        return 0;
+                    } else {
+                        printf("[ficheros_basico.c] ERROR: No hi ha direccions disponibles a pin1!\n");
                         return -1;
                     }
-
-                    bfisic= blocLogic - pin0; // calculam la posició del bloc físic
-                    temp = bfisic / N_PUNTERS_BLOC;
-
-                    if (bread(buff[temp], buff2) == -1) { // copiam el resultat de la divisió dins un altra buffer
-                        return -1;
-                    }
-
-                    return buff2[bfisic % N_PUNTERS_BLOC]; // retornam el "punter" del bloc físic que es troba al buff (dins memòria) i que apunta la zona de dades (el bloc de dades)
-                    printf("[ficheros_basico.c] DEBUG: buff2[bfisic mod N_PUNTERS_BLOC] = %d\n", buff2[bfisic % N_PUNTERS_BLOC]);
                 } else {
-                    printf("[ficheros_basico.c] ERROR: No hi ha direccions disponibles a pin1!\n");
                     return -1;
                 }
             } else if (blocLogic >= pin1 && blocLogic <= pin2 - 1) { // punters indirectes de nivell 2 // 65.804 - 16.843.019
-                temp2 = in.pindirectes[2];
-                printf("[ficheros_basico.c] DEBUG: pdinirectes2 (temp2): %d\n", temp2);
-                if (temp2 > 0) { // comprovam que hi hagui direccions
-                    if (bread(in.pindirectes[2], buff) == -1) { // carregam a memoria (a buff) els punters indirectes de nivell 2
+                if (in.pindirectes[blocLogic] != 0) {
+                    if (in.pindirectes[2] != 0) { // comprovam que hi hagui direccions
+                        if (bread(in.pindirectes[2], buff) == -1) { // carregam a memoria (a buff) els punters indirectes de nivell 2
+                            return -1;
+                        }
+
+                        btemp = blocLogic - pin1; // calculam la posició del bloc físic
+                        int b1 = N_PUNTERS_BLOC * N_PUNTERS_BLOC; // 256*256 = 65536
+                        temp = btemp / b1;
+
+                        if (buff[temp] != 0) {
+                            if (bread(buff[temp], buff2) == -1) { // copiam el resultat de la divisió
+                                return -1;
+                            }
+
+                            btemp = btemp % b1; // avançam un nivell
+                            temp = btemp / N_PUNTERS_BLOC;
+
+                            if (buff2[temp] != 0) {
+                                if (bread(buff2[temp], buff3) == -1) { // copiam el resultat de la divisió
+                                    return -1;
+                                }
+
+                                *bfisic = buff3[btemp % N_PUNTERS_BLOC]; // retornam el "punter" del bloc físic que es troba al buff (dins memòria) i que apunta la zona de dades (el bloc de dades)
+                                in.data_acces = time(NULL);
+                                if (escriureInode(inod, in) == -1) {
+                                    return -1;
+                                }
+                                return 0;
+                            } else {
+                                return -1;
+                            }
+                        } else {
+                            return -1;
+                        }
+                    } else {
+                        printf("[ficheros_basico.c] ERROR: No hi ha direccions disponibles a pin2!\n");
                         return -1;
                     }
-
-                    bfisic = blocLogic - pin1; // calculam la posició del bloc físic
-                    int b1 = N_PUNTERS_BLOC * N_PUNTERS_BLOC; // 256*256 = 65536
-                    temp = bfisic / b1;
-
-                    if (bread(buff[temp], buff2) == -1) { // copiam el resultat de la divisió
-                        return -1;
-                    }
-
-                    bfisic = bfisic % b1; // avançam un nivell
-                    temp = bfisic / N_PUNTERS_BLOC;
-
-                    if (bread(buff2[temp], buff3) == -1) { // copiam el resultat de la divisió
-                        return -1;
-                    }
-                    return buff3[bfisic % N_PUNTERS_BLOC]; // retornam el "punter" del bloc físic que es troba al buff (dins memòria) i que apunta la zona de dades (el bloc de dades)
-
                 } else {
-                    printf("[ficheros_basico.c] ERROR: No hi ha direccions disponibles a pin2!\n");
                     return -1;
                 }
             }
         } else if (reservar == '1') { // Escriptura
             if (blocLogic >= 0 && blocLogic <= pd - 1) { // punters directes de 0 - 11
-                temp2 = in.pdirectes[blocLogic];
-                printf("[ficheros_basico.c] DEBUG: pdirectes (temp2): %d\n", temp2);
-                if (temp2 > 0) { // comprovam que existeix el bloc físic
-                    bfisic = in.pdirectes[blocLogic]; // retornam directament la posició del bloc físic
-                    printf("[traduirBlocInode] DEBUG: PUNTERS DIRECTOS blocFisic: %d\n", bfisic);
-                    return bfisic;
-                } else {
+                printf("[ficheros_basico.c] DEBUG: in.pdirectes[blocLogic] = %d\n", in.pdirectes[blocLogic]);
+                if (in.pdirectes[blocLogic] == 0) { // comprovam que existeix el bloc físic
                     in.pdirectes[blocLogic] = reservarBloc(); // reservam el primer bloc lliure que trobam
+                    printf("[ficheros_basico.c] DEBUG: reserva in.pdirectes[blocLogic] = %d\n", in.pdirectes[blocLogic]);
+                    if (in.pdirectes[blocLogic] == -1) {
+                        return -1;
+                    }
                     in.blocs_assignats_dades++; // modificam els blocs assignats de l'inode
                     in.data_modificacio = time(NULL);
+                    in.data_acces = time(NULL);
+                    in.data_creacio = time(NULL);
 
                     if (escriureInode(inod, in) == -1) {
                         return -1;
                     }
 
-                    bfisic = in.pdirectes[blocLogic]; // retornam directament la posició del bloc físic
-                    printf("--->[traduirBlocInode] DEBUG: PUNTEROS DIRECTOS blocLogic: %d\n",blocLogic);
-                    printf("--->[traduirBlocInode] DEBUG: PUNTEROS DIRECTOS blocFisic: %d\n", bfisic);
-                    return bfisic;
+                    *bfisic = in.pdirectes[blocLogic]; // retornam directament la posició del bloc físic
+                } else {
+                    return -1;
                 }
             } else if (blocLogic >= pd &&  blocLogic <= pin0 - 1) {  // punters indirectes de nivell0 // 12 - 267
-                temp2 = in.pindirectes[0];
-                printf("[ficheros_basico.c] DEBUG: pdirectes (temp2): %d\n", temp2);
-                if (temp2 > 0) { // comprovam que hi hagui direccions
-                    if (bread(in.pindirectes[0], buff) == -1) { // carregam a memoria (a buff) els punters indirectes de nivell 0
+                printf("[ficheros_basico.c] DEBUG: in.pindirectes[0] = %d\n", in.pindirectes[0]);
+                if (in.pindirectes[0] == 0) { // comprovam que hi hagui direccions
+                    in.pindirectes[0] = reservarBloc(); // reservam un bloc
+                    printf("[ficheros_basico.c] DEBUG: in.pindirectes[0]res = %d\n", in.pindirectes[0]);
+                    if (in.pindirectes[0] == -1) {
                         return -1;
                     }
-                    bfisic = blocLogic - pd; // calculam la localització del bloc físic
-                    printf("[traduirBlocInode] DEBUG: PUNTEROS INDIRECTOS  bfisic: %d\n",buff[bfisic]);
-                    return buff[bfisic]; // retornam el "punter" del bloc físic que es troba al buff (dins memòria) i que apunta la zona de dades (el bloc de dades)
-                } else { // inicialitzam els punters indirectes de nivell 0
-                    bloc_res = reservarBloc(); // reservam un bloc
-                    in.pindirectes[0] = bloc_res; // assignam el bloc reservat al punter indirecte de nivell 0
+
+                    in.blocs_assignats_dades++; // modificam els blocs assignats de l'inode
+                    in.data_modificacio = time(NULL);
+                    in.data_acces = time(NULL);
+                    in.data_creacio = time(NULL);
+
+                    if (escriureInode(inod, in) == -1) {
+                        return -1;
+                    }
 
                     if (bread(in.pindirectes[0], buff) == -1) {
                         return -1;
                     }
 
-                    bfisic = blocLogic - pd;
-                    bloc_res = reservarBloc();
-                    buff[bfisic] = bloc_res;
+                    bloc = blocLogic - pd;
+                    buff[bloc] = reservarBloc();
+
+                    if (buff[bloc] == -1) {
+                        return -1;
+                    }
+
+                    in.blocs_assignats_dades++; // modificam els blocs assignats de l'inode
+                    in.data_modificacio = time(NULL);
+                    in.data_acces = time(NULL);
+                    in.data_creacio = time(NULL);
+
+                    if (escriureInode(inod, in) == -1) {
+                        return -1;
+                    }
 
                     if (bwrite(in.pindirectes[0], buff) == -1) {
                         return -1;
                     }
 
-                    in.blocs_assignats_dades++;
+                    *bfisic = buff[bloc]; // return
+                } else {
+                    return -1;
+                }
+            } else if (blocLogic >= pin0 && blocLogic <= pin1 - 1) { // punters indirectes nivell 1 //268 - 65.803
+                printf("[ficheros_basico.c] DEBUG: in.pindirectes[1] = %d\n", in.pindirectes[1]);
+                if (in.pindirectes[1] == 0) { // comprovam que hi hagui direccions
+                    in.pindirectes[1] = reservarBloc();
+                    printf("[ficheros_basico.c] DEBUG: in.pindirectes[1] res = %d\n", in.pindirectes[1]);
+                    if (in.pindirectes[1] == -1) {
+                        return -1;
+                    }
+
+                    in.blocs_assignats_dades++; // modificam els blocs assignats de l'inode
                     in.data_modificacio = time(NULL);
+                    in.data_acces = time(NULL);
+                    in.data_creacio = time(NULL);
 
                     if (escriureInode(inod, in) == -1) {
                         return -1;
                     }
-                    printf("[traduirBlocInode] DEBUG: PUNTERS INDIRECTOS bfisic: %d\n",buff[bfisic]);
-                    return buff[bfisic]; // retornam el "punter" del bloc físic que es troba al buff (dins memòria) i que apunta la zona de dades (el bloc de dades)
-                }
-            } else if (blocLogic >= pin0 && blocLogic <= pin1 - 1) { // punters indirectes nivell 1 //268 - 65.803
-                temp2 = in.pindirectes[1];
-
-                if (temp2 > 0) { // comprovam que hi hagui direccions
-                    if (bread(in.pindirectes[1], buff) == -1) { // carregam a memoria (a buff) els punters indirectes de nivell 1
-                        return -1;
-                    }
-
-                    bfisic= blocLogic - pin0; // calculam la posició del bloc físic
-                    temp = bfisic / N_PUNTERS_BLOC;
-
-                    if (bread(buff[temp], buff2) == -1) { // copiam el resultat de la divisió dins un altra buffer
-                        return -1;
-                    }
-
-                    return buff2[bfisic % N_PUNTERS_BLOC]; // retornam el "punter" del bloc físic que es troba al buff (dins memòria) i que apunta la zona de dades (el bloc de dades)
-                } else { // ara reservam
-                    bloc_res = reservarBloc();
-                    in.pindirectes[1] = bloc_res;
 
                     if (bread(in.pindirectes[1], buff) == -1) { // carregam a memoria (a buff) els punters indirectes de nivell 2
                         return -1;
                     }
 
-                    bfisic = blocLogic - pin0;
-                    bloc_res = reservarBloc();
-                    buff[bfisic / N_PUNTERS_BLOC] = bloc_res;
+                    if (buff[bloc / N_PUNTERS_BLOC] == 0) {
+                        buff[bloc / N_PUNTERS_BLOC] = reservarBloc();
+                        if (buff[bloc / N_PUNTERS_BLOC] == -1) {
+                            return -1;
+                        }
 
-                    if (bwrite(buff[bfisic / N_PUNTERS_BLOC], buff) == -1) {
+                        in.blocs_assignats_dades++; // modificam els blocs assignats de l'inode
+                        in.data_modificacio = time(NULL);
+                        in.data_acces = time(NULL);
+                        in.data_creacio = time(NULL);
+
+                        if (escriureInode(inod, in) == -1) {
+                            return -1;
+                        }
+
+                        if (bwrite(in.pindirectes[1], buff) == -1) {
+                            return -1;
+                        }
+                    }
+
+                    if (bread(buff[bloc / N_PUNTERS_BLOC], buff2) == -1) { // carregam a memoria (a buff) els punters indirectes de nivell 2
                         return -1;
                     }
-                    if (bread(buff[bfisic / N_PUNTERS_BLOC], buff2) == -1) { // carregam a memoria (a buff) els punters indirectes de nivell 2
+
+                    if (buff2[bloc % N_PUNTERS_BLOC] == 0) {
+                        buff2[bloc % N_PUNTERS_BLOC] = reservarBloc();
+
+                        if (buff2[bloc % N_PUNTERS_BLOC] == -1) {
+                            return -1;
+                        }
+
+                        in.blocs_assignats_dades++; // modificam els blocs assignats de l'inode
+                        in.data_modificacio = time(NULL);
+                        in.data_acces = time(NULL);
+                        in.data_creacio = time(NULL);
+
+                        if (escriureInode(inod, in) == -1) {
+                            return -1;
+                        }
+
+                        if (bwrite(buff[bloc / N_PUNTERS_BLOC], buff2) == -1) {
+                            return -1;
+                        }
+                    }
+
+                    *bfisic = buff2[bloc % N_PUNTERS_BLOC]; // return
+                } else {
+                    return -1;
+                }
+            } else if (blocLogic >= pin1 && blocLogic <= pin2 - 1) { // punters indirectes de nivell 2 // 65.804 - 16.843.019
+                printf("[ficheros_basico.c] DEBUG: in.pindirectes[2] = %d\n", in.pindirectes[2]);
+                if (in.pindirectes[2] == 0) { // comprovam que hi hagui direccions
+                    in.pindirectes[2] = reservarBloc(); // nivell 0
+                    printf("[ficheros_basico.c] DEBUG: in.pindirectes[2] res = %d\n", in.pindirectes[2]);
+                    if (in.pindirectes[2] == -1) {
                         return -1;
                     }
 
-                    bloc_res = reservarBloc();
-                    buff2[bfisic / N_PUNTERS_BLOC] = bloc_res;
-
-                    if (bwrite(buff[bfisic / N_PUNTERS_BLOC], buff2) == -1) {
-                        return -1;
-                    }
-
-                    in.blocs_assignats_dades++;
+                    in.blocs_assignats_dades++; // modificam els blocs assignats de l'inode
                     in.data_modificacio = time(NULL);
+                    in.data_acces = time(NULL);
+                    in.data_creacio = time(NULL);
+
                     if (escriureInode(inod, in) == -1) {
                         return -1;
                     }
 
-                    return buff2[bfisic % N_PUNTERS_BLOC];
-                }
-            } else if (blocLogic >= pin1 && blocLogic <= pin2 - 1) { // punters indirectes de nivell 2 // 65.804 - 16.843.019
-                temp2 = in.pindirectes[2];
-                if (temp2 > 0) { // comprovam que hi hagui direccions
-                    if (bread(in.pindirectes[2], buff) == -1) { // carregam a memoria (a buff) els punters indirectes de nivell 2
-                        return -1;
-                    }
-
-                    bfisic = blocLogic - pin1; // calculam la posició del bloc físic
-                    int b1 = N_PUNTERS_BLOC * N_PUNTERS_BLOC; // 256*256 = 65536
-                    temp = bfisic / b1;
-
-                    if (bread(buff[temp], buff2) == -1) { // copiam el resultat de la divisió
-                        return -1;
-                    }
-
-                    bfisic = bfisic % b1; // avançam un nivell
-                    temp = bfisic / N_PUNTERS_BLOC;
-
-                    if (bread(buff2[temp], buff3) == -1) { // copiam el resultat de la divisió
-                        return -1;
-                    }
-
-                    return buff3[bfisic % N_PUNTERS_BLOC]; // retornam el "punter" del bloc físic que es troba al buff (dins memòria) i que apunta la zona de dades (el bloc de dades)
-                } else { // ara reservam
-                    bloc_res = reservarBloc(); // nivell 0
-                    in.pindirectes[2] = bloc_res;
-
                     if (bread(in.pindirectes[2], buff) == -1) {
                         return -1;
                     }
-                    bfisic = blocLogic - pin1;
 
-                    bloc_res = reservarBloc();
-                    buff[bfisic/(N_PUNTERS_BLOC * N_PUNTERS_BLOC)] = bloc_res;
+                    if (buff[bloc / (N_PUNTERS_BLOC * N_PUNTERS_BLOC)] == 0) {
+                        buff[bloc / (N_PUNTERS_BLOC * N_PUNTERS_BLOC)] = reservarBloc();
 
-                    if (bwrite(buff[bfisic/(N_PUNTERS_BLOC * N_PUNTERS_BLOC)], buff) == -1) {
+                        if (buff[bloc / (N_PUNTERS_BLOC * N_PUNTERS_BLOC)] == -1) {
+                            return -1;
+                        }
+
+                        in.blocs_assignats_dades++; // modificam els blocs assignats de l'inode
+                        in.data_modificacio = time(NULL);
+                        in.data_acces = time(NULL);
+                        in.data_creacio = time(NULL);
+
+                        if (escriureInode(inod, in) == -1) {
+                            return -1;
+                        }
+
+                        if (bwrite(in.pindirectes[2], buff) == -1) {
+                            return -1;
+                        }
+                    }
+
+                    if (bread(buff[bloc / (N_PUNTERS_BLOC * N_PUNTERS_BLOC)], buff2) == -1) {
                         return -1;
                     }
 
-                    if (bread(buff[bfisic/(N_PUNTERS_BLOC * N_PUNTERS_BLOC)], buff2) == -1) {
-                        return -1;
-                    }
+                    int b2 = bloc % (N_PUNTERS_BLOC * N_PUNTERS_BLOC);
 
-                    int b2 = bfisic % (N_PUNTERS_BLOC * N_PUNTERS_BLOC);
+                    if (buff2[b2 / N_PUNTERS_BLOC] == 0) {
+                        buff2[b2 / N_PUNTERS_BLOC] = reservarBloc(); // nivell 1
 
-                    bloc_res = reservarBloc(); // nivell 1
-                    buff2[b2 / N_PUNTERS_BLOC] = bloc_res;
+                        if (buff2[b2 / N_PUNTERS_BLOC] == -1) {
+                            return -1;
+                        }
 
-                    if (bwrite(buff2[b2 / N_PUNTERS_BLOC], buff2) == -1) {
-                        return -1;
+                        in.blocs_assignats_dades++; // modificam els blocs assignats de l'inode
+                        in.data_modificacio = time(NULL);
+                        in.data_acces = time(NULL);
+                        in.data_creacio = time(NULL);
+
+                        if (escriureInode(inod, in) == -1) {
+                            return -1;
+                        }
+
+                        if (bwrite(buff[bloc / (N_PUNTERS_BLOC * N_PUNTERS_BLOC)], buff2) == -1) {
+                            return -1;
+                        }
                     }
 
                     if (bread(buff2[b2 / N_PUNTERS_BLOC], buff3) == -1) {
                         return -1;
                     }
 
-                    bloc_res = reservarBloc(); // nivell 2
-                    buff3[b2 % N_PUNTERS_BLOC] = bloc_res;
+                    if (buff2[b2 % N_PUNTERS_BLOC] == 0) {
+                        buff3[b2 % N_PUNTERS_BLOC] = reservarBloc(); // nivell 2
 
-                    if (bwrite(buff3[b2 % N_PUNTERS_BLOC], buff3) == -1) {
-                        return -1;
+                        if (buff3[b2 % N_PUNTERS_BLOC] == -1) {
+                            return -1;
+                        }
+
+                        in.blocs_assignats_dades++; // modificam els blocs assignats de l'inode
+                        in.data_modificacio = time(NULL);
+                        in.data_acces = time(NULL);
+                        in.data_creacio = time(NULL);
+
+                        if (escriureInode(inod, in) == -1) {
+                            return -1;
+                        }
+
+                        if (bwrite(buff3[b2 % N_PUNTERS_BLOC], buff3) == -1) {
+                            return -1;
+                        }
                     }
 
-                    in.blocs_assignats_dades++;
-                    in.data_modificacio = time(NULL);
-                    if (escriureInode(inod, in) == -1) {
-                        return -1;
-                    }
-
-                    return (buff3[b2 % N_PUNTERS_BLOC]); // devolvemos el bloque fisico
+                    *bfisic = buff3[b2 % N_PUNTERS_BLOC]; // return
+                } else {
+                    return -1;
                 }
+            } else {
+                printf("[ficheros_basico.c] ERROR: bloc logic incorrecte!\n");
+                return -1;
             }
         } else {
             printf("[ficheros_basico.c] ERROR: Valor de 'reservar' erroni!\n");

@@ -5,9 +5,9 @@
 OBJ_LIB = libs/bloques.o libs/ficheros_basico.o libs/ficheros.o libs/directorios.o libs/semaforos.o
 CC = gcc
 CFLAGS = -Wall -O2 -ggdb
-EXEC = bin/mi_mkfs bin/mi_chmod bin/mi_ls bin/mi_stat bin/mi_cat bin/mi_ln bin/mi_rm bin/mi_creat bin/mi_write bin/simulacion bin/mi_truncar bin/mi_pwd bin/mi_tree
+EXEC = bin/mi_mkfs bin/mi_chmod bin/mi_ls bin/mi_stat bin/mi_cat bin/mi_ln bin/mi_rm bin/mi_creat bin/mi_write bin/simulacion bin/mi_truncar
 
-all: mi_mkfs mi_chmod mi_ls mi_stat mi_cat mi_ln mi_rm mi_creat mi_write simulacion mi_truncar mi_tree mi_pwd
+all: mi_mkfs mi_chmod mi_ls mi_stat mi_cat mi_ln mi_rm mi_creat mi_write simulacion mi_truncar
 
 # biblioteques
 directorios.o: libs/directorios.c include/directorios.h
@@ -52,12 +52,6 @@ mi_creat: src/mi_creat.c $(OBJ_LIB)
 
 mi_write: src/mi_write.c $(OBJ_LIB)
 	$(CC) -o bin/mi_write src/mi_write.c $(OBJ_LIB)
-
-mi_pwd: src/mi_pwd.c $(OBJ_LIB)
-	$(CC) -o bin/mi_pwd src/mi_pwd.c $(OBJ_LIB)
-
-mi_tree: src/mi_tree.c $(OBJ_LIB)
-	$(CC) -o bin/mi_tree src/mi_tree.c $(OBJ_LIB)
 
 mi_truncar: src/mi_truncar.c $(OBJ_LIB)
 	$(CC) -o bin/mi_truncar src/mi_truncar.c $(OBJ_LIB)

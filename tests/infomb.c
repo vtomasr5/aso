@@ -6,7 +6,7 @@
 
 /**
  * @file infomb.c
- * @brief Mostra el contingut del Mapa de Bits del disc dur virtual passat per paràmetre
+ * @brief Mostra el contingut d'un bloc del Mapa de Bits.
  * @date 21/10/2010
  */
 int main (int argc, char *argv[])
@@ -19,7 +19,7 @@ int main (int argc, char *argv[])
 
     if (argc != 3) {
         printf("[infomb.c] ERROR: Paràmtres incorrectes! Prova: ./infomb disco.imagen numBloc \n");
-		exit(-1);
+        exit(-1);
     }
 
     bmount(argv[1]);

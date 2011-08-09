@@ -21,7 +21,7 @@
 
 /**
  *  @file mi_truncar.c
- *  @brief Mostra el contingut d'un inode.
+ *  @brief Elimina el contingut del fitxer sense eliminar-ho del disc. Ho buida.
  *  @date 07/01/2011
  */
 

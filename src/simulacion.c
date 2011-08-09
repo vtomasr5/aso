@@ -97,7 +97,7 @@ int proces(int num_proces, char *fitxer)
                     return -1;
                 }
 
-                printf("[simulacion.c] INFO: Proces: %d, escric el registre: %d, a la posicio: %d.\n", reg.pid, i + 1, reg.pos_registre);
+                printf("[simulacion.c] INFO: Proces: %d, escric el registre: %d, a la posicio: %d.\n", reg.pid, i + 1, rand);
                 usleep(50000); // 0.05s
             }
         } else {
@@ -147,7 +147,6 @@ int verificar() {
         mi_stat(dir2, &estat2); // lectura de la informacio de l'arcxiu
 
         proces = escriptures = p_escriptura = pos_p_escriptura = d_escriptura = pos_d_escriptura = posicio_menor = pos_menor_posicio = posicio_major = pos_major_posicio = 0;
-
         p_escriptura = time(NULL);
         posicio_menor = estat2.tamany;
 
@@ -194,8 +193,7 @@ int verificar() {
             }
         }
         printf("[simulacion.c] ############################# VERIFICACIO ###################################\n");
-        printf("[simulacion.c] INFO: Proces: %d\n", i + 1);
-        printf("[simulacion.c] INFO: PID: %d\n", proces);
+        printf("[simulacion.c] INFO: Proces: %d\n", proces);
         printf("[simulacion.c] INFO: Escriptures: %d\n", escriptures);
         printf("[simulacion.c] INFO: Primera escriptura a les: %d, en la posicio de l'escriptura: %d\n", p_escriptura, pos_p_escriptura);
         printf("[simulacion.c] INFO: Darrera escriptura a les: %d, en la posicio de l'escriptura: %d\n", d_escriptura, pos_d_escriptura);
@@ -256,7 +254,7 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    //verificar(); // verificam les escriptures
+    //~ verificar(); // verificam les escriptures
 
     sem_del();
 

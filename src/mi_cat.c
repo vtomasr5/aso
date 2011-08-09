@@ -36,6 +36,7 @@ int main(int argc, char *argv[])
     int lectures = 0;
     uint p_inode_dir, p_inode, p_entrada;
     p_inode_dir = p_inode = p_entrada = 0;
+    uint bfisic;
 
     if (argc != 3) {
         printf("[mi_cat.c] ERROR: Arguments incorrectes. Ex: mi_cat <nomFS> <cami>\n");
@@ -69,8 +70,12 @@ int main(int argc, char *argv[])
             int i = 0;
             int bf = 0;
             while (lectures < estat.blocs_assignats_dades) {
-                bf = traduirBlocInode(p_inode, i, '0');
-                if (bf > 0) {
+                int ret = traduirBlocInode(p_inode, i, &bfisic, '0'); // bloc físic
+                if (ret == -1) {
+                    printf("[ficheros.c] ERROR: traduirBlocInode()\n");
+                    return -1;
+                }
+                if (bfisic > 0) {
                     if (mi_read(argv[2], buff, (i * TB), TB) == -1) {
                         printf("[mi_cat.c] ERROR: No s'ha pogut llegir!\n");
                         sem_del();
@@ -93,6 +98,7 @@ int main(int argc, char *argv[])
     }
 
     if (infoSB() == -1) { // mostram el contingut del superbloc
+        sem_del();
         return -1;
     }
 
