@@ -37,7 +37,7 @@
 #include "../include/directorios.h"
 #include "../include/semaforos.h"
 
-#define PROCESOS 100
+#define PROCESOS 10
 #define N_VEGADES 50
 #define TAM 100 // llargaria nom cami
 
@@ -137,8 +137,9 @@ int verificar() {
 
     sprintf(dir1, "/%s/", ent.nom);
     mi_stat(dir1, &estat);
-    printf("[simulacion.c] DEBUG: dir1 %s\n", &dir1[0]);
+    printf("[simulacion.c] DEBUG: dir1 = '%s'\n", dir1);
     for (i = 0; i < (estat.tamany / sizeof(entrada)); i++) { // recorrem totes les entrades
+        printf("algo\n");
         if (mi_read(dir1, &ent, i * sizeof(entrada), sizeof(entrada)) == -1) { // llegim totes les entrades una a una
             printf("[simulacion.c] ERROR: Error de lectura2!\n");
             return -1;
@@ -151,12 +152,12 @@ int verificar() {
         posicio_menor = estat2.tamany;
 
         int k = 8;
-        while (k < strlen(ent.nom)) {
+        while (k < strlen(ent.nom)) { // llegim el PID
             aux[k-8] = ent.nom[k];
             k++;
         }
-
         proces = atoi(aux);
+
         for (j = 0; j < estat2.tamany / sizeof(registre); j++) { // recorrem els registres
             reg.data = reg.pid = reg.escriptura = reg.pos_registre = 0;
 
@@ -254,7 +255,7 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    //~ verificar(); // verificam les escriptures
+    verificar(); // verificam les escriptures
 
     sem_del();
 

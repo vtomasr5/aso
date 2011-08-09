@@ -513,9 +513,9 @@ int mi_dir(const char *cami, char *buff)
  */
 int mi_chmod(const char *cami, unsigned char mode)
 {
-    sem_wait();
     uint p_inode, p_entrada, p_inode_dir = 0;
 
+    sem_wait();
     if (cercarEntrada(cami, &p_inode_dir, &p_inode, &p_entrada, 0, mode) == -1) { // busca el inodo de la ultima entrada de la ruta y la deposita en p_inode
         printf("[directorios.c] ERROR: No s'ha trobat el cami!!a\n");
         sem_signal();
@@ -538,10 +538,9 @@ int mi_chmod(const char *cami, unsigned char mode)
  */
 int mi_stat(const char *cami, STAT *p_stat)
 {
-    sem_wait();
-
     uint p_inode, p_entrada, p_inode_dir = 0;
 
+    sem_wait();
     if (cercarEntrada(cami, &p_inode_dir, &p_inode, &p_entrada, 0, 7) == -1) {
         printf("[directorios.c] ERROR: No s'ha trobat el cami!!b\n");
         sem_signal();
@@ -564,10 +563,9 @@ int mi_stat(const char *cami, STAT *p_stat)
  */
 int mi_read(const char *cami, void *buff, unsigned int offset, unsigned int nbytes)
 {
-    sem_wait();
-
     uint p_inode, p_entrada, p_inode_dir = 0;
 
+    sem_wait();
     if (cercarEntrada(cami, &p_inode_dir, &p_inode, &p_entrada, 0, 7) == -1) {
         printf("[directorios.c] ERROR: No s'ha trobat el cami!!c\n");
         sem_signal();
@@ -595,11 +593,9 @@ int mi_read(const char *cami, void *buff, unsigned int offset, unsigned int nbyt
  */
 int mi_write(const char *cami, const void *buff, unsigned int offset, unsigned int nbytes)
 {
-
-    sem_wait();
-
     uint p_inode, p_entrada, p_inode_dir = 0;
 
+    sem_wait();
     if (cercarEntrada(cami, &p_inode_dir, &p_inode, &p_entrada, 0, 7) == -1) {
         printf("[directorios.c] ERROR: No s'ha trobat el cami!!d\n");
         sem_signal();
