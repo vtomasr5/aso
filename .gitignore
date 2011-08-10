@@ -1,6 +1,7 @@
 *.o
 *~
 *.dSYM
+.DS_Store
 mi_mkfs
 mi_ls
 mi_ln
