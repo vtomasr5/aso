@@ -50,10 +50,7 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    if (mi_stat(argv[2], &estat) == -1) {
-        sem_del();
-        return -1;
-    } else {
+    if (mi_stat(argv[2], &estat) != -1) {
         printf("\nEstat del camí '%s':\n", argv[2]);
         printf("\n");
         veure_estat(&estat);

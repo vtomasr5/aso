@@ -37,7 +37,7 @@
 #include "../include/directorios.h"
 #include "../include/semaforos.h"
 
-#define PROCESOS 10
+#define PROCESOS 100
 #define N_VEGADES 50
 #define TAM 100 // llargaria nom cami
 
@@ -51,7 +51,7 @@ typedef struct {
 int acabados = 0;
 
 /**
- *  Funció que s'encarrega de que no quedin processos zombies.
+ *  Funció que s'encarrega de que no quedin processos zombies. Espera el processos fills a que acabin.
  *  @param s
  */
 void enterrador(int s)
@@ -255,7 +255,7 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    verificar(); // verificam les escriptures
+    //~ verificar(); // verificam les escriptures
 
     sem_del();
 

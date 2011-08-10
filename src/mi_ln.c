@@ -48,12 +48,7 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    if (mi_link(argv[2], argv[3]) == -1) {
-        sem_del();
-        return -1;
-    } else {
-        printf("[mi_ln.c] INFO: Enllaç realitzat correctament.\n");
-    }
+    mi_link(argv[2], argv[3]);
 
     if (infoSB() == -1) { // mostram el contingut del superbloc
         sem_del();

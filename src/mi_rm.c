@@ -52,8 +52,6 @@ int main(int argc, char *argv[])
 
     if (mi_unlink(argv[2]) == -1) {
         printf("[mi_rm.c] ERROR: No s'ha pogut eliminar!\n");
-    } else {
-        printf("[mi_rm.c] INFO: S'ha eliminat correctament\n");
     }
 
     if (infoSB() == -1) { // mostram el contingut del superbloc

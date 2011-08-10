@@ -52,8 +52,7 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    if (mi_dir(argv[2], buffer) == -1) { // escriu al buffer
-    } else {
+    if (mi_dir(argv[2], buffer) != -1) { // escriu al buffer
         mi_lsdir(argv[2], buffer); // mostra el contingut del buffer
     }
 

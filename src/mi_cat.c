@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
             while (lectures < estat.blocs_assignats_dades) {
                 int ret = traduirBlocInode(p_inode, i, &bfisic, 0); // bloc físic
                 if (ret == -1) {
-                    printf("[ficheros.c] ERROR: traduirBlocInode()\n");
+                    printf("[mi_cat.c] ERROR: traduirBlocInode()\n");
                     return -1;
                 }
                 if (bfisic > 0) {
