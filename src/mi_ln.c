@@ -43,17 +43,7 @@ int main(int argc, char *argv[])
     }
 
     // codi
-    if (infoSB() == -1) { // mostram el contingut del superbloc
-        sem_del();
-        return -1;
-    }
-
     mi_link(argv[2], argv[3]);
-
-    if (infoSB() == -1) { // mostram el contingut del superbloc
-        sem_del();
-        return -1;
-    }
 
     // desmontam es FS
     if (bumount() == -1) {

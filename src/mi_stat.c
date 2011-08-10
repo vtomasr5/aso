@@ -45,21 +45,11 @@ int main(int argc, char *argv[])
     }
 
     // codi
-    if (infoSB() == -1) { // mostram el contingut del superbloc
-        sem_del();
-        return -1;
-    }
-
     if (mi_stat(argv[2], &estat) != -1) {
         printf("\nEstat del camí '%s':\n", argv[2]);
         printf("\n");
         veure_estat(&estat);
         printf("\n");
-    }
-
-    if (infoSB() == -1) { // mostram el contingut del superbloc
-        sem_del();
-        return -1;
     }
 
     // desmontam es FS

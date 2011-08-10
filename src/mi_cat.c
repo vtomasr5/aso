@@ -97,11 +97,6 @@ int main(int argc, char *argv[])
         printf("[mi_cat.c] ERROR: No se pot fet un 'mi_cat' sobre un directori!\n");
     }
 
-    if (infoSB() == -1) { // mostram el contingut del superbloc
-        sem_del();
-        return -1;
-    }
-
     // desmontam es FS
     if (bumount() == -1) {
         sem_del();

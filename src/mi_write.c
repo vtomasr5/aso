@@ -51,20 +51,10 @@ int main(int argc, char *argv[])
     nbytes = atoi(argv[5]);
     buff = argv[3];
 
-    if (infoSB() == -1) { // mostram el contingut del superbloc
-        sem_del();
-        return -1;
-    }
-
     if (mi_write(argv[2], buff, offset, nbytes) == -1) {
         printf("[mi_write.c] ERROR: No s'ha pogut escriure!\n");
     } else {
         printf("[mi_write.c] INFO: S'ha escrit correctament.\n");
-    }
-
-    if (infoSB() == -1) { // mostram el contingut del superbloc
-        sem_del();
-        return -1;
     }
 
     // desmontam es FS

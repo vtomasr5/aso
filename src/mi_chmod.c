@@ -45,20 +45,10 @@ int main(int argc, char *argv[])
     }
 
     // codi
-    if (infoSB() == -1) { // mostram el contingut del superbloc
-        sem_del();
-        return -1;
-    }
-
     mode = atoi(argv[3]);
 
     if (mi_chmod(argv[2], mode) != -1) {
         printf("\n[mi_chmod.c] INFO: Permisos canviats correctament\n\n");
-    }
-
-    if (infoSB() == -1) { // mostram el contingut del superbloc
-        sem_del();
-        return -1;
     }
 
     // desmontam es FS

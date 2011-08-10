@@ -45,18 +45,9 @@ int main(int argc, char *argv[])
     }
 
     // codi
-    if (infoSB() == -1) { // mostram el contingut del superbloc
-        sem_del();
-        return -1;
-    }
 
     if (mi_unlink(argv[2]) == -1) {
         printf("[mi_rm.c] ERROR: No s'ha pogut eliminar!\n");
-    }
-
-    if (infoSB() == -1) { // mostram el contingut del superbloc
-        sem_del();
-        return -1;
     }
 
     // desmontam es FS

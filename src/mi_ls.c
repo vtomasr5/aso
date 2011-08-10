@@ -47,18 +47,8 @@ int main(int argc, char *argv[])
     }
 
     // codi
-    if (infoSB() == -1) { // mostram el contingut del superbloc
-        sem_del();
-        return -1;
-    }
-
     if (mi_dir(argv[2], buffer) != -1) { // escriu al buffer
         mi_lsdir(argv[2], buffer); // mostra el contingut del buffer
-    }
-
-    if (infoSB() == -1) { // mostram el contingut del superbloc
-        sem_del();
-        return -1;
     }
 
     // desmontam es FS
