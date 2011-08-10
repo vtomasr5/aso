@@ -128,7 +128,7 @@ int cercarEntrada(const char *cami_parcial, unsigned int *p_inode_dir, unsigned 
     }
 
     if (i < num_ent) { // trobat
-        *p_entrada = i;
+        *p_entrada = i; 
         *p_inode = ent[i].inode;
 
         if ((strlen(cami_final) == 0) || (strcmp(cami_final, "/") == 0)) { // si solo queda una entrada en el camino (fichero o directorio)
@@ -193,7 +193,7 @@ void alliberar(uint *p_inode_dir, uint *p_inode, uint *p_entrada)
 /**
  *  Funció que crea un fitxer o directori i sa seva respectiva entrada de directori.
  *  A més ho crea amb uns permisos especificats per paràmetre.
- *  @param cami ruta que es vol crei
+ *  @param cami ruta que es vol crear
  *  @param mode permisos amb que es crea el fitxer o directori
  */
 int mi_creat(const char *cami, unsigned int mode)
@@ -339,7 +339,7 @@ int mi_link(const char *cami1, const char *cami2)
 /**
  *  Funció que elimina l'entrada de directori. Si només hi ha un enllaç elimina
  *  el propi fitxer o directori.
- *  @param cami Ruta que ha de borrar.
+ *  @param cami Ruta que s'ha de borrar o decrementar un enllaç.
  */
 int mi_unlink(const char *cami)
 {
@@ -356,7 +356,7 @@ int mi_unlink(const char *cami)
     *p_inode = 0;
     *p_entrada = 0;
 
-    if (strcmp(cami, "/") == 0) { // caso de eliminar "/"
+    if (strcmp(cami, "/") == 0) { // cas d'eliminar "/"
         printf("[directorios.c] ERROR: No pots borrar l'arrel '/'\n");
         alliberar(p_inode_dir, p_inode, p_entrada);
         sem_signal();
@@ -384,7 +384,7 @@ int mi_unlink(const char *cami)
     }
 
     // hi ha més d'una entrada
-    if (mi_read_f(*p_inode_dir, &ent, estat.tamany - sizeof(entrada), sizeof(entrada)) == -1) { // in.tam - sizeof(struct entrada) = numero de bytes de offset
+    if (mi_read_f(*p_inode_dir, &ent, estat.tamany - sizeof(entrada), sizeof(entrada)) == -1) { 
         printf("[directorios.c] ERROR: No s'ha pogut llegir\n");
         alliberar(p_inode_dir, p_inode, p_entrada);
         sem_signal();
@@ -592,6 +592,7 @@ int mi_write(const char *cami, const void *buff, unsigned int offset, unsigned i
     uint p_inode, p_entrada, p_inode_dir = 0;
 
     sem_wait();
+    
     if (cercarEntrada(cami, &p_inode_dir, &p_inode, &p_entrada, 0, 7) == -1) {
         printf("[directorios.c] ERROR: No s'ha trobat el cami!!d\n");
         sem_signal();

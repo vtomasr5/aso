@@ -29,8 +29,8 @@
 
 /**
  *  Funció que crea un nou semàfor mutex
- *  @param clau
- *  @param num
+ *  @param clau clau per crear el semàfor
+ *  @param num valor numèric per identificar el semàfor
  *  @return El descriptor del nou semàfor.
  */
 int nouSemafor(int clau, int num)
@@ -48,8 +48,6 @@ int nouSemafor(int clau, int num)
 /**
  *  Funció que decrementa el valor del semàfor mutex
  *  @param s descriptor del semafor a esperar (wait)
- *  @param pos
- *  @param flag
  */
 void esperarSemafor(int s)
 {
@@ -65,7 +63,6 @@ void esperarSemafor(int s)
 /**
  *  Funció que incrementa el valor del semàfor mutex
  *  @param s descriptor del semafor a senyalitzar (signal)
- *  @param pos
  */
 void senyalitzarSemafor(int s)
 {
@@ -81,7 +78,7 @@ void senyalitzarSemafor(int s)
 /**
  *  Inicialitza el semàfor amb el valor del paràmetre
  *  @param s descriptor del semafor a inicialitzar
- *  @param valor
+ *  @param valor valor del semàfor a inicialitzar
  */
 void inicialitzarSemafor(int s, int valor)
 {

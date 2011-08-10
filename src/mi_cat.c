@@ -82,8 +82,6 @@ int main(int argc, char *argv[])
                         return -1;
                     }
                     lectures++; // quantitat de blocs llegits
-                    //file = fopen("/dev/stdout", "w");
-                    //fwrite(buff, TB, 1, file);
                     write(1, buff, estat.tamany);
                     i++;
                 }

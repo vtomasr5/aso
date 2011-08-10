@@ -154,7 +154,7 @@ int initMB()
 /**
  *  Inicialitza, a la zona de metainformació, l'array de inodes amb la informació
  *  de cada camp actualitzada segons convengui. Els punters directes i indirectes
- *  també s'inicialitzen a "-1" (encara no hi ha punters).
+ *  també s'inicialitzen amb el valor "0" (encara no hi ha punters).
  */
 int initAI()
 {
@@ -811,10 +811,10 @@ int alliberarInode(unsigned int inod)
 
 /**
  *  Funció que s'encarrega de calcular el número de bloc físic el quan fa referència al número de bloc lògic d'un determinat inode.
- *  @param inod inode que volem traduir
- *  @param blocLogic bloc lògic
- *  @param blocFisic bloc físic
- *  @param reservar si val 0 llavors només consulta. Si val 1, llavors consunta, i si, no existeix cap bloc físic, també reserva.
+ *  @param inod número de l'inode on es troba el bloc
+ *  @param blocLogic bloc lògic que volem traduir
+ *  @param bfisic punter que es retorna al haver traduit el bloc logic al bloc físic
+ *  @param reservar si val 0 llavors només consulta. Si val 1, llavors consunta, i si no existeix cap bloc físic, també el reserva.
  */
 int traduirBlocInode(unsigned int inod, unsigned int blocLogic, unsigned int *bfisic, unsigned int reservar)
 {

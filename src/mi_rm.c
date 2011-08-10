@@ -21,8 +21,7 @@
 
 /**
  *  @file mi_rm.c
- *  @brief Elimina un enllaç entre dos directoris o elimina el directori completament.
- *  També elimina els fitxers.
+ *  @brief Elimina un directori o fitxer si només hi ha enllaç. Si n'hi ha més d'ún elimina un enllaç del mateix.
  *  @date 07/01/2011
  */
 

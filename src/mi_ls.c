@@ -21,7 +21,7 @@
 
 /**
  *  @file mi_ls.c
- *  @brief Mostra el contingut del directori.
+ *  @brief Mostra el contingut del directori llistant els seus fitxers o més directoris.
  *  @date 07/01/2011
  */
 

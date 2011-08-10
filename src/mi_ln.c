@@ -21,7 +21,7 @@
 
 /**
  *  @file mi_ln.c
- *  @brief Crea un enllaç entre dos directoris.
+ *  @brief Crea un enllaç entre dos directoris o fitxers.
  *  @date 07/01/2011
  */
 

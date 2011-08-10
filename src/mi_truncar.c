@@ -21,7 +21,7 @@
 
 /**
  *  @file mi_truncar.c
- *  @brief Elimina el contingut del fitxer sense eliminar-ho del disc. Ho buida.
+ *  @brief Elimina el contingut del fitxer sense eliminar-ho del disc. Ho buida a uns determinats bytes.
  *  @date 07/01/2011
  */
 
