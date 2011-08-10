@@ -4,6 +4,11 @@ export PATH=$PATH:"bin/"
 
 rm -f disco.imagen
 echo "FS BORRAT\n"
+
+if [ ! -d bin ]; then
+	mkdir bin/
+fi
+
 make clean
 echo
 make
