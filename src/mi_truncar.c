@@ -66,8 +66,6 @@ int main(int argc, char *argv[])
         if (estat.tamany > 0) { // si no esta buit
             if (mi_truncar_f(num_inode, bytes) == -1) {
                 printf("[mi_truncar.c] ERROR: No s'ha pogut truncar!\n");
-                sem_del();
-                return -1;
             }
         } else {
             printf("[mi_truncar.c] INFO: Aquest fitxer esta buit!\n");
