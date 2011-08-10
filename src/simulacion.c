@@ -139,7 +139,6 @@ int verificar() {
     mi_stat(dir1, &estat);
     printf("[simulacion.c] DEBUG: dir1 = '%s'\n", dir1);
     for (i = 0; i < (estat.tamany / sizeof(entrada)); i++) { // recorrem totes les entrades
-        printf("algo\n");
         if (mi_read(dir1, &ent, i * sizeof(entrada), sizeof(entrada)) == -1) { // llegim totes les entrades una a una
             printf("[simulacion.c] ERROR: Error de lectura2!\n");
             return -1;
@@ -255,7 +254,7 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    //~ verificar(); // verificam les escriptures
+    verificar(); // verificam les escriptures
 
     sem_del();
 
