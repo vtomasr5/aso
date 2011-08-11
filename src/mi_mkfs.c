@@ -50,8 +50,7 @@ int main(int argc, char *argv[])
         exit(-1);
     }
 
-    uint nblocs = atoi(argv[2]);
-    if (nblocs < 0) {
+    if (atoi(argv[2]) < 0) {
         printf("[mi_mkfs.c] ERROR: Nombre de bloc incorrectes\n");
         exit(-1);
     }
@@ -71,7 +70,7 @@ int main(int argc, char *argv[])
     }
 
     // inicialitzam el SB
-    if (initSB(nblocs) == -1) {
+    if (initSB(atoi(argv[2])) == -1) {
         printf("[mi_mkfs.c] ERROR: Error cridant a initSB");
         return -1;
     }
@@ -83,7 +82,7 @@ int main(int argc, char *argv[])
     }
 
     // inicialitzam l'AI
-    if (initAI(nblocs) == -1) {
+    if (initAI(atoi(argv[2])) == -1) {
         printf("[mi_mkfs.c] ERROR: Error cridant a initAI");
         return -1;
     }
