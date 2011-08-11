@@ -64,13 +64,11 @@ void enterrador(int s)
 
 /**
  *  Funció que crea 100 procesos que escriuen de forma concurrent en el sistema de fitxers.
- *  @param num_proces PID del procés que arranca
  *  @param fitxer Fitxer que es crea
  */
-int proces(int num_proces, char *fitxer)
+int proces(char *fitxer)
 {
     char nom_carpeta[TAM];
-    //memcpy(nom_carpeta, '\0', TAM);
     int i = 0;
     registre reg;
     int rand; // numero del random
@@ -79,7 +77,6 @@ int proces(int num_proces, char *fitxer)
     sprintf(nom_carpeta, "%sproceso_%d/", nom_carpeta, getpid());
 
     srandom(getpid());
-    //printf("[simulacion.c] DEBUG: Carpeta: %s\n", &nom_carpeta[0]);
 
     if (mi_creat(nom_carpeta, 7) != -1) { // cream els directori 'proceso_n'
         sprintf(nom_carpeta, "%sprueba.dat", nom_carpeta); // afegim a la ruta el nom del fitxer
@@ -97,7 +94,7 @@ int proces(int num_proces, char *fitxer)
                     return -1;
                 }
 
-                printf("[simulacion.c] INFO: Proces: %d, escric el registre: %d, a la posicio: %d.\n", reg.pid, i + 1, rand);
+                //~ printf("[simulacion.c] INFO: Proces: %d, escric el registre: %d, a la posicio: %d.\n", reg.pid, i + 1, rand);
                 usleep(50000); // 0.05s
             }
         } else {
@@ -139,7 +136,7 @@ int verificar() {
     mi_stat(dir1, &estat);
     printf("[simulacion.c] DEBUG: dir1 = '%s'\n", dir1);
     for (i = 0; i < (estat.tamany / sizeof(entrada)); i++) { // recorrem totes les entrades
-        if (mi_read(dir1, &ent, i * sizeof(entrada), sizeof(entrada)) == -1) { // llegim totes les entrades una a una
+        if (mi_read(dir1, &ent, i * sizeof(entrada), sizeof(entrada)) == -1) { // llegim totes les entrades
             printf("[simulacion.c] ERROR: Error de lectura2!\n");
             return -1;
         }
@@ -192,7 +189,7 @@ int verificar() {
             printf("[simulacion.c] DEBUG: data: %d, pid: %d, escriptura: %d, pos_registre: %d\n", reg.data, reg.pid, reg.escriptura, reg.pos_registre);
             }
         }
-        printf("[simulacion.c] ############################# VERIFICACIO ###################################\n");
+        printf("[simulacion.c] ############################# VERIFICACIO #############################\n");
         printf("[simulacion.c] INFO: Proces: %d\n", proces);
         printf("[simulacion.c] INFO: Escriptures: %d\n", escriptures);
         printf("[simulacion.c] INFO: Primera escriptura a les: %d, en la posicio de l'escriptura: %d\n", p_escriptura, pos_p_escriptura);
@@ -240,7 +237,7 @@ int main(int argc, char **argv)
         for (i = 0; i < PROCESOS; i++) {
             printf("[simulacion.c] ############################# Proces: %d #############################\n", i);
             if (fork() == 0) { // es creen els 100 processos fills
-                proces(i, nom_carpeta);
+                proces(nom_carpeta);
                 exit(0);
             }
             usleep(200000); // 0.2s
