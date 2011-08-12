@@ -590,7 +590,6 @@ int alliberarBlocInode(unsigned int inod, unsigned int blocLogic)
                 in.pdirectes[i] = 0; // resetejam la posicio del inode i les dates
                 in.data_acces = time(NULL);
                 in.data_modificacio = time(NULL);
-                in.data_creacio = time(NULL);
                 escriureInode(inod, in); // guardam els canvis
             }
         }
@@ -626,7 +625,6 @@ int alliberarBlocInode(unsigned int inod, unsigned int blocLogic)
 
             in.data_acces = time(NULL);
             in.data_modificacio = time(NULL);
-            in.data_creacio = time(NULL);
             escriureInode(inod, in); // guardam els canvis
         }
     }
@@ -682,7 +680,6 @@ int alliberarBlocInode(unsigned int inod, unsigned int blocLogic)
 
             in.data_acces = time(NULL);
             in.data_modificacio = time(NULL);
-            in.data_creacio = time(NULL);
             escriureInode(inod, in); // guardam els canvis
         }
     }
@@ -755,7 +752,6 @@ int alliberarBlocInode(unsigned int inod, unsigned int blocLogic)
 
             in.data_acces = time(NULL);
             in.data_modificacio = time(NULL);
-            in.data_creacio = time(NULL);
             escriureInode(inod, in); // guardam els canvis
         }
     }
@@ -800,7 +796,6 @@ int alliberarInode(unsigned int inod)
 
         sb.inode_lliure = inod;
         sb.inodes_lliures++;
-        //~ sb.blocs_lliures += blocs_ocupats;
 
         if (bwrite(POSICIO_SB, (char *)&sb) == -1) { // guardam els canvis en el superbloc
             return -1;
@@ -942,7 +937,6 @@ int traduirBlocInode(unsigned int inod, unsigned int blocLogic, unsigned int *bf
                     in.blocs_assignats_dades++; // modificam els blocs assignats de l'inode
                     in.data_modificacio = time(NULL);
                     in.data_acces = time(NULL);
-                    in.data_creacio = time(NULL);
 
                     if (escriureInode(inod, in) == -1) {
                         return -1;
@@ -959,8 +953,7 @@ int traduirBlocInode(unsigned int inod, unsigned int blocLogic, unsigned int *bf
                     in.blocs_assignats_dades++; // modificam els blocs assignats de l'inode
                     in.data_modificacio = time(NULL);
                     in.data_acces = time(NULL);
-                    in.data_creacio = time(NULL);
-
+                    
                     if (escriureInode(inod, in) == -1) {
                         return -1;
                     }
@@ -979,7 +972,6 @@ int traduirBlocInode(unsigned int inod, unsigned int blocLogic, unsigned int *bf
                     in.blocs_assignats_dades++; // modificam els blocs assignats de l'inode
                     in.data_modificacio = time(NULL);
                     in.data_acces = time(NULL);
-                    in.data_creacio = time(NULL);
 
                     if (escriureInode(inod, in) == -1) {
                         return -1;
@@ -1000,7 +992,6 @@ int traduirBlocInode(unsigned int inod, unsigned int blocLogic, unsigned int *bf
                     in.blocs_assignats_dades++; // modificam els blocs assignats de l'inode
                     in.data_modificacio = time(NULL);
                     in.data_acces = time(NULL);
-                    in.data_creacio = time(NULL);
 
                     if (escriureInode(inod, in) == -1) {
                         return -1;
@@ -1019,7 +1010,6 @@ int traduirBlocInode(unsigned int inod, unsigned int blocLogic, unsigned int *bf
                         in.blocs_assignats_dades++; // modificam els blocs assignats de l'inode
                         in.data_modificacio = time(NULL);
                         in.data_acces = time(NULL);
-                        in.data_creacio = time(NULL);
 
                         if (escriureInode(inod, in) == -1) {
                             return -1;
@@ -1044,7 +1034,6 @@ int traduirBlocInode(unsigned int inod, unsigned int blocLogic, unsigned int *bf
                         in.blocs_assignats_dades++; // modificam els blocs assignats de l'inode
                         in.data_modificacio = time(NULL);
                         in.data_acces = time(NULL);
-                        in.data_creacio = time(NULL);
 
                         if (escriureInode(inod, in) == -1) {
                             return -1;
@@ -1066,7 +1055,6 @@ int traduirBlocInode(unsigned int inod, unsigned int blocLogic, unsigned int *bf
                     in.blocs_assignats_dades++; // modificam els blocs assignats de l'inode
                     in.data_modificacio = time(NULL);
                     in.data_acces = time(NULL);
-                    in.data_creacio = time(NULL);
 
                     if (escriureInode(inod, in) == -1) {
                         return -1;
@@ -1086,7 +1074,6 @@ int traduirBlocInode(unsigned int inod, unsigned int blocLogic, unsigned int *bf
                         in.blocs_assignats_dades++; // modificam els blocs assignats de l'inode
                         in.data_modificacio = time(NULL);
                         in.data_acces = time(NULL);
-                        in.data_creacio = time(NULL);
 
                         if (escriureInode(inod, in) == -1) {
                             return -1;
@@ -1113,7 +1100,6 @@ int traduirBlocInode(unsigned int inod, unsigned int blocLogic, unsigned int *bf
                         in.blocs_assignats_dades++; // modificam els blocs assignats de l'inode
                         in.data_modificacio = time(NULL);
                         in.data_acces = time(NULL);
-                        in.data_creacio = time(NULL);
 
                         if (escriureInode(inod, in) == -1) {
                             return -1;
@@ -1138,7 +1124,6 @@ int traduirBlocInode(unsigned int inod, unsigned int blocLogic, unsigned int *bf
                         in.blocs_assignats_dades++; // modificam els blocs assignats de l'inode
                         in.data_modificacio = time(NULL);
                         in.data_acces = time(NULL);
-                        in.data_creacio = time(NULL);
 
                         if (escriureInode(inod, in) == -1) {
                             return -1;
