@@ -128,7 +128,7 @@ int cercarEntrada(const char *cami_parcial, unsigned int *p_inode_dir, unsigned 
     }
 
     if (i < num_ent) { // trobat
-        *p_entrada = i; 
+        *p_entrada = i;
         *p_inode = ent[i].inode;
 
         if ((strlen(cami_final) == 0) || (strcmp(cami_final, "/") == 0)) { // si solo queda una entrada en el camino (fichero o directorio)
@@ -268,6 +268,8 @@ int mi_link(const char *cami1, const char *cami2)
     *p_inode_enllac = 0;
     *p_entrada_enllac = 0;
 
+    sem_wait();
+
     if (cami1[0] != '/' || cami2[0] != '/') {
         printf("[directorios.c] ERROR: Cami incorrecte\n");
         alliberar(p_inode_dir, p_inode, p_entrada);
@@ -283,8 +285,6 @@ int mi_link(const char *cami1, const char *cami2)
         alliberar(p_inode_dir, p_inode, p_entrada);
         return -1;
     }
-
-    sem_wait();
 
     if (cercarEntrada(cami2, p_inode_dir_enllac, p_inode_enllac, p_entrada_enllac, 0, 7) == -1) { // entrada que ha d'existir
         printf("[directorios.c] ERROR: No s'ha trobat el cami: '%s', el link no s'ha pogut realitzar!!\n", cami2);
@@ -384,7 +384,7 @@ int mi_unlink(const char *cami)
     }
 
     // hi ha més d'una entrada
-    if (mi_read_f(*p_inode_dir, &ent, estat.tamany - sizeof(entrada), sizeof(entrada)) == -1) { 
+    if (mi_read_f(*p_inode_dir, &ent, estat.tamany - sizeof(entrada), sizeof(entrada)) == -1) {
         printf("[directorios.c] ERROR: No s'ha pogut llegir\n");
         alliberar(p_inode_dir, p_inode, p_entrada);
         sem_signal();
@@ -444,10 +444,10 @@ int mi_dir(const char *cami, char *buff)
     entrada ent;
     inode in, aux;
 
+    sem_wait();
+
     memset(buff, '\0', BUFFER_DIR); // resetejam
     p_inode_dir = p_inode = p_entrada = 0;
-
-    sem_wait();
 
     if (cercarEntrada(cami, &p_inode_dir, &p_inode, &p_entrada, 0, 7) == -1) {
         printf("[directorios.c] ERROR: Entrada no trobada.\n");
@@ -592,7 +592,7 @@ int mi_write(const char *cami, const void *buff, unsigned int offset, unsigned i
     uint p_inode, p_entrada, p_inode_dir = 0;
 
     sem_wait();
-    
+
     if (cercarEntrada(cami, &p_inode_dir, &p_inode, &p_entrada, 0, 7) == -1) {
         printf("[directorios.c] ERROR: No s'ha trobat el cami!!d\n");
         sem_signal();
@@ -618,26 +618,21 @@ int mi_lsdir(const char *cami, char *buff)
 {
     sem_wait();
 
-    int cont = 0;
-
-    for(cont = 0; cont < 2; cont++) {
-        printf("\n");
-    }
+    printf("\n\n");
 
     printf("##### Contingut de '%s' #####\n", cami);
 
     // imprimim el contingut del directori per pantalla
-    for (cont = 0; cont < BUFFER_DIR; cont++) {
-        if (buff[cont] == ':') {
+    int count = 0;
+    for (count = 0; count < BUFFER_DIR; count++) {
+        if (buff[count] == ':') {
             printf("\n");
         } else {
-            printf("%c", buff[cont]);
+            printf("%c", buff[count]);
         }
     }
 
-    for(cont = 0; cont < 2; cont++) {
-        printf("\n");
-    }
+    printf("\n\n");
 
     sem_signal();
     return 0;
@@ -672,7 +667,11 @@ void sem_init()
     }
 
     mutex = nouSemafor(key, 1);
-    inicialitzarSemafor(mutex, 1);
+    int res = semctl(mutex, 0, SETVAL, 1);
+    if (res == -1) {
+        printf("[semaforos.c] ERROR: Error inicialitzant el semafor!\n");
+        exit(-1);
+    }
 }
 
 /**

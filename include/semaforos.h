@@ -36,7 +36,6 @@
 int nouSemafor(int clau, int num);
 void esperarSemafor(int s);
 void senyalitzarSemafor(int s);
-void inicialitzarSemafor(int s, int valor);
 void eliminarSemafor(int s);
 
 #endif // _SEMAFOROS_H

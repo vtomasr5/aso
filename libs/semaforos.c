@@ -76,16 +76,6 @@ void senyalitzarSemafor(int s)
 }
 
 /**
- *  Inicialitza el semàfor amb el valor del paràmetre
- *  @param s descriptor del semafor a inicialitzar
- *  @param valor valor del semàfor a inicialitzar
- */
-void inicialitzarSemafor(int s, int valor)
-{
-    semctl(s, 0, SETVAL, valor);
-}
-
-/**
  *  Elimina el semàfor
  *  @param s descriptor del semafor a eliminar
  */

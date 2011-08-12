@@ -39,7 +39,7 @@
 
 #define PROCESOS 100
 #define N_VEGADES 50
-#define TAM 100 // llargaria nom cami
+#define TAM 200 // llargaria nom cami
 
 typedef struct {
     int data;
@@ -251,9 +251,9 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    verificar(); // verificam les escriptures
-
     sem_del();
+
+    verificar(); // verificam les escriptures
 
     if (bumount() == -1) {
         return -1;
