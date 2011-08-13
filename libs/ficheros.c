@@ -43,7 +43,7 @@ int mi_write_f (unsigned int inod, const void *buff_original, unsigned int offse
     int bytes_escrits = 0;
     int blocLogic = offset / TB; // primer bloc (logic) on escriurem
     int darrer_bloc_logic = ((offset + nbytes) - 1) / TB; // ultim bloc on escriurem primer_byte
-    int primer_byte = offset % TB; // offset del primer bloc. Punt d'inici del primer bloc
+    int primer_byte = offset % TB; // offset del primer bloc. Desplaçament dins el bloc
     int darrer_byte = ((offset + nbytes) - 1) % TB; // numero de bytes a escriure en el primer bloc
     memset(buff_bloc, '\0', TB);
     uint bfisic;
@@ -68,6 +68,7 @@ int mi_write_f (unsigned int inod, const void *buff_original, unsigned int offse
 
     // únicament tenim que escriure en un bloc
     if ((blocLogic == darrer_bloc_logic) && (primer_byte + nbytes < TB)) {
+        //~ printf("[ficheros.c] DEBUG: 1 bloc\n\n");
         memcpy(buff_bloc + primer_byte, buff_original, nbytes);
 
         if (bwrite(bfisic, buff_bloc) == -1) {
@@ -77,6 +78,7 @@ int mi_write_f (unsigned int inod, const void *buff_original, unsigned int offse
         bytes_escrits += darrer_byte - primer_byte;
 
     } else { // cas en que escrivim en més d'un bloc
+        //~ printf("[ficheros.c] DEBUG: + d'un bloc\n\n");
         memcpy(buff_bloc + primer_byte, buff_original, TB - primer_byte);
 
         if (bwrite(bfisic, buff_bloc) == -1) {
@@ -87,6 +89,7 @@ int mi_write_f (unsigned int inod, const void *buff_original, unsigned int offse
     }
 
     if ((darrer_bloc_logic - blocLogic) > 1) {
+        //~ printf("[ficheros.c] DEBUG: blocs intermitjos\n\n");
         int i;
         for (i = blocLogic+1; i < darrer_bloc_logic; i++) {
             ret = traduirBlocInode(inod, i, &bfisic, 1); // bloc físic
@@ -111,6 +114,7 @@ int mi_write_f (unsigned int inod, const void *buff_original, unsigned int offse
     }
 
     if ((darrer_bloc_logic - blocLogic) >= 1) {
+        //~ printf("[ficheros.c] DEBUG: darrer bloc\n\n");
         ret = traduirBlocInode(inod, blocLogic, &bfisic, 1); // bloc físic
         if (ret == -1) {
             printf("[ficheros.c] ERROR: traduirBlocInode()3\n");

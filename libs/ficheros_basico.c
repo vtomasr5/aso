@@ -266,10 +266,8 @@ int escriureBit(int bloc, int bit)
 
     if (bit == 0) {
         buff[pos_byte] &= ~valor; // AND (&) i NOT (~) en bits
-        //sb.blocs_lliures++; // augmentam el contador de blocs lliures del SB
     } else if (bit == 1) {
         buff[pos_byte] |= valor; // OR (|) en bits
-        //sb.blocs_lliures--; // disminuim el contador de blocs lliures del SB
     }
 
     if (bwrite(bloc_mb, buff) == -1) { // escrivim els canvis
@@ -314,7 +312,6 @@ int llegirBit(int bloc)
 
     valor &= buff[pos_byte]; // operador AND para bits
     valor >>= (7-pos_bit); // desplazamiento de bits a la derecha
-    //printf("valor = %d\n",valor);
 
     return valor;
 }
@@ -554,9 +551,9 @@ int alliberarBlocInode(unsigned int inod, unsigned int blocLogic)
     int buff1[N_PUNTERS_BLOC];
     int buff2[N_PUNTERS_BLOC];
     int pd = MAX_PUNTERS_DIRECTES; // pd = punters directes
-    int pin0 = MAX_PUNTERS_DIRECTES + N_PUNTERS_BLOC; // 268
-    int pin1 = MAX_PUNTERS_DIRECTES + N_PUNTERS_BLOC + (N_PUNTERS_BLOC * N_PUNTERS_BLOC); // 65.804
-    int pin2 = MAX_PUNTERS_DIRECTES + N_PUNTERS_BLOC +
+    uint pin0 = MAX_PUNTERS_DIRECTES + N_PUNTERS_BLOC; // 268
+    uint pin1 = MAX_PUNTERS_DIRECTES + N_PUNTERS_BLOC + (N_PUNTERS_BLOC * N_PUNTERS_BLOC); // 65.804
+    uint pin2 = MAX_PUNTERS_DIRECTES + N_PUNTERS_BLOC +
                 (N_PUNTERS_BLOC * N_PUNTERS_BLOC) +
                 (N_PUNTERS_BLOC * N_PUNTERS_BLOC * N_PUNTERS_BLOC); // 16.843.020
     int blocs = 0;
@@ -953,7 +950,7 @@ int traduirBlocInode(unsigned int inod, unsigned int blocLogic, unsigned int *bf
                     in.blocs_assignats_dades++; // modificam els blocs assignats de l'inode
                     in.data_modificacio = time(NULL);
                     in.data_acces = time(NULL);
-                    
+
                     if (escriureInode(inod, in) == -1) {
                         return -1;
                     }

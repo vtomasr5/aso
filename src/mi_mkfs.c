@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    // reservam l'inode arrel del tipus directori (1)
+    // reservam l'inode 0 com a l'arrel del sistema de fitxers. Del tipus directori (1)
     int r;
     if ((r = reservarInode(1, 7)) == -1) {
         printf("[mi_mkfs.c] ERROR: Error cridant a reservarInode");

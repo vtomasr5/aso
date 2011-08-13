@@ -77,7 +77,6 @@ int bumount()
 int bread(uint bloc, void *buff)
 {
     int res = lseek(descriptor, bloc * TB, SEEK_SET);
-    // printf ("[bloques.c] DEBUG: Bloque recibido: %d\n", bloc);
     if (res == -1) {
         printf("[bloques.c] ERROR: No s'ha pogut posicionar (bread)\n");
         return -1;

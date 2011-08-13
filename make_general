@@ -13,7 +13,7 @@ make clean
 echo
 make
 echo
-./bin/mi_mkfs disco.imagen 200000 # 200 MB
+./bin/mi_mkfs disco.imagen 200000 
 cd tests
 ./make_tests
 cd ..

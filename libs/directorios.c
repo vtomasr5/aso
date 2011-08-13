@@ -118,6 +118,7 @@ int cercarEntrada(const char *cami_parcial, unsigned int *p_inode_dir, unsigned 
         //~ for (k = 0; k < length(ent); k++) { // mostram les entrades per pantalla
             //~ printf("[directorios.c] DEBUG: ----> Entrada directori: nom = '%s' || inode = '%d'\n", ent[k].nom, ent[k].inode);
         //~ }
+        //~ printf("[directorios.c] DEBUG: ----> n_entrades = %ld\n", length(ent));
         //~ // fi debug
 
         while ((strcmp(ent[i].nom, cami_inicial) != 0) && (i < num_ent)) { // anam comparant les entrades del directori amb el cami inicial per veure si existeix
@@ -299,14 +300,26 @@ int mi_link(const char *cami1, const char *cami2)
         *p_inode = 0;
         *p_entrada = 0;
 
-        cercarEntrada(cami1, p_inode_dir, p_inode, p_entrada, 1, 7); // la cream
+        if (cercarEntrada(cami1, p_inode_dir, p_inode, p_entrada, 1, 7) == -1) { // la cream
+            printf("[directorios.c] ERROR: No s'ha pogut crear l'entrada nova.\n");
+            alliberar(p_inode_dir_enllac, p_inode_enllac, p_entrada_enllac);
+            alliberar(p_inode_dir, p_inode, p_entrada);
+            sem_signal();
+            return -1;
+        }
 
         // llegim el contingut del directori que conté el nou inode i les entrades de directori.
         mi_stat_f(*p_inode_dir, &estat);
 
         alliberarInode(*p_inode);
 
-        mi_truncar_f(*p_inode_dir, estat.tamany - sizeof(entrada));
+        if (mi_truncar_f(*p_inode_dir, estat.tamany - sizeof(entrada)) == -1) {
+            printf("[directorios.c] ERROR: No s'ha pogut truncar\n");
+            alliberar(p_inode_dir_enllac, p_inode_enllac, p_entrada_enllac);
+            alliberar(p_inode_dir, p_inode, p_entrada);
+            sem_signal();
+            return -1;
+        }
 
         int darrer = strlen(cami1) - 1;
         if (cami1[darrer] == '/') {
@@ -320,11 +333,23 @@ int mi_link(const char *cami1, const char *cami2)
 
         memcpy(ent.nom, cami1 + d + 1, darrer - d);  // escrivim el nom
         ent.inode = *p_inode_enllac;
-        mi_write_f(*p_inode_dir, &ent, estat.tamany - sizeof(entrada), sizeof(entrada));
+        if (mi_write_f(*p_inode_dir, &ent, estat.tamany - sizeof(entrada), sizeof(entrada)) == -1) {
+            printf("[directorios.c] ERROR: No s'ha pogut escriure.\n");
+            alliberar(p_inode_dir_enllac, p_inode_enllac, p_entrada_enllac);
+            alliberar(p_inode_dir, p_inode, p_entrada);
+            sem_signal();
+            return -1;
+        }
 
         inode in = llegirInode(*p_inode_enllac);
         in.links_directoris++;
-        escriureInode(*p_inode_enllac, in);
+        if (escriureInode(*p_inode_enllac, in) == -1) {
+            printf("[directorios.c] ERROR: No s'ha pogut escriure l'inode\n");
+            alliberar(p_inode_dir_enllac, p_inode_enllac, p_entrada_enllac);
+            alliberar(p_inode_dir, p_inode, p_entrada);
+            sem_signal();
+            return -1;
+        }
         printf("[directorios.c] INFO: Enllaç realitzat correctament.\n");
     } else {
         printf("[directorios.c] INFO: El cami '%s' ja existeix!\n", cami1);

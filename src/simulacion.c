@@ -118,10 +118,18 @@ int verificar() {
     registre reg;
     entrada ent;
     STAT estat, estat2;
+    char temps1[TAM];
+    char temps2[TAM];
+    char temps3[TAM];
+    char temps4[TAM];
     char aux[TAM];
     char dir1[TAM]; // simul_ddmmaahhmmss
     char dir2[TAM];
-    int i, j;
+    int i, j = 0;
+    time_t primera_escritura;
+    time_t darrera_escritura;
+    time_t hora_menor;
+    time_t hora_major;
 
     memset(aux, '\0', TAM);
     memset(dir1, '\0', TAM);
@@ -134,17 +142,18 @@ int verificar() {
 
     sprintf(dir1, "/%s/", ent.nom);
     mi_stat(dir1, &estat);
-    printf("[simulacion.c] DEBUG: dir1 = '%s'\n", dir1);
+
     for (i = 0; i < (estat.tamany / sizeof(entrada)); i++) { // recorrem totes les entrades
         if (mi_read(dir1, &ent, i * sizeof(entrada), sizeof(entrada)) == -1) { // llegim totes les entrades
             printf("[simulacion.c] ERROR: Error de lectura2!\n");
             return -1;
         }
+
         sprintf(dir2, "%s%s/prueba.dat", dir1, ent.nom); // direccio completa
         mi_stat(dir2, &estat2); // lectura de la informacio de l'arcxiu
 
         proces = escriptures = p_escriptura = pos_p_escriptura = d_escriptura = pos_d_escriptura = posicio_menor = pos_menor_posicio = posicio_major = pos_major_posicio = 0;
-        p_escriptura = time(NULL);
+        primera_escritura = time(NULL);
         posicio_menor = estat2.tamany;
 
         int k = 8;
@@ -154,7 +163,7 @@ int verificar() {
         }
         proces = atoi(aux);
 
-        for (j = 0; j < estat2.tamany / sizeof(registre); j++) { // recorrem els registres
+        for (j = 0; j < (estat2.tamany / sizeof(registre)); j++) { // recorrem els registres
             reg.data = reg.pid = reg.escriptura = reg.pos_registre = 0;
 
             if (mi_read(dir2, &reg, j * sizeof(registre), sizeof(registre)) == -1) {
@@ -162,40 +171,53 @@ int verificar() {
                 return -1;
             }
 
-            struct tm *t = localtime((time_t*)reg.data);
-            char *d = asctime(t);
-
             if (reg.pid != 0) {
                 if (reg.pid == proces) { // validam
                     escriptures++;
                 }
-                if (reg.data < p_escriptura) {
-                    p_escriptura = atoi(d);
+                if (reg.data < primera_escritura) {
+                    primera_escritura = reg.data;
                     pos_p_escriptura = reg.escriptura;
                 }
-                if (reg.data > d_escriptura) {
-                    d_escriptura = atoi(d);
+                if (reg.data > darrera_escritura) {
+                    darrera_escritura = reg.data;
                     pos_d_escriptura = reg.escriptura;
                 }
                 if (reg.pos_registre < posicio_menor) {
                     posicio_menor = reg.pos_registre;
                     pos_menor_posicio = reg.escriptura;
+                    hora_menor = reg.data;
                 }
                 if (reg.pos_registre > posicio_major) {
                     posicio_major = reg.pos_registre;
                     pos_major_posicio = reg.escriptura;
+                    hora_major = reg.data;
                 }
 
-            printf("[simulacion.c] DEBUG: data: %d, pid: %d, escriptura: %d, pos_registre: %d\n", reg.data, reg.pid, reg.escriptura, reg.pos_registre);
+            //~ printf("[simulacion.c] DEBUG: PID: %d, escriptura: %d, pos_registre: %d\n", reg.pid, reg.escriptura, reg.pos_registre);
             }
         }
+
+        struct tm t;
+        t = *localtime(&primera_escritura);
+        strftime(temps1, sizeof(temps1), "%Y-%m-%d %H:%M:%S", &t);
+
+        t = *localtime(&darrera_escritura);
+        strftime(temps2, sizeof(temps2), "%Y-%m-%d %H:%M:%S", &t);
+
+        t = *localtime(&hora_menor);
+        strftime(temps3, sizeof(temps3), "%Y-%m-%d %H:%M:%S", &t);
+
+        t = *localtime(&hora_major);
+        strftime(temps4, sizeof(temps4), "%Y-%m-%d %H:%M:%S", &t);
+
         printf("[simulacion.c] ############################# VERIFICACIO #############################\n");
         printf("[simulacion.c] INFO: Proces: %d\n", proces);
         printf("[simulacion.c] INFO: Escriptures: %d\n", escriptures);
-        printf("[simulacion.c] INFO: Primera escriptura a les: %d, en la posicio de l'escriptura: %d\n", p_escriptura, pos_p_escriptura);
-        printf("[simulacion.c] INFO: Darrera escriptura a les: %d, en la posicio de l'escriptura: %d\n", d_escriptura, pos_d_escriptura);
-        printf("[simulacion.c] INFO: Menor posicio de l'escriptura: %d, en la posicio de l'escriptura: %d\n", posicio_menor, pos_menor_posicio);
-        printf("[simulacion.c] INFO: Major posicio de l'escritura: %d, en la posicio de l'escriptura: %d\n\n", posicio_major, pos_major_posicio);
+        printf("[simulacion.c] INFO: Primera escriptura a les: %s, a la posicio: %d\n", temps1, pos_p_escriptura);
+        printf("[simulacion.c] INFO: Darrera escriptura a les: %s, a la posicio: %d\n", temps2, pos_d_escriptura);
+        printf("[simulacion.c] INFO: Menor posicio de l'escriptura: %s, a la posicio: %d\n", temps3, pos_menor_posicio);
+        printf("[simulacion.c] INFO: Major posicio de l'escritura: %s, a la posicio: %d\n\n", temps4, pos_major_posicio);
     }
 
     return 0;
