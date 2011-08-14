@@ -10,16 +10,16 @@
 #include "../include/directorios.h"
 #include "../include/ficheros.h"
 
+#define TAM 1024
+
 typedef struct {
-    char nom[60];
+    char nom[TAM];
     int valor;
 } estructura;
 
 int main(int argc, char *argv[])
 {
     estructura est;
-    //~ char buff[60];
-    memset(est.nom, 'a', 60);
 
     if (argc != 2) {
         printf("[read_write.c] ERROR: Arguments incorrectes. Ex: ./read_write ../disco.imagen\n");
@@ -32,20 +32,32 @@ int main(int argc, char *argv[])
     }
 
     // proves
-    //~ est.nom = "prova";
+    memset(est.nom, 'a', TAM);
     est.valor = 10;
 
-    int r = reservarInode(2, 7);
+    printf("[read_write.c] DEBUG: est.nom = %s\n", est.nom);
 
-    if (mi_write_f(r, &est, 0 * sizeof(estructura), sizeof(estructura)) == -1) { // escrivim els canvis
+    int r = reservarInode(1, 7);
+
+    if (mi_write_f(r, &est, 0, sizeof(estructura)) == -1) { // escrivim els canvis
         printf("[read_write.c] ERROR: No s'ha pogut escriure!\n");
     }
 
-    if (mi_read_f(r, &est, 0 * sizeof(estructura), sizeof(estructura)) == -1) { // escrivim els canvis
+    printf("[read_write.c] DEBUG: sizeof(est) escritura = %ld\n", sizeof(est));
+    printf("[read_write.c] DEBUG: sizeof(est.nom) escritura = %ld\n", sizeof(est.nom));
+    printf("[read_write.c] DEBUG: sizeof(est.valor) escritura = %ld\n\n", sizeof(est.valor));
+
+    if (mi_read_f(r, &est, 0, sizeof(estructura)) == -1) { // escrivim els canvis
         printf("[read_write.c] ERROR: No s'ha pogut llegir!\n");
     }
 
-    printf("read_write.c] DEBUG: nom = '%s', valor = %d\n", est.nom, est.valor);
+    printf("[read_write.c] DEBUG: sizeof(est) lectura = %ld\n", sizeof(est));
+    printf("[read_write.c] DEBUG: sizeof(est.nom) lectura = %ld\n", sizeof(est.nom));
+    printf("[read_write.c] DEBUG: sizeof(est.valor) lectura = %ld\n", sizeof(est.valor));
+
+    alliberarInode(r);
+
+    printf("[read_write.c] DEBUG:\nnom = '%s'\nvalor = %d\n", est.nom, est.valor);
 
     // desmontam es FS
     if (bumount() == -1) {
