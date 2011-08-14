@@ -38,18 +38,21 @@ int main(int argc, char *argv[])
     printf("[read_write.c] DEBUG: est.nom = %s\n", est.nom);
 
     int r = reservarInode(1, 7);
-
-    if (mi_write_f(r, &est, 0, sizeof(estructura)) == -1) { // escrivim els canvis
+    int ret = mi_write_f(r, &est, 0, sizeof(estructura));
+    if (ret == -1) { // escrivim els canvis
         printf("[read_write.c] ERROR: No s'ha pogut escriure!\n");
     }
+    printf("[read_write.c] DEBUG: bytes_escrits = %d\n", ret);
 
     printf("[read_write.c] DEBUG: sizeof(est) escritura = %ld\n", sizeof(est));
     printf("[read_write.c] DEBUG: sizeof(est.nom) escritura = %ld\n", sizeof(est.nom));
     printf("[read_write.c] DEBUG: sizeof(est.valor) escritura = %ld\n\n", sizeof(est.valor));
 
-    if (mi_read_f(r, &est, 0, sizeof(estructura)) == -1) { // escrivim els canvis
+    int ret2 = mi_read_f(r, &est, 0, sizeof(estructura));
+    if (ret2 == -1) { // escrivim els canvis
         printf("[read_write.c] ERROR: No s'ha pogut llegir!\n");
     }
+    printf("[read_write.c] DEBUG: bytes_llegits = %d\n", ret2);
 
     printf("[read_write.c] DEBUG: sizeof(est) lectura = %ld\n", sizeof(est));
     printf("[read_write.c] DEBUG: sizeof(est.nom) lectura = %ld\n", sizeof(est.nom));
@@ -57,7 +60,7 @@ int main(int argc, char *argv[])
 
     alliberarInode(r);
 
-    printf("[read_write.c] DEBUG:\nnom = '%s'\nvalor = %d\n", est.nom, est.valor);
+    printf("[read_write.c] DEBUG:\nnom = %s\nvalor = %d\n", est.nom, est.valor);
 
     // desmontam es FS
     if (bumount() == -1) {
