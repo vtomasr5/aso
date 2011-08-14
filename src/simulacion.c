@@ -37,7 +37,7 @@
 #include "../include/directorios.h"
 #include "../include/semaforos.h"
 
-#define PROCESOS 100
+#define PROCESOS 20
 #define N_VEGADES 50
 #define TAM 200 // llargaria nom cami
 
@@ -48,7 +48,7 @@ typedef struct {
     int pos_registre;
 } registre; // sizeof = 16 bytes
 
-int acabados = 0;
+static int acabados = 0;
 
 /**
  *  Funció que s'encarrega de que no quedin processos zombies. Espera el processos fills a que acabin.
@@ -114,7 +114,7 @@ int proces(char *fitxer)
  *  de la forma correcta.
  */
 int verificar() {
-    int proces, escriptures, p_escriptura, pos_p_escriptura, d_escriptura, pos_d_escriptura, posicio_menor, pos_menor_posicio, posicio_major, pos_major_posicio;
+    int proces, escriptures, pos_p_escriptura, pos_d_escriptura, posicio_menor, pos_menor_posicio, posicio_major, pos_major_posicio;
     registre reg;
     entrada ent;
     STAT estat, estat2;
@@ -152,7 +152,7 @@ int verificar() {
         sprintf(dir2, "%s%s/prueba.dat", dir1, ent.nom); // direccio completa
         mi_stat(dir2, &estat2); // lectura de la informacio de l'arcxiu
 
-        proces = escriptures = p_escriptura = pos_p_escriptura = d_escriptura = pos_d_escriptura = posicio_menor = pos_menor_posicio = posicio_major = pos_major_posicio = 0;
+        proces = escriptures  = pos_p_escriptura = pos_d_escriptura = posicio_menor = pos_menor_posicio = posicio_major = pos_major_posicio = 0;
         primera_escritura = time(NULL);
         posicio_menor = estat2.tamany;
 
@@ -166,7 +166,7 @@ int verificar() {
         for (j = 0; j < (estat2.tamany / sizeof(registre)); j++) { // recorrem els registres
             reg.data = reg.pid = reg.escriptura = reg.pos_registre = 0;
 
-            if (mi_read(dir2, &reg, j * sizeof(registre), sizeof(registre)) == -1) {
+            if (mi_read(dir2, &reg, (j * sizeof(registre)), sizeof(registre)) == -1) {
                 printf("[simulacion.c] ERROR: Error de lectura3!\n");
                 return -1;
             }
@@ -216,8 +216,8 @@ int verificar() {
         printf("[simulacion.c] INFO: Escriptures: %d\n", escriptures);
         printf("[simulacion.c] INFO: Primera escriptura a les: %s, a la posicio: %d\n", temps1, pos_p_escriptura);
         printf("[simulacion.c] INFO: Darrera escriptura a les: %s, a la posicio: %d\n", temps2, pos_d_escriptura);
-        printf("[simulacion.c] INFO: Menor posicio de l'escriptura: %s, a la posicio: %d\n", temps3, pos_menor_posicio);
-        printf("[simulacion.c] INFO: Major posicio de l'escritura: %s, a la posicio: %d\n\n", temps4, pos_major_posicio);
+        printf("[simulacion.c] INFO: Menor posicio de l'escriptura a les: %s, a la posicio: %d\n", temps3, pos_menor_posicio);
+        printf("[simulacion.c] INFO: Major posicio de l'escriptura a les: %s, a la posicio: %d\n\n", temps4, pos_major_posicio);
     }
 
     return 0;

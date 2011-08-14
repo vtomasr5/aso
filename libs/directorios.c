@@ -104,6 +104,9 @@ int cercarEntrada(const char *cami_parcial, unsigned int *p_inode_dir, unsigned 
         return -1;
     }
 
+    printf("[directorios.c] DEBUG: cami_inicial = '%s'\n", cami_inicial);
+    printf("[directorios.c] DEBUG: cami_final = '%s'\n\n", cami_final);
+
     STAT estat;
     mi_stat_f(*p_inode_dir, &estat); // llegim la informació de l'inode i la guardam en sa varible estat
 
@@ -111,15 +114,17 @@ int cercarEntrada(const char *cami_parcial, unsigned int *p_inode_dir, unsigned 
 
     entrada ent[num_ent]; // definimos un array de entradas de directorio que contiene el numero de entradas del inodo leido
     if (estat.tamany != 0) { // si hi ha entrades
-        mi_read_f(*p_inode_dir, &ent, 0, estat.tamany); // leemos las entradas del directorio y las guardamos en el "buffer" ent
-
-        //~ // inici debug
-        //~ int k;
-        //~ for (k = 0; k < length(ent); k++) { // mostram les entrades per pantalla
-            //~ printf("[directorios.c] DEBUG: ----> Entrada directori: nom = '%s' || inode = '%d'\n", ent[k].nom, ent[k].inode);
-        //~ }
-        //~ printf("[directorios.c] DEBUG: ----> n_entrades = %ld\n", length(ent));
-        //~ // fi debug
+        if (mi_read_f(*p_inode_dir, &ent, 0, estat.tamany) == -1) { // leemos las entradas del directorio y las guardamos en el "buffer" ent
+            printf("[directorios.c] ERROR: No s'ha pogut llegir l'entrada!\n");
+            return -1;
+        }
+        // inici debug
+        int k;
+        for (k = 0; k < length(ent); k++) { // mostram les entrades per pantalla
+            printf("[directorios.c] DEBUG: ----> Entrada directori: nom = '%s' || inode = '%d'\n", ent[k].nom, ent[k].inode);
+        }
+        printf("[directorios.c] DEBUG: ----> n_entrades = %ld\n", length(ent));
+        // fi debug
 
         while ((strcmp(ent[i].nom, cami_inicial) != 0) && (i < num_ent)) { // anam comparant les entrades del directori amb el cami inicial per veure si existeix
             i++;
@@ -161,12 +166,12 @@ int cercarEntrada(const char *cami_parcial, unsigned int *p_inode_dir, unsigned 
             strcpy(entra.nom, cami_inicial); // copiam el camí a l'entrada de directori
 
             if (mi_write_f(*p_inode_dir, &entra, num_ent * sizeof(entrada), sizeof(entrada)) == -1) { // escrivim els canvis
-                printf("[directorios.c] ERROR: No s'ha pogut escriure!\n");
+                printf("[directorios.c] ERROR: No s'ha pogut escriure l'entrada!\n");
                 return -1;
             }
 
-            *p_inode = r; // l'inode reservar es el seu inode (p_inode)
-            *p_entrada = (estat.tamany / sizeof(entrada));
+            *p_inode = r; // l'inode reservat es el seu inode (p_inode)
+            *p_entrada = (estat.tamany / sizeof(entrada)); // numero de l'entrada (sa darrera)
 
             if ((strlen(cami_final) == 0) || (strcmp(cami_final, "/") == 0)) {  // si hemos acabado o lo ultimo es una "/"
                 return 0;

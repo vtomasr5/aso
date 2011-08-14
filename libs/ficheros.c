@@ -42,9 +42,9 @@ int mi_write_f (unsigned int inod, const void *buff_original, unsigned int offse
     unsigned char buff_bloc[TB];
     int bytes_escrits = 0;
     int blocLogic = offset / TB; // primer bloc (logic) on escriurem
-    int darrer_bloc_logic = ((offset + nbytes) - 1) / TB; // ultim bloc on escriurem primer_byte
+    int darrer_bloc_logic = (offset + nbytes - 1) / TB; // ultim bloc on escriurem primer_byte
     int primer_byte = offset % TB; // offset del primer bloc. Desplaçament dins el bloc
-    int darrer_byte = ((offset + nbytes) - 1) % TB; // numero de bytes a escriure en el primer bloc
+    int darrer_byte = (offset + nbytes - 1) % TB; // numero de bytes a escriure en el primer bloc
     memset(buff_bloc, '\0', TB);
     uint bfisic;
     int ret = 0;
@@ -68,7 +68,6 @@ int mi_write_f (unsigned int inod, const void *buff_original, unsigned int offse
 
     // únicament tenim que escriure en un bloc
     if ((blocLogic == darrer_bloc_logic) && (primer_byte + nbytes < TB)) {
-        //~ printf("[ficheros.c] DEBUG: 1 bloc\n\n");
         memcpy(buff_bloc + primer_byte, buff_original, nbytes);
 
         if (bwrite(bfisic, buff_bloc) == -1) {
@@ -78,18 +77,16 @@ int mi_write_f (unsigned int inod, const void *buff_original, unsigned int offse
         bytes_escrits += darrer_byte - primer_byte;
 
     } else { // cas en que escrivim en més d'un bloc
-        //~ printf("[ficheros.c] DEBUG: + d'un bloc\n\n");
         memcpy(buff_bloc + primer_byte, buff_original, TB - primer_byte);
 
         if (bwrite(bfisic, buff_bloc) == -1) {
             return -1;
         }
 
-        bytes_escrits += darrer_byte;
+        bytes_escrits += (TB - primer_byte);
     }
 
     if ((darrer_bloc_logic - blocLogic) > 1) {
-        //~ printf("[ficheros.c] DEBUG: blocs intermitjos\n\n");
         int i;
         for (i = blocLogic+1; i < darrer_bloc_logic; i++) {
             ret = traduirBlocInode(inod, i, &bfisic, 1); // bloc físic
@@ -114,8 +111,7 @@ int mi_write_f (unsigned int inod, const void *buff_original, unsigned int offse
     }
 
     if ((darrer_bloc_logic - blocLogic) >= 1) {
-        //~ printf("[ficheros.c] DEBUG: darrer bloc\n\n");
-        ret = traduirBlocInode(inod, blocLogic, &bfisic, 1); // bloc físic
+        ret = traduirBlocInode(inod, darrer_bloc_logic, &bfisic, 1); // bloc físic
         if (ret == -1) {
             printf("[ficheros.c] ERROR: traduirBlocInode()3\n");
             return -1;
@@ -125,7 +121,7 @@ int mi_write_f (unsigned int inod, const void *buff_original, unsigned int offse
             return -1;
         }
 
-        memcpy(buff_bloc, buff_original + (TB - darrer_byte) + (darrer_bloc_logic - blocLogic - 1) * TB, darrer_byte + 1);
+        memcpy(buff_bloc, buff_original + (TB - primer_byte) + (darrer_bloc_logic - blocLogic - 1) * TB, darrer_byte + 1);
 
         if (bwrite(bfisic, buff_bloc) == -1) {
             return -1;
@@ -163,9 +159,9 @@ int mi_read_f (unsigned int inod, void *buff_original, unsigned int offset, unsi
     inode in;
     int bytes_llegits = 0;
     int blocLogic = offset / TB; // primer bloc logic
-    int darrer_bloc_logic = ((offset + nbytes) - 1) / TB; // darrer bloc logic
+    int darrer_bloc_logic = (offset + nbytes - 1) / TB; // darrer bloc logic
     int primer_byte = offset % TB; // desplaçament del primer bloc. On es comença a llegir
-    int darrer_byte = ((offset + nbytes) - 1) % TB; // nombre de bytes a escriure al primer bloc
+    int darrer_byte = (offset + nbytes - 1) % TB; // nombre de bytes a escriure al primer bloc
     memset(buff_bloc, '\0', TB);
     int ret = 0;
     uint bfisic;
@@ -225,7 +221,7 @@ int mi_read_f (unsigned int inod, void *buff_original, unsigned int offset, unsi
             return -1;
         }
 
-        memcpy(buff_original + (TB - darrer_bloc_logic) + (darrer_bloc_logic - blocLogic - 1) * TB, buff_bloc, darrer_byte + 1);
+        memcpy(buff_original + (TB - primer_byte) + (darrer_bloc_logic - blocLogic - 1) * TB, buff_bloc, darrer_byte + 1);
 
         bytes_llegits += (darrer_byte + 1);
     }

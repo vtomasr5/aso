@@ -9,19 +9,19 @@ rm -f RWBits
 rm -f RWBlocs
 rm -f RWInodes
 rm -f traduir
-rm -f cercar
+rm -f read_write
 rm -f truncar
 rm -f Rinode
 rm -f RAInodes
 
-$CC -Wall -O2 -ggdb infosb.c ${OBJ} -o infosb
-$CC -Wall -O2 -ggdb infomb.c ${OBJ} -o infomb
-$CC -Wall -O2 -ggdb RWBits.c ${OBJ} -o RWBits
-$CC -Wall -O2 -ggdb RWBlocs.c ${OBJ} -o RWBlocs
-$CC -Wall -O2 -ggdb RWInodes.c ${OBJ} -o RWInodes
-$CC -Wall -O2 -ggdb traduir.c ${OBJ} -o traduir
-$CC -Wall -O2 -ggdb cercar.c ${OBJ} -o cercar
-$CC -Wall -O2 -ggdb truncar.c ${OBJ} -o truncar
-$CC -Wall -O2 -ggdb RInode.c ${OBJ} -o RInode
-$CC -Wall -O2 -ggdb RAInodes.c ${OBJ} -o RAInodes
+$CC -Wall -O2 -g -ggdb infosb.c ${OBJ} -o infosb
+$CC -Wall -O2 -g -ggdb infomb.c ${OBJ} -o infomb
+$CC -Wall -O2 -g -ggdb RWBits.c ${OBJ} -o RWBits
+$CC -Wall -O2 -g -ggdb RWBlocs.c ${OBJ} -o RWBlocs
+$CC -Wall -O2 -g -ggdb RWInodes.c ${OBJ} -o RWInodes
+$CC -Wall -O2 -g -ggdb traduir.c ${OBJ} -o traduir
+$CC -Wall -O2 -g -ggdb read_write.c ${OBJ} -o read_write
+$CC -Wall -O2 -g -ggdb truncar.c ${OBJ} -o truncar
+$CC -Wall -O2 -g -ggdb RInode.c ${OBJ} -o RInode
+$CC -Wall -O2 -g -ggdb RAInodes.c ${OBJ} -o RAInodes
 echo "OK TEST"
