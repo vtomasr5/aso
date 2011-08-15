@@ -10,7 +10,7 @@
 #include "../include/directorios.h"
 #include "../include/ficheros.h"
 
-#define TAM 1024
+#define TAM 2048
 
 typedef struct {
     char nom[TAM];
