@@ -26,6 +26,15 @@ int main(int argc, char *argv[])
     // proves
     STAT estat;
     uint p_inode_dir, p_inode, p_entrada = 0;
+    //~ char nom[50];
+    //~ int i = 0;
+    //~ for (i = 1; i <= 16; i++) {
+        //~ sprintf(nom, "/dir%d/", i);
+        //~ if (mi_creat(nom, 7) == -1) {
+            //~ printf("error\n");
+            //~ return -1;
+        //~ }
+    //~ }
 
     if (cercarEntrada(argv[2], &p_inode_dir, &p_inode, &p_entrada, 0, 7) == -1) { // entrada que ha d'existir
         printf("[comprovar_entrades.c] ERROR: No s'ha trobat el cami o no es un directori!\n");
