@@ -37,7 +37,7 @@
 #include "../include/directorios.h"
 #include "../include/semaforos.h"
 
-#define PROCESOS 20
+#define PROCESOS 100
 #define N_VEGADES 50
 #define TAM 200 // llargaria nom cami
 

@@ -13,6 +13,7 @@ rm -f read_write
 rm -f truncar
 rm -f Rinode
 rm -f RAInodes
+rm -f comprovar_entrades
 
 $CC -Wall -O2 -g -ggdb infosb.c ${OBJ} -o infosb
 $CC -Wall -O2 -g -ggdb infomb.c ${OBJ} -o infomb
@@ -24,4 +25,5 @@ $CC -Wall -O2 -g -ggdb read_write.c ${OBJ} -o read_write
 $CC -Wall -O2 -g -ggdb truncar.c ${OBJ} -o truncar
 $CC -Wall -O2 -g -ggdb RInode.c ${OBJ} -o RInode
 $CC -Wall -O2 -g -ggdb RAInodes.c ${OBJ} -o RAInodes
+$CC -Wall -O2 -g -ggdb comprovar_entrades.c ${OBJ} -o comprovar_entrades
 echo "OK TEST"

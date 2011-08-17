@@ -2,7 +2,7 @@
 #define _DEFINICIONS_H
 
 // tamany de bloc
-#define TB 1024
+#define TB 8192
 
 // nombre de inodes que s'usaran a l'array de inodes
 #define N_INODES 4

@@ -441,13 +441,13 @@ int mi_unlink(const char *cami)
             alliberar(p_inode_dir, p_inode, p_entrada);
             sem_signal();
         }
-    } else {
+    }
         if (escriureInode(*p_inode, in)  == -1) {
             printf("[directorios.c] ERROR: No s'ha pogut escriure a l'inode\n");
             alliberar(p_inode_dir, p_inode, p_entrada);
             sem_signal();
         }
-    }
+
 
     printf("[directorios.c] INFO: El cami '%s' s'ha borrat correctament.\n", cami);
     alliberar(p_inode_dir, p_inode, p_entrada);
@@ -458,7 +458,7 @@ int mi_unlink(const char *cami)
 /**
  *  Funció que escriu el contingut del directori 'cami' dins el buffer.
  *  @param cami Ruta que ha de llegir
- *  @param buffer Buffer on ha de guardar la informació.
+ *  @param buff Buffer on ha de guardar la informació.
  *  @return El nombre de fitxers que hi ha dins el directori
  */
 int mi_dir(const char *cami, char *buff)
