@@ -64,12 +64,11 @@ int mi_write_f (unsigned int inod, const void *buff_original, unsigned int offse
     }
     printf("[ficheros.c] DEBUG: bloc_fisic1 = '%d'\n", bfisic);
 
-    if (bread(bfisic, buff_bloc) == -1) {
-        return -1;
-    }
-
     // únicament tenim que escriure en un bloc
-    if ((primer_bloc_logic == darrer_bloc_logic) && (primer_byte_logic + nbytes < TB)) {
+    if ((primer_byte_logic + nbytes) < TB) {
+        if (bread(bfisic, buff_bloc) == -1) {
+            return -1;
+        }
         //~ printf("[ficheros.c] DEBUG: 1 bloc\n");
         memcpy(buff_bloc + primer_byte_logic, buff_original, nbytes);
 
@@ -77,10 +76,13 @@ int mi_write_f (unsigned int inod, const void *buff_original, unsigned int offse
             return -1;
         }
 
-        bytes_escrits += darrer_byte_logic - primer_byte_logic;
+        bytes_escrits += nbytes;
 
     } else { // cas en que escrivim en més d'un bloc
-    //~ printf("[ficheros.c] DEBUG: + 1 bloc (resta)\n");
+        if (bread(bfisic, buff_bloc) == -1) {
+            return -1;
+        }
+        //~ printf("[ficheros.c] DEBUG: + 1 bloc (resta)\n");
         memcpy(buff_bloc + primer_byte_logic, buff_original, TB - primer_byte_logic);
 
         if (bwrite(bfisic, buff_bloc) == -1) {
@@ -187,16 +189,19 @@ int mi_read_f (unsigned int inod, void *buff_original, unsigned int offset, unsi
         printf("[ficheros.c] ERROR: traduirBlocInode()4\n");
         return -1;
     }
+    printf("[ficheros.c] DEBUG: bloc_fisic4 = '%d'\n", bfisic);
 
-    if (bread(bfisic, buff_bloc) == -1) {
-        return -1;
-    }
-
-    if ((primer_bloc_logic == darrer_bloc_logic) && (primer_byte_logic + nbytes < TB)) {
+    if ((primer_byte_logic + nbytes) < TB) {
+        if (bread(bfisic, buff_bloc) == -1) {
+            return -1;
+        }
         //~ printf("[ficheros.c] DEBUG2: 1 bloc\n");
         memcpy(buff_original, buff_bloc + primer_byte_logic, nbytes);
         bytes_llegits += nbytes;
     } else {
+        if (bread(bfisic, buff_bloc) == -1) {
+            return -1;
+        }
         //~ printf("[ficheros.c] DEBUG2: + 1 bloc (resta)\n");
         memcpy(buff_original, buff_bloc + primer_byte_logic, TB - primer_byte_logic);
         bytes_llegits += (TB - primer_byte_logic);
@@ -211,6 +216,7 @@ int mi_read_f (unsigned int inod, void *buff_original, unsigned int offset, unsi
                 printf("[ficheros.c] ERROR: traduirBlocInode()5\n");
                 return -1;
             }
+            printf("[ficheros.c] DEBUG: bloc_fisic5 = '%d'\n", bfisic);
 
             if (bread(bfisic, buff_bloc) == -1) {
                 return -1;
@@ -229,6 +235,7 @@ int mi_read_f (unsigned int inod, void *buff_original, unsigned int offset, unsi
             printf("[ficheros.c] ERROR: traduirBlocInode()6\n");
             return -1;
         }
+        printf("[ficheros.c] DEBUG: bloc_fisic6 = '%d'\n", bfisic);
 
         if (bread(bfisic, buff_bloc) == -1) {
             return -1;

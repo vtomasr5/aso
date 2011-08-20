@@ -104,6 +104,11 @@ int cercarEntrada(const char *cami_parcial, unsigned int *p_inode_dir, unsigned 
         return -1;
     }
 
+    printf("[directorios.c] DEBUG: Cami = '%s'\n", cami_parcial);
+    printf("[directorios.c] DEBUG: Cami inicial = '%s'\n", cami_inicial);
+    printf("[directorios.c] DEBUG: Cami final = '%s'\n", cami_final);
+    printf("[directorios.c] DEBUG: p_inode_dir = '%d'\n", *p_inode_dir);
+
     STAT estat;
     mi_stat_f(*p_inode_dir, &estat); // llegim la informació de l'inode i la guardam en sa varible estat
 
